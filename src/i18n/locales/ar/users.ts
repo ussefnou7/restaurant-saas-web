@@ -1,0 +1,86 @@
+import type { TranslationDictionary } from '../../types'
+
+export const usersAr: TranslationDictionary = {
+  'users.title': 'المستخدمون',
+  'users.subtitle': 'إدارة المستخدمين والصلاحيات',
+  'users.add': 'إضافة مستخدم',
+  'users.listTitle': 'قائمة المستخدمين',
+  'users.listSubtitle': 'إدارة الحسابات والأدوار والصلاحيات',
+  'users.searchPlaceholder': 'بحث المستخدمين',
+  'users.filterStatus': 'تصفية حسب الحالة',
+  'users.filterRole': 'تصفية حسب الدور',
+  'users.permissions': 'الصلاحيات',
+  'users.totalUsers': 'إجمالي المستخدمين',
+  'users.loading': 'جاري تحميل المستخدمين…',
+  'users.emptyTitle': 'لا يوجد مستخدمون بعد',
+  'users.emptyText': 'أنشئ أول حساب مستخدم لإدارة الوصول.',
+  'users.loadError': 'فشل تحميل المستخدمين',
+  'users.statusError': 'فشل تحديث حالة المستخدم',
+  'users.deleteError': 'فشل حذف المستخدم',
+  'users.col.user': 'المستخدم',
+  'users.col.role': 'الدور',
+  'users.col.branch': 'الفرع',
+
+  'users.details.backToList': 'العودة إلى المستخدمين',
+  'users.details.tab.overview': 'نظرة عامة',
+  'users.details.tab.permissions': 'الصلاحيات',
+  'users.details.editUser': 'تعديل المستخدم',
+  'users.details.notFound': 'المستخدم غير موجود.',
+  'users.details.notFoundTitle': 'المستخدم غير موجود',
+
+  'users.deleteConfirm.title': 'حذف المستخدم',
+  'users.deleteConfirm.message': 'هل أنت متأكد من حذف هذا المستخدم؟ لا يمكن التراجع عن هذا الإجراء.',
+  'users.deleteConfirm.confirm': 'حذف المستخدم',
+
+  'users.modal.addTitle': 'إضافة مستخدم',
+  'users.modal.addSubtitle': 'إنشاء مستخدم جديد وتحديد صلاحيات الوصول.',
+  'users.modal.editTitle': 'تعديل مستخدم',
+  'users.modal.editSubtitle': 'تحديث بيانات المستخدم وصلاحيات الوصول.',
+
+  'users.sections.basicInfo': 'البيانات الأساسية',
+  'users.sections.access': 'الوصول',
+  'users.sections.status': 'الحالة',
+
+  'users.fields.fullName': 'الاسم بالكامل',
+  'users.fields.username': 'اسم المستخدم',
+  'users.fields.password': 'كلمة المرور',
+  'users.fields.phone': 'الهاتف',
+  'users.fields.role': 'الدور',
+  'users.fields.branch': 'الفرع',
+  'users.fields.active': 'مستخدم نشط',
+
+  'users.placeholders.fullName': 'مثال: أحمد حسن',
+  'users.placeholders.username': 'admin',
+  'users.placeholders.password': '••••••••',
+  'users.placeholders.phone': '+201000000000',
+  'users.placeholders.selectRole': 'اختر الدور',
+  'users.placeholders.selectBranch': 'اختر الفرع',
+  'users.placeholders.noBranch': 'بدون فرع / وصول على مستوى المطعم',
+  'users.placeholders.loadingBranches': 'جاري تحميل الفروع…',
+
+  'users.helpers.branch': 'اتركه فارغًا للوصول على مستوى المطعم.',
+  'users.helpers.active': 'المستخدمون غير النشطين لا يمكنهم الدخول إلى النظام.',
+
+  'users.actions.create': 'إنشاء مستخدم',
+  'users.actions.save': 'حفظ التغييرات',
+  'users.actions.creating': 'جاري الإنشاء…',
+  'users.actions.saving': 'جاري الحفظ…',
+
+  'users.form.loadingBranches': 'جاري تحميل الفروع…',
+
+  'users.validation.usernameRequired': 'اسم المستخدم مطلوب',
+  'users.validation.fullNameRequired': 'الاسم بالكامل مطلوب',
+  'users.validation.passwordRequired': 'كلمة المرور مطلوبة',
+  'users.validation.roleRequired': 'الدور مطلوب',
+
+  'users.errors.loadBranches': 'فشل تحميل الفروع',
+  'users.errors.create': 'فشل إنشاء المستخدم',
+  'users.errors.update': 'فشل تحديث المستخدم',
+
+  'users.roles.OWNER': 'المالك',
+  'users.roles.BRANCH_MANAGER': 'مدير الفرع',
+  'users.roles.CASHIER': 'أمين الصندوق',
+  'users.roles.ACCOUNTANT': 'محاسب',
+  'users.roles.HR_MANAGER': 'مدير الموارد البشرية',
+  'users.roles.INVENTORY_MANAGER': 'مدير المخزون',
+}

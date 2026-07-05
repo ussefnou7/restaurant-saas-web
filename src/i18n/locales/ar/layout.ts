@@ -1,0 +1,35 @@
+import type { TranslationDictionary } from '../../types'
+
+export const layoutAr: TranslationDictionary = {
+  'layout.nav.main': 'الرئيسية',
+  'layout.nav.sales': 'المبيعات',
+  'layout.nav.menu': 'القائمة',
+  'layout.nav.operations': 'العمليات',
+  'layout.nav.inventorySetup': 'إعداد المخزون',
+  'layout.nav.inventoryOperations': 'الشراء والحركات',
+  'layout.nav.inventoryStock': 'الأرصدة والمعاملات',
+  'layout.nav.inventoryAdmin': 'إدارة النظام',
+  'layout.nav.management': 'الإدارة',
+  'layout.nav.hr': 'الموارد البشرية',
+
+  'layout.nav.dashboard': 'لوحة التحكم',
+  'layout.nav.pos': 'نقطة البيع',
+  'layout.nav.orders': 'الطلبات',
+  'layout.nav.products': 'المنتجات',
+  'layout.nav.categories': 'التصنيفات',
+  'layout.nav.branches': 'الفروع',
+  'layout.nav.inventory': 'المخزون',
+  'layout.nav.purchase': 'المشتريات',
+  'layout.nav.materials': 'المواد',
+  'layout.nav.users': 'المستخدمون',
+  'layout.nav.reports': 'التقارير',
+  'layout.nav.settings': 'الإعدادات',
+  'layout.nav.jobs': 'الوظائف',
+  'layout.nav.employees': 'الموظفون',
+  'layout.nav.leaveRequests': 'طلبات الإجازة',
+  'layout.nav.leaveTypes': 'أنواع الإجازة',
+
+  'layout.sidebar.aria': 'التنقل الرئيسي',
+  'layout.appName': 'تطبيق المطعم',
+  'layout.logout': 'تسجيل الخروج',
+}

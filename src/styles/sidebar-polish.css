@@ -1,0 +1,135 @@
+/* Sidebar — compact, simple, content-first */
+
+.sidebar {
+  background: #fcfcfd;
+  border-inline-end: 1px solid #eef0f2;
+  box-shadow: none;
+  width: 240px;
+  min-width: 240px;
+}
+
+.sidebar-header {
+  padding: 1rem 0.875rem 0.875rem;
+  border-block-end: 1px solid #f3f4f6;
+}
+
+.sidebar-title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.sidebar-nav {
+  padding: 12px 10px 14px;
+}
+
+.sidebar-group {
+  margin-bottom: 12px;
+}
+
+.sidebar-group-header {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #9ca3af;
+  padding: 7px 10px;
+  opacity: 1;
+}
+
+.sidebar-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.sidebar-icon--group {
+  width: 15px;
+  height: 15px;
+}
+
+.sidebar-group-leading {
+  gap: 9px;
+}
+
+.sidebar-group-header[aria-expanded='true'] {
+  background: #f6fbf8;
+  border-color: #e8f5ee;
+  color: #065f46;
+}
+
+.sidebar-group-header:hover {
+  background: #f9fafb;
+  border-color: #f3f4f6;
+  color: #4b5563;
+}
+
+.sidebar-group-items {
+  padding-inline-start: 6px;
+  margin-block-start: 5px;
+  gap: 4px;
+}
+
+.nav-link {
+  padding: 9px 11px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #6b7280;
+  border-radius: 9px;
+  gap: 10px;
+  line-height: 1.3;
+}
+
+.nav-link .sidebar-icon {
+  color: #9ca3af;
+  opacity: 1;
+}
+
+.nav-link:hover {
+  background: #f9fafb;
+  color: #374151;
+  border-color: transparent;
+}
+
+.nav-link.active {
+  background: #f0fdf7;
+  color: #047857;
+  border: none;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.nav-link.active::before {
+  background: #34d399;
+  height: 16px;
+  inset-inline-start: 5px;
+}
+
+.nav-link.active .sidebar-icon {
+  color: #059669;
+}
+
+.sidebar-footer {
+  padding: 12px 10px;
+  gap: 9px;
+}
+
+.language-switcher__btn {
+  padding: 0.4375rem 0.625rem;
+  font-size: 0.9375rem;
+}
+
+.sidebar-logout {
+  padding: 0.5rem 0.875rem;
+  font-size: 1rem;
+  gap: 9px;
+}
+
+.main-content {
+  padding: 1.25rem 1.5rem;
+  background: #f8faf9;
+}
+
+[dir='rtl'] .sidebar-group-header {
+  text-transform: none;
+  letter-spacing: 0;
+}

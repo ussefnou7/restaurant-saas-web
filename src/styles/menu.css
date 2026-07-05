@@ -1,0 +1,41 @@
+.menu-hub-page__panel {
+  padding-block-start: 4px;
+}
+
+.recipe-builder-modal__toolbar {
+  display: flex;
+  justify-content: flex-start;
+  margin-block-end: 16px;
+}
+
+.recipe-builder-modal__dirty {
+  margin-block-end: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-warning, #f59e0b) 12%, transparent);
+  color: var(--color-text, #111827);
+  font-size: 0.875rem;
+}
+
+.recipe-builder-modal__empty {
+  margin: 0;
+  padding: 24px 12px;
+  text-align: center;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+.recipe-builder-modal__table-wrap {
+  overflow-x: auto;
+}
+
+.recipe-builder-modal__hint {
+  margin-block-start: 12px;
+}
+
+.recipe-builder-modal .pi-material-select {
+  min-width: 220px;
+}
+
+.recipe-builder-modal .dropdown {
+  min-width: 120px;
+}

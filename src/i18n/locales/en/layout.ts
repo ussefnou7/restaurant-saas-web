@@ -1,0 +1,35 @@
+import type { TranslationDictionary } from '../../types'
+
+export const layoutEn: TranslationDictionary = {
+  'layout.nav.main': 'Main',
+  'layout.nav.sales': 'Sales',
+  'layout.nav.menu': 'Menu',
+  'layout.nav.operations': 'Operations',
+  'layout.nav.inventorySetup': 'Inventory Setup',
+  'layout.nav.inventoryOperations': 'Purchasing & Movements',
+  'layout.nav.inventoryStock': 'Stock & Transactions',
+  'layout.nav.inventoryAdmin': 'System Administration',
+  'layout.nav.management': 'Management',
+  'layout.nav.hr': 'HR',
+
+  'layout.nav.dashboard': 'Dashboard',
+  'layout.nav.pos': 'POS',
+  'layout.nav.orders': 'Orders',
+  'layout.nav.products': 'Products',
+  'layout.nav.categories': 'Categories',
+  'layout.nav.branches': 'Branches',
+  'layout.nav.inventory': 'Inventory',
+  'layout.nav.purchase': 'Purchasing',
+  'layout.nav.materials': 'Materials',
+  'layout.nav.users': 'Users',
+  'layout.nav.reports': 'Reports',
+  'layout.nav.settings': 'Settings',
+  'layout.nav.jobs': 'Jobs',
+  'layout.nav.employees': 'Employees',
+  'layout.nav.leaveRequests': 'Leave Requests',
+  'layout.nav.leaveTypes': 'Leave Types',
+
+  'layout.sidebar.aria': 'Main navigation',
+  'layout.appName': 'Restaurant App',
+  'layout.logout': 'Logout',
+}
