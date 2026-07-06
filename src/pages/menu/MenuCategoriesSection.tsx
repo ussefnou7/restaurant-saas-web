@@ -125,7 +125,7 @@ export function MenuCategoriesSection() {
               <TableHead>
                 <TableRow>
                   <Th column="entity">{t('menu.col.name')}</Th>
-                  <Th>{t('menu.fields.sortOrder')}</Th>
+                  <Th className="table-cell--numeric">{t('menu.fields.sortOrder')}</Th>
                   <Th column="status">{t('common.status')}</Th>
                   <Th>{t('menu.col.actions')}</Th>
                 </TableRow>
@@ -137,7 +137,7 @@ export function MenuCategoriesSection() {
                   return (
                     <TableRow key={category.id}>
                       <Td column="entity">{category.name}</Td>
-                      <Td dir="ltr">{formatMenuNumber(category.sortOrder, locale)}</Td>
+                      <Td dir="ltr" className="table-cell--numeric">{formatMenuNumber(category.sortOrder, locale)}</Td>
                       <StopPropagationCell column="status">
                         <StatusToggle
                           active={category.active}

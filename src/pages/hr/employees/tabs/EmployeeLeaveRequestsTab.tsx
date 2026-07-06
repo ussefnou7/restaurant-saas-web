@@ -108,9 +108,9 @@ export function EmployeeLeaveRequestsTab({ employeeId }: EmployeeLeaveRequestsTa
             <thead>
               <tr>
                 <th>{t('leaves.fields.leaveType')}</th>
-                <th>{t('leaves.fields.fromDate')}</th>
-                <th>{t('leaves.fields.toDate')}</th>
-                <th>{t('leaves.fields.daysCount')}</th>
+                <th className="table-cell--numeric">{t('leaves.fields.fromDate')}</th>
+                <th className="table-cell--numeric">{t('leaves.fields.toDate')}</th>
+                <th className="table-cell--numeric">{t('leaves.fields.daysCount')}</th>
                 <th>{t('common.status')}</th>
                 <th>{t('leaves.fields.reason')}</th>
                 <th>{t('leaves.fields.notes')}</th>
@@ -121,9 +121,9 @@ export function EmployeeLeaveRequestsTab({ employeeId }: EmployeeLeaveRequestsTa
               {sortedRequests.map((request) => (
                 <tr key={request.id}>
                   <td>{request.leaveTypeName ?? request.leaveTypeCode ?? t('common.empty.dash')}</td>
-                  <td dir="ltr">{formatDate(request.fromDate)}</td>
-                  <td dir="ltr">{formatDate(request.toDate)}</td>
-                  <td>{request.daysCount}</td>
+                  <td dir="ltr" className="table-cell--numeric">{formatDate(request.fromDate)}</td>
+                  <td dir="ltr" className="table-cell--numeric">{formatDate(request.toDate)}</td>
+                  <td className="table-cell--numeric">{request.daysCount}</td>
                   <td>
                     <LeaveStatusBadge status={request.status} />
                   </td>

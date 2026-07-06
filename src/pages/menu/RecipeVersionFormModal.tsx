@@ -20,48 +20,35 @@ import * as inventoryService from '../../services/inventoryService'
 import * as menuService from '../../services/menuService'
 import * as uomService from '../../services/uomService'
 import type { MaterialResponse, UomResponse } from '../../types/inventory'
-import type { Product, RecipeItemWrite } from '../../types/menu'
+import type { Product, RecipeItemRequest, RecipeItemView } from '../../types/menu'
 import { translateApiError } from '../../utils/errors'
 import { parsePositiveNumber } from './menuNumberUtils'
+import {
+  createRow,
+  getMaterialStockUomId,
+  rowsFromRecipeItems,
+  serializeRows,
+  type EditableRecipeRow,
+} from './recipeFormUtils'
 import { RecipeMaterialSelect } from './RecipeMaterialSelect'
 
-type EditableRecipeRow = {
-  key: string
-  materialId: string
-  quantity: string
-  uomId: string
-}
-
-interface RecipeBuilderModalProps {
+interface RecipeVersionFormModalProps {
   open: boolean
   product: Product | null
+  initialItems: RecipeItemView[]
+  isFirstVersion: boolean
   onClose: () => void
+  onSuccess: () => void
 }
 
-function getMaterialStockUomId(material: MaterialResponse): number | undefined {
-  return material.stockUomId ?? material.defaultUomId
-}
-
-function serializeRows(rows: EditableRecipeRow[]): string {
-  return JSON.stringify(
-    rows.map((row) => ({
-      materialId: row.materialId,
-      quantity: row.quantity,
-      uomId: row.uomId,
-    })),
-  )
-}
-
-function createRow(partial?: Partial<EditableRecipeRow>): EditableRecipeRow {
-  return {
-    key: partial?.key ?? `row-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-    materialId: partial?.materialId ?? '',
-    quantity: partial?.quantity ?? '',
-    uomId: partial?.uomId ?? '',
-  }
-}
-
-export function RecipeBuilderModal({ open, product, onClose }: RecipeBuilderModalProps) {
+export function RecipeVersionFormModal({
+  open,
+  product,
+  initialItems,
+  isFirstVersion,
+  onClose,
+  onSuccess,
+}: RecipeVersionFormModalProps) {
   const { t, locale } = useTranslation()
   const notify = useNotify()
 
@@ -69,12 +56,12 @@ export function RecipeBuilderModal({ open, product, onClose }: RecipeBuilderModa
   const [savedSnapshot, setSavedSnapshot] = useState('')
   const [materials, setMaterials] = useState<MaterialResponse[]>([])
   const [uoms, setUoms] = useState<UomResponse[]>([])
-  const [loading, setLoading] = useState(false)
   const [lookupsLoading, setLookupsLoading] = useState(false)
   const [error, setError] = useState('')
   const [formError, setFormError] = useState('')
   const [saving, setSaving] = useState(false)
   const [discardOpen, setDiscardOpen] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   const isDirty = useMemo(() => serializeRows(rows) !== savedSnapshot, [rows, savedSnapshot])
 
@@ -100,6 +87,7 @@ export function RecipeBuilderModal({ open, product, onClose }: RecipeBuilderModa
 
   const loadLookups = useCallback(async () => {
     setLookupsLoading(true)
+    setError('')
     try {
       const [materialList, uomList] = await Promise.all([
         inventoryService.getMaterials({ active: true }),
@@ -114,47 +102,21 @@ export function RecipeBuilderModal({ open, product, onClose }: RecipeBuilderModa
     }
   }, [t])
 
-  const loadRecipe = useCallback(async () => {
-    if (!product) return
-
-    setLoading(true)
-    setError('')
-    try {
-      const recipe = await menuService.getProductRecipe(product.id)
-      const nextRows =
-        recipe.length > 0
-          ? recipe.map((item) =>
-              createRow({
-                key: `saved-${item.id}`,
-                materialId: String(item.materialId),
-                quantity: String(item.quantity),
-                uomId: String(item.uomId),
-              }),
-            )
-          : []
-      setRows(nextRows)
-      setSavedSnapshot(serializeRows(nextRows))
-    } catch (err) {
-      setError(translateApiError(err, t).message)
-      setRows([])
-      setSavedSnapshot(serializeRows([]))
-    } finally {
-      setLoading(false)
-    }
-  }, [product, t])
-
   useEffect(() => {
     if (!open || !product) {
       setRows([])
       setSavedSnapshot('')
       setError('')
       setFormError('')
+      setConfirmOpen(false)
       return
     }
 
+    const nextRows = rowsFromRecipeItems(initialItems)
+    setRows(nextRows)
+    setSavedSnapshot(serializeRows(nextRows))
     void loadLookups()
-    void loadRecipe()
-  }, [open, product, loadLookups, loadRecipe])
+  }, [open, product, initialItems, loadLookups])
 
   function requestClose() {
     if (isDirty) {
@@ -204,17 +166,20 @@ export function RecipeBuilderModal({ open, product, onClose }: RecipeBuilderModa
     return null
   }
 
-  async function handleSave() {
-    if (!product) return
-
+  function requestSubmit() {
     setFormError('')
     const validationError = validateRows()
     if (validationError) {
       setFormError(validationError)
       return
     }
+    setConfirmOpen(true)
+  }
 
-    const payload: RecipeItemWrite[] = rows.map((row) => ({
+  async function handleSubmit() {
+    if (!product) return
+
+    const payload: RecipeItemRequest[] = rows.map((row) => ({
       materialId: Number(row.materialId),
       quantity: parsePositiveNumber(row.quantity) ?? 0,
       uomId: Number(row.uomId),
@@ -222,16 +187,21 @@ export function RecipeBuilderModal({ open, product, onClose }: RecipeBuilderModa
 
     setSaving(true)
     try {
-      await menuService.replaceProductRecipe(product.id, payload)
-      notify.success(t('menu.recipe.toast.saveSuccess'))
-      setSavedSnapshot(serializeRows(rows))
+      await menuService.createProductRecipe(product.id, payload)
+      notify.success(t('menu.recipe.toast.createSuccess'))
+      setConfirmOpen(false)
+      onSuccess()
       onClose()
     } catch {
-      // API errors are translated and toasted by the global axios interceptor.
+      setConfirmOpen(false)
     } finally {
       setSaving(false)
     }
   }
+
+  const title = isFirstVersion
+    ? t('menu.recipe.form.title.create')
+    : t('menu.recipe.form.title.newVersion')
 
   return (
     <>
@@ -239,7 +209,7 @@ export function RecipeBuilderModal({ open, product, onClose }: RecipeBuilderModa
         open={open}
         size="large"
         className="recipe-builder-modal"
-        title={t('menu.recipe.title')}
+        title={title}
         subtitle={product ? t('menu.recipe.subtitle', { name: product.name }) : undefined}
         onClose={requestClose}
         footer={
@@ -247,8 +217,12 @@ export function RecipeBuilderModal({ open, product, onClose }: RecipeBuilderModa
             <Button variant="secondary" onClick={requestClose} disabled={saving}>
               {t('common.cancel')}
             </Button>
-            <Button variant="primary" onClick={() => void handleSave()} disabled={saving || loading}>
-              {saving ? t('branches.actions.saving') : t('menu.recipe.save')}
+            <Button
+              variant="primary"
+              onClick={requestSubmit}
+              disabled={saving || lookupsLoading}
+            >
+              {saving ? t('branches.actions.saving') : t('menu.recipe.form.submit')}
             </Button>
           </>
         }
@@ -257,7 +231,7 @@ export function RecipeBuilderModal({ open, product, onClose }: RecipeBuilderModa
         {formError ? <div className="alert-error">{formError}</div> : null}
         {isDirty ? <div className="recipe-builder-modal__dirty">{t('menu.recipe.unsavedChanges')}</div> : null}
 
-        {loading || lookupsLoading ? (
+        {lookupsLoading ? (
           <LoadingRows columns={3} rows={4} />
         ) : (
           <>
@@ -341,12 +315,6 @@ export function RecipeBuilderModal({ open, product, onClose }: RecipeBuilderModa
                 </DataTable>
               </div>
             )}
-
-            {rows.length > 0 ? (
-              <p className="recipe-builder-modal__hint text-muted text-sm">
-                {t('menu.recipe.replaceHint')}
-              </p>
-            ) : null}
           </>
         )}
       </Modal>
@@ -362,6 +330,18 @@ export function RecipeBuilderModal({ open, product, onClose }: RecipeBuilderModa
           setDiscardOpen(false)
           onClose()
         }}
+      />
+
+      <ConfirmModal
+        open={confirmOpen}
+        title={t('menu.recipe.confirm.title')}
+        message={t('menu.recipe.confirm.message')}
+        confirmLabel={t('menu.recipe.confirm.confirm')}
+        confirmVariant="primary"
+        loading={saving}
+        loadingLabel={t('branches.actions.saving')}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={() => void handleSubmit()}
       />
     </>
   )

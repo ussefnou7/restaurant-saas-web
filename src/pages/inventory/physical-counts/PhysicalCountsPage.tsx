@@ -139,13 +139,13 @@ export function PhysicalCountsPage() {
             <DataTable>
               <TableHead>
                 <TableRow>
-                  <Th>{t('inventory.physicalCounts.col.code')}</Th>
+                  <Th className="table-cell--numeric">{t('inventory.physicalCounts.col.code')}</Th>
                   <Th column="entity">{t('inventory.physicalCounts.col.warehouse')}</Th>
-                  <Th>{t('inventory.physicalCounts.col.scheduledDate')}</Th>
+                  <Th className="table-cell--numeric">{t('inventory.physicalCounts.col.scheduledDate')}</Th>
                   <Th column="status">{t('inventory.physicalCounts.col.status')}</Th>
-                  <Th>{t('inventory.physicalCounts.col.lineCount')}</Th>
-                  <Th>{t('inventory.physicalCounts.col.varianceCount')}</Th>
-                  <Th>{t('inventory.physicalCounts.col.createdAt')}</Th>
+                  <Th className="table-cell--numeric">{t('inventory.physicalCounts.col.lineCount')}</Th>
+                  <Th className="table-cell--numeric">{t('inventory.physicalCounts.col.varianceCount')}</Th>
+                  <Th className="table-cell--numeric">{t('inventory.physicalCounts.col.createdAt')}</Th>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -154,19 +154,19 @@ export function PhysicalCountsPage() {
                     key={count.id}
                     onClick={() => navigate(`/inventory/physical-counts/${count.id}`)}
                   >
-                    <Td dir="ltr">
+                    <Td dir="ltr" className="table-cell--numeric">
                       <span className="physical-count-code">{count.code}</span>
                     </Td>
                     <Td column="entity">{count.warehouseName}</Td>
-                    <Td dir="ltr">{formatDate(count.scheduledDate)}</Td>
+                    <Td dir="ltr" className="table-cell--numeric">{formatDate(count.scheduledDate)}</Td>
                     <Td column="status">
                       <Badge variant={getStatusVariant(count.status)}>
                         {t(`inventory.physicalCounts.status.${count.status}`)}
                       </Badge>
                     </Td>
-                    <Td dir="ltr">{count.lineCount}</Td>
-                    <Td dir="ltr">{count.varianceCount}</Td>
-                    <Td dir="ltr">{formatDate(count.createdAt)}</Td>
+                    <Td dir="ltr" className="table-cell--numeric">{count.lineCount}</Td>
+                    <Td dir="ltr" className="table-cell--numeric">{count.varianceCount}</Td>
+                    <Td dir="ltr" className="table-cell--numeric">{formatDate(count.createdAt)}</Td>
                   </ClickableTableRow>
                 ))}
               </TableBody>

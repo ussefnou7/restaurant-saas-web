@@ -225,7 +225,7 @@ export function MaterialsPage() {
                   <Th>{t('inventory.col.category')}</Th>
                   <Th>{t('inventory.col.displayUom')}</Th>
                   <Th>{t('inventory.col.stockUom')}</Th>
-                  <Th>{t('inventory.col.minimumStock')}</Th>
+                  <Th className="table-cell--numeric">{t('inventory.col.minimumStock')}</Th>
                   <Th>{t('inventory.col.source')}</Th>
                   <Th column="status">{t('common.status')}</Th>
                   {canManage ? <Th>{t('inventory.col.actions')}</Th> : null}
@@ -255,7 +255,7 @@ export function MaterialsPage() {
                       <Td className="text-muted text-sm">
                         {getStockUomLabel(material, locale, uoms)}
                       </Td>
-                      <Td dir="ltr">
+                      <Td dir="ltr" className="table-cell--numeric">
                         {material.minimumStockLevel ?? t('common.empty.dash')}
                       </Td>
                       <Td>

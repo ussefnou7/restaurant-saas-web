@@ -179,8 +179,8 @@ export function PhysicalCountInProgressView({
                 <Th>{t('inventory.physicalCounts.counting.col.status')}</Th>
                 <Th column="entity">{t('inventory.physicalCounts.lines.material')}</Th>
                 <Th>{t('inventory.physicalCounts.lines.uom')}</Th>
-                <Th>{t('inventory.physicalCounts.lines.expected')}</Th>
-                <Th>{t('inventory.physicalCounts.lines.counted')}</Th>
+                <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.expected')}</Th>
+                <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.counted')}</Th>
                 <Th>{t('inventory.physicalCounts.counting.col.lineNotes')}</Th>
               </TableRow>
             </TableHead>
@@ -219,8 +219,8 @@ export function PhysicalCountInProgressView({
                       <span className="entity-cell__code">{line.materialCode}</span>
                     </Td>
                     <Td>{line.uomSymbol}</Td>
-                    <Td dir="ltr">{line.expectedQuantity}</Td>
-                    <Td>
+                    <Td dir="ltr" className="table-cell--numeric">{line.expectedQuantity}</Td>
+                    <Td className="table-cell--numeric">
                       {canManage ? (
                         <FormInput
                           type="number"

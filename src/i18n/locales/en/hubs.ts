@@ -54,9 +54,11 @@ export const hubsEn: TranslationDictionary = {
   'hubs.purchase.accessDenied.message': 'You do not have permission to access purchasing.',
 
   'hubs.hr.title': 'Human Resources',
-  'hubs.hr.subtitle': 'Employees, payroll, and leave management',
+  'hubs.hr.subtitle': 'Employees, jobs, payroll, and leave management',
   'hubs.hr.employees.title': 'Employees',
-  'hubs.hr.employees.description': 'Employee records, jobs, and assignments',
+  'hubs.hr.employees.description': 'Employee records and assignments',
+  'hubs.hr.jobs.title': 'Jobs',
+  'hubs.hr.jobs.description': 'Job titles, codes, and status',
   'hubs.hr.payroll.title': 'Payroll',
   'hubs.hr.payroll.description': 'Salaries, allowances, and adjustments',
   'hubs.hr.leaves.title': 'Leave',

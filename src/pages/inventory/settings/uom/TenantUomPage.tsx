@@ -168,7 +168,7 @@ export function TenantUomPage() {
                   <Th column="entity">الاسم</Th>
                   <Th>النوع</Th>
                   <Th>المصدر</Th>
-                  <Th>معامل التحويل</Th>
+                  <Th className="table-cell--numeric">معامل التحويل</Th>
                   <Th column="status">الحالة</Th>
                   <Th>الإجراءات</Th>
                 </TableRow>
@@ -189,7 +189,7 @@ export function TenantUomPage() {
                       </Td>
                       <Td>{getTenantUomTypeLabel(uom.type)}</Td>
                       <Td>{global ? '🌐 عام' : '🏪 مخصص'}</Td>
-                      <Td dir="ltr">{uom.factorToBase ?? '—'}</Td>
+                      <Td dir="ltr" className="table-cell--numeric">{uom.factorToBase ?? '—'}</Td>
                       <StopPropagationCell column="status">
                         <Badge variant={uom.active ? 'success' : 'inactive'}>
                           {uom.active ? 'نشط' : 'معطل'}

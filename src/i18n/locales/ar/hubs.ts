@@ -54,9 +54,11 @@ export const hubsAr: TranslationDictionary = {
   'hubs.purchase.accessDenied.message': 'ليس لديك صلاحية للوصول إلى المشتريات.',
 
   'hubs.hr.title': 'الموارد البشرية',
-  'hubs.hr.subtitle': 'إدارة الموظفين والرواتب والإجازات',
+  'hubs.hr.subtitle': 'إدارة الموظفين والوظائف والرواتب والإجازات',
   'hubs.hr.employees.title': 'الموظفين',
-  'hubs.hr.employees.description': 'بيانات الموظفين والوظائف والتعيينات',
+  'hubs.hr.employees.description': 'بيانات الموظفين والتعيينات',
+  'hubs.hr.jobs.title': 'الوظائف',
+  'hubs.hr.jobs.description': 'المسميات الوظيفية والرموز والحالة',
   'hubs.hr.payroll.title': 'الرواتب',
   'hubs.hr.payroll.description': 'الرواتب والبدلات والتعديلات',
   'hubs.hr.leaves.title': 'الإجازات',

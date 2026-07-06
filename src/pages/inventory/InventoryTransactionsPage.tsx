@@ -243,7 +243,7 @@ export function InventoryTransactionsPage() {
                   <Th>{t('inventory.stock.transactions.col.direction')}</Th>
                   <Th column="entity">{t('inventory.stock.transactions.col.material')}</Th>
                   <Th>{t('inventory.stock.transactions.col.warehouse')}</Th>
-                  <Th>{t('inventory.stock.transactions.col.quantity')}</Th>
+                  <Th className="table-cell--numeric">{t('inventory.stock.transactions.col.quantity')}</Th>
                   <Th>{t('inventory.stock.transactions.col.uom')}</Th>
                 </TableRow>
               </TableHead>
@@ -292,7 +292,7 @@ export function InventoryTransactionsPage() {
                           locale,
                         )}
                       </Td>
-                      <Td dir="ltr">
+                      <Td dir="ltr" className="table-cell--numeric">
                         <span>{quantityView.primary}</span>
                         {quantityView.stockSecondary ? (
                           <span className="inventory-uom-secondary">{quantityView.stockSecondary}</span>

@@ -216,11 +216,11 @@ export function PurchaseReturnsPage() {
             <DataTable>
               <TableHead>
                 <TableRow>
-                  <Th>{t('inventory.purchaseReturn.col.returnNumber')}</Th>
-                  <Th>{t('inventory.purchaseReturn.col.originalInvoice')}</Th>
+                  <Th className="table-cell--numeric">{t('inventory.purchaseReturn.col.returnNumber')}</Th>
+                  <Th className="table-cell--numeric">{t('inventory.purchaseReturn.col.originalInvoice')}</Th>
                   <Th column="entity">{t('inventory.purchaseReturn.col.supplier')}</Th>
-                  <Th>{t('inventory.purchaseReturn.col.returnDate')}</Th>
-                  <Th>{t('inventory.purchaseReturn.col.total')}</Th>
+                  <Th className="table-cell--numeric">{t('inventory.purchaseReturn.col.returnDate')}</Th>
+                  <Th className="table-cell--numeric">{t('inventory.purchaseReturn.col.total')}</Th>
                   <Th>{t('inventory.purchaseReturn.col.reason')}</Th>
                   <Th>{t('inventory.purchaseReturn.col.status')}</Th>
                   <Th>{t('inventory.col.actions')}</Th>
@@ -242,10 +242,10 @@ export function PurchaseReturnsPage() {
 
                   return (
                     <TableRow key={purchaseReturn.id}>
-                      <Td dir="ltr">
+                      <Td dir="ltr" className="table-cell--numeric">
                         {purchaseReturn.returnNumber?.trim() || t('common.empty.dash')}
                       </Td>
-                      <Td dir="ltr">
+                      <Td dir="ltr" className="table-cell--numeric">
                         {purchaseReturn.originalInvoiceNumber?.trim() || t('common.empty.dash')}
                       </Td>
                       <Td column="entity">
@@ -255,8 +255,8 @@ export function PurchaseReturnsPage() {
                           compact
                         />
                       </Td>
-                      <Td dir="ltr">{formatDate(purchaseReturn.returnDate)}</Td>
-                      <Td dir="ltr">{formatMoney(purchaseReturn.totalAmount)}</Td>
+                      <Td dir="ltr" className="table-cell--numeric">{formatDate(purchaseReturn.returnDate)}</Td>
+                      <Td dir="ltr" className="table-cell--numeric">{formatMoney(purchaseReturn.totalAmount)}</Td>
                       <Td>{getPurchaseReturnReasonLabel(purchaseReturn.reason, t)}</Td>
                       <Td>
                         <PurchaseInvoiceStatusBadges status={purchaseReturn.status} />

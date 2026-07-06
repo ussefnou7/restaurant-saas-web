@@ -401,12 +401,12 @@ export function WarehouseStocksPanel({ warehouseId }: WarehouseStocksPanelProps)
               <TableRow>
                 <Th>{t('inventory.warehouses.stocks.material')}</Th>
                 <Th>{t('inventory.warehouses.stocks.uom')}</Th>
-                <Th>{t('inventory.warehouses.stocks.openingQty')}</Th>
-                <Th>{t('inventory.warehouses.stocks.currentQty')}</Th>
-                <Th>{t('inventory.warehouses.stocks.minQty')}</Th>
-                <Th>{t('inventory.stock.balances.col.avgCost')}</Th>
-                <Th>{t('inventory.warehouses.stocks.lastPurchasePrice')}</Th>
-                <Th>{t('inventory.warehouses.stocks.lastPurchaseDate')}</Th>
+                <Th className="table-cell--numeric">{t('inventory.warehouses.stocks.openingQty')}</Th>
+                <Th className="table-cell--numeric">{t('inventory.warehouses.stocks.currentQty')}</Th>
+                <Th className="table-cell--numeric">{t('inventory.warehouses.stocks.minQty')}</Th>
+                <Th className="table-cell--numeric">{t('inventory.stock.balances.col.avgCost')}</Th>
+                <Th className="table-cell--numeric">{t('inventory.warehouses.stocks.lastPurchasePrice')}</Th>
+                <Th className="table-cell--numeric">{t('inventory.warehouses.stocks.lastPurchaseDate')}</Th>
                 <Th>{t('inventory.stock.balances.col.status')}</Th>
                 {canManage ? <Th column="actions">{t('inventory.col.actions')}</Th> : null}
               </TableRow>
@@ -432,7 +432,7 @@ export function WarehouseStocksPanel({ warehouseId }: WarehouseStocksPanelProps)
                         ? getDisplayUomLabel(addMaterial, locale)
                         : t('common.empty.dash')}
                     </Td>
-                    <Td>
+                    <Td className="table-cell--numeric">
                       {renderNumberInput(
                         addOpeningQuantity,
                         setAddOpeningQuantity,
@@ -440,8 +440,8 @@ export function WarehouseStocksPanel({ warehouseId }: WarehouseStocksPanelProps)
                         t('inventory.warehouses.stocks.openingQty'),
                       )}
                     </Td>
-                    <Td>{t('common.empty.dash')}</Td>
-                    <Td>
+                    <Td className="table-cell--numeric">{t('common.empty.dash')}</Td>
+                    <Td className="table-cell--numeric">
                       {renderNumberInput(
                         addForm.minimumQuantity,
                         (value) => setAddForm((prev) => ({ ...prev, minimumQuantity: value })),
@@ -449,7 +449,7 @@ export function WarehouseStocksPanel({ warehouseId }: WarehouseStocksPanelProps)
                         t('inventory.warehouses.stocks.minQty'),
                       )}
                     </Td>
-                    <Td dir="ltr">
+                    <Td dir="ltr" className="table-cell--numeric">
                       {renderNumberInput(
                         addAverageCost,
                         setAddAverageCost,
@@ -457,8 +457,8 @@ export function WarehouseStocksPanel({ warehouseId }: WarehouseStocksPanelProps)
                         t('inventory.stock.balances.col.avgCost'),
                       )}
                     </Td>
-                    <Td dir="ltr">{t('common.empty.dash')}</Td>
-                    <Td dir="ltr">{t('common.empty.dash')}</Td>
+                    <Td dir="ltr" className="table-cell--numeric">{t('common.empty.dash')}</Td>
+                    <Td dir="ltr" className="table-cell--numeric">{t('common.empty.dash')}</Td>
                     <Td>{t('common.empty.dash')}</Td>
                     <Td>
                       <div className="stocks-row-actions">
@@ -501,11 +501,17 @@ export function WarehouseStocksPanel({ warehouseId }: WarehouseStocksPanelProps)
                       <TableRow className="stocks-add-row">
                         <Td>{displayMaterialName(stock)}</Td>
                         <Td>{displayUomName(stock)}</Td>
-                        <Td>{formatNumber(stock.openingBalance ?? 0)}</Td>
-                        <Td className={belowMin ? 'stock-qty--below-minimum' : undefined}>
+                        <Td className="table-cell--numeric">{formatNumber(stock.openingBalance ?? 0)}</Td>
+                        <Td
+                          className={
+                            belowMin
+                              ? 'table-cell--numeric stock-qty--below-minimum'
+                              : 'table-cell--numeric'
+                          }
+                        >
                           {formatNumber(stock.quantity)}
                         </Td>
-                        <Td>
+                        <Td className="table-cell--numeric">
                           {renderNumberInput(
                             editForm.minimumQuantity,
                             (value) => setEditForm((prev) => ({ ...prev, minimumQuantity: value })),
@@ -513,9 +519,9 @@ export function WarehouseStocksPanel({ warehouseId }: WarehouseStocksPanelProps)
                             t('inventory.warehouses.stocks.minQty'),
                           )}
                         </Td>
-                        <Td dir="ltr">{renderAverageCost(stock)}</Td>
-                        <Td dir="ltr">{renderLastPurchasePrice(stock)}</Td>
-                        <Td dir="ltr">{renderLastPurchaseDate(stock)}</Td>
+                        <Td dir="ltr" className="table-cell--numeric">{renderAverageCost(stock)}</Td>
+                        <Td dir="ltr" className="table-cell--numeric">{renderLastPurchasePrice(stock)}</Td>
+                        <Td dir="ltr" className="table-cell--numeric">{renderLastPurchaseDate(stock)}</Td>
                         <Td>{renderBelowMinimumFlag(stock)}</Td>
                         <Td>
                           <div className="stocks-row-actions">
@@ -575,14 +581,20 @@ export function WarehouseStocksPanel({ warehouseId }: WarehouseStocksPanelProps)
                         </span>
                       </Td>
                       <Td>{displayUomName(stock)}</Td>
-                      <Td>{formatNumber(stock.openingBalance ?? 0)}</Td>
-                      <Td className={belowMin ? 'stock-qty--below-minimum' : undefined}>
+                      <Td className="table-cell--numeric">{formatNumber(stock.openingBalance ?? 0)}</Td>
+                      <Td
+                        className={
+                          belowMin
+                            ? 'table-cell--numeric stock-qty--below-minimum'
+                            : 'table-cell--numeric'
+                        }
+                      >
                         {formatNumber(stock.quantity)}
                       </Td>
-                      <Td>{formatNumber(getMinimumQuantity(stock))}</Td>
-                      <Td dir="ltr">{renderAverageCost(stock)}</Td>
-                      <Td dir="ltr">{renderLastPurchasePrice(stock)}</Td>
-                      <Td dir="ltr">{renderLastPurchaseDate(stock)}</Td>
+                      <Td className="table-cell--numeric">{formatNumber(getMinimumQuantity(stock))}</Td>
+                      <Td dir="ltr" className="table-cell--numeric">{renderAverageCost(stock)}</Td>
+                      <Td dir="ltr" className="table-cell--numeric">{renderLastPurchasePrice(stock)}</Td>
+                      <Td dir="ltr" className="table-cell--numeric">{renderLastPurchaseDate(stock)}</Td>
                       <Td>{renderBelowMinimumFlag(stock)}</Td>
                       {canManage ? (
                         <StopPropagationCell>

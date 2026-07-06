@@ -228,11 +228,11 @@ export function TransfersPage() {
             <DataTable>
               <TableHead>
                 <TableRow>
-                  <Th>{t('inventory.transfers.col.code')}</Th>
+                  <Th className="table-cell--numeric">{t('inventory.transfers.col.code')}</Th>
                   <Th column="entity">{t('inventory.transfers.col.from')}</Th>
                   <Th column="entity">{t('inventory.transfers.col.to')}</Th>
-                  <Th>{t('inventory.transfers.col.requestedDate')}</Th>
-                  <Th>{t('inventory.transfers.col.dispatchedAt')}</Th>
+                  <Th className="table-cell--numeric">{t('inventory.transfers.col.requestedDate')}</Th>
+                  <Th className="table-cell--numeric">{t('inventory.transfers.col.dispatchedAt')}</Th>
                   <Th column="status">{t('inventory.transfers.col.status')}</Th>
                   <Th>{t('inventory.col.actions')}</Th>
                 </TableRow>
@@ -243,7 +243,7 @@ export function TransfersPage() {
                   const menuItems = buildMenuItems(transfer)
                   return (
                     <TableRow key={transfer.id}>
-                      <Td dir="ltr">
+                      <Td dir="ltr" className="table-cell--numeric">
                         <span className="transfer-code">{transfer.code}</span>
                       </Td>
                       <Td column="entity">
@@ -266,8 +266,8 @@ export function TransfersPage() {
                           compact
                         />
                       </Td>
-                      <Td dir="ltr">{formatDate(transfer.requestedDate)}</Td>
-                      <Td dir="ltr">
+                      <Td dir="ltr" className="table-cell--numeric">{formatDate(transfer.requestedDate)}</Td>
+                      <Td dir="ltr" className="table-cell--numeric">
                         {transfer.dispatchedAt ? formatDate(transfer.dispatchedAt) : <span className="text-muted">—</span>}
                       </Td>
                       <Td column="status">

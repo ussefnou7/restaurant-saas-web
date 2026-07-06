@@ -1,4 +1,4 @@
-import { Banknote, CalendarDays, UserRound } from 'lucide-react'
+import { Banknote, Briefcase, CalendarDays, UserRound } from 'lucide-react'
 import { ModuleHubPage } from '../../components/hub/ModuleHubPage'
 import { useTranslation } from '../../i18n/useTranslation'
 
@@ -16,6 +16,12 @@ export function HrHubPage() {
           icon: UserRound,
           title: t('hubs.hr.employees.title'),
           to: '/hr/employees',
+        },
+        {
+          id: 'jobs',
+          icon: Briefcase,
+          title: t('hubs.hr.jobs.title'),
+          to: '/hr/jobs',
         },
         {
           id: 'payroll',

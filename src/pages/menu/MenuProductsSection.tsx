@@ -26,7 +26,7 @@ import { translateApiError } from '../../utils/errors'
 import { useMenuCategories } from './MenuCategoriesContext'
 import { formatMenuPrice } from './menuNumberUtils'
 import { MenuProductFormModal } from './MenuProductFormModal'
-import { RecipeBuilderModal } from './RecipeBuilderModal'
+import { RecipeManageModal } from './RecipeManageModal'
 
 export function MenuProductsSection() {
   const { t, locale } = useTranslation()
@@ -179,7 +179,7 @@ export function MenuProductsSection() {
                 <TableRow>
                   <Th column="entity">{t('menu.col.name')}</Th>
                   <Th>{t('menu.col.category')}</Th>
-                  <Th>{t('menu.col.sellingPrice')}</Th>
+                  <Th className="table-cell--numeric">{t('menu.col.sellingPrice')}</Th>
                   <Th column="status">{t('common.status')}</Th>
                   <Th>{t('menu.col.actions')}</Th>
                 </TableRow>
@@ -192,7 +192,7 @@ export function MenuProductsSection() {
                     <TableRow key={product.id}>
                       <Td column="entity">{product.name}</Td>
                       <Td>{product.menuCategoryName ?? t('common.empty.dash')}</Td>
-                      <Td dir="ltr">{formatMenuPrice(product.sellingPrice, locale)}</Td>
+                      <Td dir="ltr" className="table-cell--numeric">{formatMenuPrice(product.sellingPrice, locale)}</Td>
                       <StopPropagationCell column="status">
                         <StatusToggle
                           active={product.active}
@@ -244,7 +244,7 @@ export function MenuProductsSection() {
         }}
       />
 
-      <RecipeBuilderModal
+      <RecipeManageModal
         open={recipeProduct !== null}
         product={recipeProduct}
         onClose={() => setRecipeProduct(null)}

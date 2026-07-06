@@ -125,8 +125,8 @@
 }
 
 .main-content {
-  padding: 1.25rem 1.5rem;
-  background: #f8faf9;
+  padding: var(--space-lg) var(--space-xl);
+  background: var(--color-background);
 }
 
 [dir='rtl'] .sidebar-group-header {

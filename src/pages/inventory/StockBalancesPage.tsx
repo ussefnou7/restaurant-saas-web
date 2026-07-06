@@ -190,10 +190,10 @@ export function StockBalancesPage() {
                 <TableRow>
                   <Th column="entity">{t('inventory.stock.balances.col.material')}</Th>
                   <Th>{t('inventory.stock.balances.col.warehouse')}</Th>
-                  <Th>{t('inventory.stock.balances.col.quantity')}</Th>
+                  <Th className="table-cell--numeric">{t('inventory.stock.balances.col.quantity')}</Th>
                   <Th>{t('inventory.stock.balances.col.uom')}</Th>
-                  <Th>{t('inventory.stock.balances.col.avgCost')}</Th>
-                  <Th>{t('inventory.stock.balances.col.stockValue')}</Th>
+                  <Th className="table-cell--numeric">{t('inventory.stock.balances.col.avgCost')}</Th>
+                  <Th className="table-cell--numeric">{t('inventory.stock.balances.col.stockValue')}</Th>
                   <Th column="status">{t('inventory.stock.balances.col.status')}</Th>
                   {canManage ? <Th>{t('inventory.col.actions')}</Th> : null}
                 </TableRow>
@@ -236,7 +236,7 @@ export function StockBalancesPage() {
                           locale,
                         )}
                       </Td>
-                      <Td dir="ltr">
+                      <Td dir="ltr" className="table-cell--numeric">
                         <span>{quantityView.primary}</span>
                         {quantityView.stockSecondary ? (
                           <span className="inventory-uom-secondary" title={quantityView.stockSecondary}>
@@ -250,8 +250,8 @@ export function StockBalancesPage() {
                           row.uomSymbol ??
                           t('common.empty.dash')}
                       </Td>
-                      <Td dir="ltr">{formatMoney(row.averageCost)}</Td>
-                      <Td dir="ltr">{formatMoney(row.stockValue)}</Td>
+                      <Td dir="ltr" className="table-cell--numeric">{formatMoney(row.averageCost)}</Td>
+                      <Td dir="ltr" className="table-cell--numeric">{formatMoney(row.stockValue)}</Td>
                       <Td column="status">
                         <Badge variant={row.lowStock ? 'warning' : 'success'}>
                           {row.lowStock

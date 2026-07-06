@@ -144,7 +144,7 @@
 }
 
 .text-sm {
-  font-size: 0.8125rem;
+  font-size: var(--font-size-sm);
 }
 
 .inventory-seed-actions {
@@ -3326,23 +3326,24 @@
   transform: scaleX(-1);
 }
 
+/* Nested batch sub-table (expandable rows under warehouse stock materials).
+   Reuse these patterns if similar parent/child expandable tables are added elsewhere. */
 .warehouse-stocks-panel__batches-row {
-  background: #f3f4f6;
+  background: var(--color-surface-soft);
 }
 
 .warehouse-stocks-panel__batches-cell {
   padding: 0 !important;
-  border-block-end: 1px solid var(--color-border, #e5e7eb);
+  border-block-end: var(--border-width) solid var(--border-color);
 }
 
 .warehouse-stocks-panel__batches {
-  padding: 12px 16px 14px 44px;
-  background: #eef2f6;
-  border-inline-start: 3px solid #cbd5e1;
-}
-
-[dir='rtl'] .warehouse-stocks-panel__batches {
-  padding: 12px 44px 14px 16px;
+  margin: var(--space-sm) var(--space-md);
+  margin-inline-start: calc(var(--space-md) + var(--space-lg));
+  padding: var(--space-sm) var(--space-md);
+  background: #f7f8f9;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--card-radius);
 }
 
 .warehouse-stocks-panel__batches--loading,
@@ -3350,68 +3351,66 @@
 .warehouse-stocks-panel__batches--error {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-sm);
   min-block-size: 48px;
 }
 
 .warehouse-stocks-panel__batches-loading-text,
 .warehouse-stocks-panel__batches-empty {
   margin: 0;
-  font-size: 0.8125rem;
-  color: #6b7280;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
 }
 
 .warehouse-stocks-panel__batches-error {
   margin: 0;
-  font-size: 0.8125rem;
-  color: var(--color-danger, #dc2626);
+  font-size: var(--font-size-sm);
+  color: var(--color-danger);
 }
 
 .warehouse-stocks-panel__batches-title {
-  margin: 0 0 10px;
-  font-size: 0.8125rem;
+  margin: 0 0 var(--space-sm);
+  font-size: var(--font-size-sm);
   font-weight: 600;
-  color: #475569;
+  color: var(--color-text);
 }
 
 .warehouse-stocks-panel__batches-table-wrap {
   overflow-x: auto;
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--card-radius) var(--card-radius) 0 0;
 }
 
 .warehouse-stocks-panel__batches-table {
   inline-size: 100%;
   border-collapse: collapse;
-  background: #fff;
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 8px;
-  overflow: hidden;
+  background: transparent;
+  border: none;
+  border-radius: 0;
 }
 
 .warehouse-stocks-panel__batches-table thead th {
-  padding: 8px 12px;
-  background: #f8fafc;
-  color: #64748b;
-  font-size: 0.75rem;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--section-header-bg);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
   font-weight: 500;
   text-align: start;
-  border-block-end: 1px solid var(--color-border, #e5e7eb);
+  border-block-end: var(--border-width) solid var(--border-color);
   white-space: nowrap;
 }
 
 .warehouse-stocks-panel__batches-table tbody td {
-  padding: 8px 12px;
-  font-size: 0.8125rem;
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-base);
   text-align: start;
-  border-block-end: 1px solid #f1f5f9;
-  color: var(--color-text, #111827);
-}
-
-.warehouse-stocks-panel__batches-table tbody tr:last-child td {
-  border-block-end: none;
+  border-block-end: var(--border-width) solid var(--border-color);
+  color: var(--color-text);
 }
 
 .warehouse-stocks-panel__batch-line--closed td {
-  color: #94a3b8;
+  color: var(--color-text-subtle);
 }
 
 .warehouse-stocks-panel__batch-line--closed .badge {
@@ -3419,10 +3418,15 @@
 }
 
 .warehouse-stocks-panel__batches-footer {
-  margin: 10px 0 0;
-  font-size: 0.8125rem;
+  margin: 0;
+  padding: var(--space-sm) var(--space-md);
+  border: var(--border-width) solid var(--border-color);
+  border-block-start: none;
+  border-radius: 0 0 var(--card-radius) var(--card-radius);
+  background: var(--color-surface);
+  font-size: var(--font-size-sm);
   font-weight: 500;
-  color: #475569;
+  color: var(--color-text-secondary);
 }
 
 .warehouse-stock-material-search {

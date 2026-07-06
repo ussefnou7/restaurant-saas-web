@@ -139,12 +139,12 @@ export function WasteDocumentsPage() {
             <DataTable>
               <TableHead>
                 <TableRow>
-                  <Th>{t('inventory.waste.col.code')}</Th>
+                  <Th className="table-cell--numeric">{t('inventory.waste.col.code')}</Th>
                   <Th column="entity">{t('inventory.waste.col.warehouse')}</Th>
-                  <Th>{t('inventory.waste.col.wasteDate')}</Th>
+                  <Th className="table-cell--numeric">{t('inventory.waste.col.wasteDate')}</Th>
                   <Th>{t('inventory.waste.col.reason')}</Th>
                   <Th column="status">{t('inventory.waste.col.status')}</Th>
-                  <Th>{t('inventory.waste.col.lineCount')}</Th>
+                  <Th className="table-cell--numeric">{t('inventory.waste.col.lineCount')}</Th>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -153,18 +153,18 @@ export function WasteDocumentsPage() {
                     key={doc.id}
                     onClick={() => navigate(`/inventory/waste-documents/${doc.id}`)}
                   >
-                    <Td dir="ltr">
+                    <Td dir="ltr" className="table-cell--numeric">
                       <span className="waste-document-code">{doc.code}</span>
                     </Td>
                     <Td column="entity">{doc.warehouseName}</Td>
-                    <Td dir="ltr">{formatDate(doc.wasteDate)}</Td>
+                    <Td dir="ltr" className="table-cell--numeric">{formatDate(doc.wasteDate)}</Td>
                     <Td>{t(`inventory.waste.reasonCode.${doc.reasonCode}`)}</Td>
                     <Td column="status">
                       <Badge variant={getStatusVariant(doc.status)}>
                         {t(`inventory.waste.status.${doc.status}`)}
                       </Badge>
                     </Td>
-                    <Td dir="ltr">{doc.lines?.length ?? 0}</Td>
+                    <Td dir="ltr" className="table-cell--numeric">{doc.lines?.length ?? 0}</Td>
                   </ClickableTableRow>
                 ))}
               </TableBody>

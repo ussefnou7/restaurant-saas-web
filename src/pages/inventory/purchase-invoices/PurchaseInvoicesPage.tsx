@@ -284,11 +284,11 @@ export function PurchaseInvoicesPage() {
             <DataTable>
               <TableHead>
                 <TableRow>
-                  <Th>{t('inventory.purchase.col.invoiceNumber')}</Th>
+                  <Th className="table-cell--numeric">{t('inventory.purchase.col.invoiceNumber')}</Th>
                   <Th column="entity">{t('inventory.purchase.col.supplier')}</Th>
                   <Th>{t('inventory.purchase.col.warehouse')}</Th>
-                  <Th>{t('inventory.purchase.col.invoiceDate')}</Th>
-                  <Th>{t('inventory.purchase.col.total')}</Th>
+                  <Th className="table-cell--numeric">{t('inventory.purchase.col.invoiceDate')}</Th>
+                  <Th className="table-cell--numeric">{t('inventory.purchase.col.total')}</Th>
                   <Th>{t('inventory.purchase.col.paymentStatus')}</Th>
                   <Th>{t('inventory.purchase.col.status')}</Th>
                   <Th>{t('inventory.col.actions')}</Th>
@@ -310,7 +310,7 @@ export function PurchaseInvoicesPage() {
 
                   return (
                     <TableRow key={invoice.id}>
-                      <Td dir="ltr">
+                      <Td dir="ltr" className="table-cell--numeric">
                         {invoice.invoiceNumber?.trim() || t('common.empty.dash')}
                       </Td>
                       <Td column="entity">
@@ -326,8 +326,8 @@ export function PurchaseInvoicesPage() {
                           locale,
                         )}
                       </Td>
-                      <Td dir="ltr">{formatDate(invoice.invoiceDate)}</Td>
-                      <Td dir="ltr">{formatMoney(invoice.totalAmount)}</Td>
+                      <Td dir="ltr" className="table-cell--numeric">{formatDate(invoice.invoiceDate)}</Td>
+                      <Td dir="ltr" className="table-cell--numeric">{formatMoney(invoice.totalAmount)}</Td>
                       <Td>
                         <Badge variant={getPurchasePaymentStatusBadgeVariant(invoice.paymentStatus)}>
                           {getPurchasePaymentStatusLabel(invoice.paymentStatus, t)}

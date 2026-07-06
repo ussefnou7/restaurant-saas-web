@@ -1,15 +1,22 @@
+import axios from 'axios'
 import type {
   CreateMenuCategoryRequest,
   CreateProductRequest,
   MenuCategory,
   Product,
   ProductListParams,
-  RecipeItem,
-  RecipeItemWrite,
+  Recipe,
+  RecipeItemRequest,
   UpdateMenuCategoryRequest,
   UpdateProductRequest,
 } from '../types/menu'
+import { getApiErrorCode } from '../utils/errors'
 import { api } from './api'
+
+function isRecipeNotFound(error: unknown): boolean {
+  if (axios.isAxiosError(error) && error.response?.status === 404) return true
+  return getApiErrorCode(error) === 'RECIPE_NOT_FOUND'
+}
 
 function toSearchParams(params: Record<string, string | number | boolean | undefined | null>): string {
   const search = new URLSearchParams()
@@ -77,15 +84,32 @@ export async function toggleProductActive(id: number | string): Promise<Product>
   return response.data
 }
 
-export async function getProductRecipe(productId: number | string): Promise<RecipeItem[]> {
-  const response = await api.get<RecipeItem[]>(`/api/menu/products/${productId}/recipe`)
+export async function getProductRecipes(productId: number | string): Promise<Recipe[]> {
+  const response = await api.get<Recipe[]>(`/api/menu/products/${productId}/recipes`)
   return response.data
 }
 
-export async function replaceProductRecipe(
+export async function getActiveProductRecipe(productId: number | string): Promise<Recipe | null> {
+  try {
+    const response = await api.get<Recipe>(`/api/menu/products/${productId}/recipes/active`, {
+      notifyOnError: false,
+    })
+    return response.data
+  } catch (error) {
+    if (isRecipeNotFound(error)) return null
+    throw error
+  }
+}
+
+export async function getRecipe(recipeId: number | string): Promise<Recipe> {
+  const response = await api.get<Recipe>(`/api/menu/recipes/${recipeId}`)
+  return response.data
+}
+
+export async function createProductRecipe(
   productId: number | string,
-  items: RecipeItemWrite[],
-): Promise<RecipeItem[]> {
-  const response = await api.put<RecipeItem[]>(`/api/menu/products/${productId}/recipe`, items)
+  items: RecipeItemRequest[],
+): Promise<Recipe> {
+  const response = await api.post<Recipe>(`/api/menu/products/${productId}/recipes`, items)
   return response.data
 }

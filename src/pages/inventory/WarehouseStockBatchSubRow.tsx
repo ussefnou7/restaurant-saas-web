@@ -71,11 +71,11 @@ export function WarehouseStockBatchSubRow({
         <table className="warehouse-stocks-panel__batches-table">
           <thead>
             <tr>
-              <th>{t('inventory.warehouses.stocks.batches.col.number')}</th>
-              <th>{t('inventory.warehouses.stocks.batches.col.movementDate')}</th>
-              <th>{t('inventory.warehouses.stocks.batches.col.originalQty')}</th>
-              <th>{t('inventory.warehouses.stocks.batches.col.remainingQty')}</th>
-              <th>{t('inventory.warehouses.stocks.batches.col.unitCost')}</th>
+              <th className="table-cell--numeric">{t('inventory.warehouses.stocks.batches.col.number')}</th>
+              <th className="table-cell--numeric">{t('inventory.warehouses.stocks.batches.col.movementDate')}</th>
+              <th className="table-cell--numeric">{t('inventory.warehouses.stocks.batches.col.originalQty')}</th>
+              <th className="table-cell--numeric">{t('inventory.warehouses.stocks.batches.col.remainingQty')}</th>
+              <th className="table-cell--numeric">{t('inventory.warehouses.stocks.batches.col.unitCost')}</th>
               <th>{t('inventory.warehouses.stocks.batches.col.source')}</th>
               <th>{t('inventory.warehouses.stocks.batches.col.status')}</th>
             </tr>
@@ -90,11 +90,11 @@ export function WarehouseStockBatchSubRow({
                     isClosed ? 'warehouse-stocks-panel__batch-line warehouse-stocks-panel__batch-line--closed' : 'warehouse-stocks-panel__batch-line'
                   }
                 >
-                  <td>{index + 1}</td>
-                  <td>{formatDate(batch.movementDate)}</td>
-                  <td dir="ltr">{formatNumber(batch.originalQuantity)}</td>
-                  <td dir="ltr">{formatNumber(batch.remainingQuantity)}</td>
-                  <td dir="ltr">{formatMoney(batch.unitCost)}</td>
+                  <td className="table-cell--numeric">{index + 1}</td>
+                  <td className="table-cell--numeric">{formatDate(batch.movementDate)}</td>
+                  <td dir="ltr" className="table-cell--numeric">{formatNumber(batch.originalQuantity)}</td>
+                  <td dir="ltr" className="table-cell--numeric">{formatNumber(batch.remainingQuantity)}</td>
+                  <td dir="ltr" className="table-cell--numeric">{formatMoney(batch.unitCost)}</td>
                   <td>{renderBatchSource(batch, t)}</td>
                   <td>
                     <Badge variant={isClosed ? 'inactive' : 'success'}>

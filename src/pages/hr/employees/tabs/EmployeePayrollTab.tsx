@@ -117,7 +117,7 @@ export function EmployeePayrollTab({ employee, onEmployeeUpdated }: EmployeePayr
             <thead>
               <tr>
                 <th>{t('payroll.fields.title')}</th>
-                <th>{t('payroll.fields.amount')}</th>
+                <th className="table-cell--numeric">{t('payroll.fields.amount')}</th>
                 <th>{t('payroll.fields.salaryMonth')}</th>
                 <th>{t('common.status')}</th>
                 <th>{t('common.createdAt')}</th>
@@ -128,7 +128,7 @@ export function EmployeePayrollTab({ employee, onEmployeeUpdated }: EmployeePayr
               {activeAdditions.map((item) => (
                 <tr key={item.id}>
                   <td>{item.title}</td>
-                  <td dir="ltr">{formatMoney(item.amount)}</td>
+                  <td dir="ltr" className="table-cell--numeric">{formatMoney(item.amount)}</td>
                   <td>
                     <CompactDateCell value={item.salaryMonth} />
                   </td>

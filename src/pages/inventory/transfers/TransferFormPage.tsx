@@ -290,9 +290,9 @@ function TransferFormInner({ mode, transfer }: { mode: FormMode; transfer: Inven
                 <TableHead>
                   <TableRow>
                     <Th column="entity">{t('inventory.transfers.lines.material')}</Th>
-                    <Th>{t('inventory.transfers.lines.requested')}</Th>
-                    <Th>{t('inventory.transfers.lines.dispatched')}</Th>
-                    <Th>{t('inventory.transfers.lines.received')}</Th>
+                    <Th className="table-cell--numeric">{t('inventory.transfers.lines.requested')}</Th>
+                    <Th className="table-cell--numeric">{t('inventory.transfers.lines.dispatched')}</Th>
+                    <Th className="table-cell--numeric">{t('inventory.transfers.lines.received')}</Th>
                     <Th>{t('inventory.transfers.lines.uom')}</Th>
                   </TableRow>
                 </TableHead>
@@ -303,9 +303,9 @@ function TransferFormInner({ mode, transfer }: { mode: FormMode; transfer: Inven
                         <span>{getInventoryLocalizedName({ name: line.materialName, nameAr: line.materialNameAr ?? undefined }, locale)}</span>
                         <span className="entity-cell__code">{line.materialCode}</span>
                       </Td>
-                      <Td dir="ltr">{line.requestedQuantity}</Td>
-                      <Td dir="ltr">{line.dispatchedQuantity ?? <span className="text-muted">—</span>}</Td>
-                      <Td dir="ltr">{line.receivedQuantity ?? <span className="text-muted">—</span>}</Td>
+                      <Td dir="ltr" className="table-cell--numeric">{line.requestedQuantity}</Td>
+                      <Td dir="ltr" className="table-cell--numeric">{line.dispatchedQuantity ?? <span className="text-muted">—</span>}</Td>
+                      <Td dir="ltr" className="table-cell--numeric">{line.receivedQuantity ?? <span className="text-muted">—</span>}</Td>
                       <Td>{line.uomSymbol ?? line.uomCode}</Td>
                     </TableRow>
                   ))}

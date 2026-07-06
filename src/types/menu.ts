@@ -32,8 +32,7 @@ export type CreateProductRequest = {
 
 export type UpdateProductRequest = CreateProductRequest
 
-export type RecipeItem = {
-  id: number
+export type RecipeItemView = {
   materialId: number
   materialName: string
   quantity: number
@@ -41,11 +40,21 @@ export type RecipeItem = {
   uomName: string
 }
 
-export type RecipeItemWrite = {
+export type Recipe = {
+  id: number
+  isActive: boolean
+  createdAt: string
+  items: RecipeItemView[]
+}
+
+export type RecipeItemRequest = {
   materialId: number
   quantity: number
   uomId: number
 }
+
+/** @deprecated Use RecipeItemRequest */
+export type RecipeItemWrite = RecipeItemRequest
 
 export type ProductListParams = {
   menuCategoryId?: number

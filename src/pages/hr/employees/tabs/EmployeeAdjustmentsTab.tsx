@@ -139,7 +139,7 @@ export function EmployeeAdjustmentsTab({ employeeId }: EmployeeAdjustmentsTabPro
             <thead>
               <tr>
                 <th>{t('payroll.fields.adjustmentType')}</th>
-                <th>{t('payroll.fields.amount')}</th>
+                <th className="table-cell--numeric">{t('payroll.fields.amount')}</th>
                 <th>{t('payroll.fields.adjustmentDate')}</th>
                 <th>{t('payroll.fields.reason')}</th>
                 <th>{t('payroll.fields.notes')}</th>
@@ -151,7 +151,7 @@ export function EmployeeAdjustmentsTab({ employeeId }: EmployeeAdjustmentsTabPro
               {visibleAdjustments.map((item) => (
                 <tr key={item.id}>
                   <td>{formatAdjustmentType(item.type)}</td>
-                  <td dir="ltr">{formatMoney(item.amount)}</td>
+                  <td dir="ltr" className="table-cell--numeric">{formatMoney(item.amount)}</td>
                   <td>
                     <CompactDateCell value={item.adjustmentDate} />
                   </td>

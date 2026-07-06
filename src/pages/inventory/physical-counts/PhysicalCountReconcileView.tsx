@@ -160,10 +160,10 @@ export function PhysicalCountReconcileView({
             <TableHead>
               <TableRow>
                 <Th column="entity">{t('inventory.physicalCounts.lines.material')}</Th>
-                <Th>{t('inventory.physicalCounts.reconcile.col.adjustedExpected')}</Th>
-                <Th>{t('inventory.physicalCounts.lines.counted')}</Th>
-                <Th>{t('inventory.physicalCounts.lines.variance')}</Th>
-                <Th>{t('inventory.physicalCounts.lines.varianceValue')}</Th>
+                <Th className="table-cell--numeric">{t('inventory.physicalCounts.reconcile.col.adjustedExpected')}</Th>
+                <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.counted')}</Th>
+                <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.variance')}</Th>
+                <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.varianceValue')}</Th>
                 <Th>{t('inventory.physicalCounts.reconcile.col.action')}</Th>
               </TableRow>
             </TableHead>
@@ -378,7 +378,7 @@ function ReconcileLineRow({
         <span className="entity-cell__code">{line.materialCode}</span>
         <span className="entity-cell__code">{line.uomSymbol}</span>
       </Td>
-      <Td dir="ltr">
+      <Td dir="ltr" className="table-cell--numeric">
         <span>{expectedDisplay}</span>
         {isProvisional && usesFrozenExpected ? (
           <span className="physical-count-reconcile__provisional-tag">
@@ -386,8 +386,8 @@ function ReconcileLineRow({
           </span>
         ) : null}
       </Td>
-      <Td dir="ltr">{line.countedQuantity}</Td>
-      <Td dir="ltr" className={getVarianceCellClass(variance)}>
+      <Td dir="ltr" className="table-cell--numeric">{line.countedQuantity}</Td>
+      <Td dir="ltr" className={`table-cell--numeric ${getVarianceCellClass(variance)}`}>
         <span>{formatVarianceQuantity(variance)}</span>
         {isProvisional ? (
           <span className="physical-count-reconcile__provisional-tag">
@@ -395,7 +395,7 @@ function ReconcileLineRow({
           </span>
         ) : null}
       </Td>
-      <Td dir="ltr" className={getVarianceCellClass(variance)}>
+      <Td dir="ltr" className={`table-cell--numeric ${getVarianceCellClass(variance)}`}>
         {varianceValue != null ? (
           <span>{formatSignedMoney(varianceValue)}</span>
         ) : (
@@ -510,10 +510,10 @@ export function PhysicalCountReconciledView({ count, locale, t }: PhysicalCountR
           <TableHead>
             <TableRow>
               <Th column="entity">{t('inventory.physicalCounts.lines.material')}</Th>
-              <Th>{t('inventory.physicalCounts.reconcile.col.adjustedExpected')}</Th>
-              <Th>{t('inventory.physicalCounts.lines.counted')}</Th>
-              <Th>{t('inventory.physicalCounts.lines.variance')}</Th>
-              <Th>{t('inventory.physicalCounts.lines.varianceValue')}</Th>
+              <Th className="table-cell--numeric">{t('inventory.physicalCounts.reconcile.col.adjustedExpected')}</Th>
+              <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.counted')}</Th>
+              <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.variance')}</Th>
+              <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.varianceValue')}</Th>
               <Th>{t('inventory.physicalCounts.reconcile.col.actionTaken')}</Th>
             </TableRow>
           </TableHead>
@@ -530,12 +530,12 @@ export function PhysicalCountReconciledView({ count, locale, t }: PhysicalCountR
                     <span className="entity-cell__code">{line.materialCode}</span>
                     <span className="entity-cell__code">{line.uomSymbol}</span>
                   </Td>
-                  <Td dir="ltr">{line.adjustedExpectedQuantity ?? line.expectedQuantity}</Td>
-                  <Td dir="ltr">{line.countedQuantity ?? '—'}</Td>
-                  <Td dir="ltr" className={getVarianceCellClass(variance)}>
+                  <Td dir="ltr" className="table-cell--numeric">{line.adjustedExpectedQuantity ?? line.expectedQuantity}</Td>
+                  <Td dir="ltr" className="table-cell--numeric">{line.countedQuantity ?? '—'}</Td>
+                  <Td dir="ltr" className={`table-cell--numeric ${getVarianceCellClass(variance)}`}>
                     {variance != null ? formatVarianceQuantity(variance) : <span className="text-muted">—</span>}
                   </Td>
-                  <Td dir="ltr" className={getVarianceCellClass(variance)}>
+                  <Td dir="ltr" className={`table-cell--numeric ${getVarianceCellClass(variance)}`}>
                     {varianceValue != null ? formatSignedMoney(varianceValue) : <span className="text-muted">—</span>}
                   </Td>
                   <Td>

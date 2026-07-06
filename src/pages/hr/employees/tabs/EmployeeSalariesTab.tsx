@@ -93,7 +93,7 @@ export function EmployeeSalariesTab({ employee, onEmployeeUpdated }: EmployeeSal
           <table className="detail-mini-table">
             <thead>
               <tr>
-                <th>{t('payroll.fields.salaryAmount')}</th>
+                <th className="table-cell--numeric">{t('payroll.fields.salaryAmount')}</th>
                 <th>{t('payroll.fields.effectiveFrom')}</th>
                 <th>{t('payroll.fields.notes')}</th>
                 <th>{t('common.createdAt')}</th>
@@ -102,7 +102,7 @@ export function EmployeeSalariesTab({ employee, onEmployeeUpdated }: EmployeeSal
             <tbody>
               {history.map((record) => (
                 <tr key={record.id}>
-                  <td dir="ltr">{formatMoney(record.amount)}</td>
+                  <td dir="ltr" className="table-cell--numeric">{formatMoney(record.amount)}</td>
                   <td>
                     <CompactDateCell value={record.effectiveFrom} />
                   </td>

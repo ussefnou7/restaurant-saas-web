@@ -174,7 +174,7 @@ export function LeaveTypesPage() {
               <TableHead>
                 <TableRow>
                   <Th column="entity">{t('leaveTypes.col.leaveType')}</Th>
-                  <Th>{t('leaveTypes.col.defaultDays')}</Th>
+                  <Th className="table-cell--numeric">{t('leaveTypes.col.defaultDays')}</Th>
                   <Th>{t('leaveTypes.col.paid')}</Th>
                   <Th column="status">{t('common.status')}</Th>
                   <Th column="date">{t('common.createdAt')}</Th>
@@ -193,7 +193,7 @@ export function LeaveTypesPage() {
                       <Td column="entity">
                         <EntityCell name={name} code={type.code} compact />
                       </Td>
-                      <Td dir="ltr">{formatDecimalDays(type.defaultDays)}</Td>
+                      <Td dir="ltr" className="table-cell--numeric">{formatDecimalDays(type.defaultDays)}</Td>
                       <Td>
                         <Badge variant={type.paid ? 'success' : 'muted'}>
                           {type.paid
