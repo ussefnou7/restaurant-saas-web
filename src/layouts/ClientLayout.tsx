@@ -4,6 +4,7 @@ import {
   BarChart3,
   Boxes,
   BriefcaseBusiness,
+  Landmark,
   LayoutDashboard,
   LogOut,
   Receipt,
@@ -28,6 +29,7 @@ const topNavItems: TopNavItem[] = [
   { id: 'menu', labelKey: 'layout.nav.menu', path: '/menu', icon: UtensilsCrossed },
   { id: 'sales', labelKey: 'layout.nav.sales', path: '/sales', icon: Receipt },
   { id: 'inventory', labelKey: 'layout.nav.inventory', path: '/inventory', icon: Boxes },
+  { id: 'assets', labelKey: 'layout.nav.assets', path: '/assets', icon: Landmark },
   { id: 'purchase', labelKey: 'layout.nav.purchase', path: '/purchase', icon: ShoppingCart },
   { id: 'hr', labelKey: 'layout.nav.hr', path: '/hr', icon: BriefcaseBusiness },
   { id: 'reports', labelKey: 'layout.nav.reports', path: '/reports', icon: BarChart3 },
@@ -51,6 +53,8 @@ function isNavItemActive(pathname: string, item: TopNavItem): boolean {
       return pathname.startsWith('/menu')
     case 'inventory':
       return pathname.startsWith('/inventory')
+    case 'assets':
+      return pathname.startsWith('/assets')
     case 'purchase':
       return pathname.startsWith('/purchase')
     case 'hr':
@@ -61,6 +65,7 @@ function isNavItemActive(pathname: string, item: TopNavItem): boolean {
       return (
         pathname === '/admin' ||
         pathname.startsWith('/branches') ||
+        pathname.startsWith('/devices') ||
         pathname.startsWith('/users') ||
         pathname.startsWith('/settings')
       )

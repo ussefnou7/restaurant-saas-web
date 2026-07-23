@@ -22,6 +22,16 @@ export const errorsEn: TranslationDictionary = {
     'Waste cannot be recorded for {{materialName}} because the count variance is positive',
   'errors.UOM_CONVERSION_FAILED': 'Failed to convert from unit {{fromUom}} to unit {{toUom}}',
   'errors.EMPTY_DOCUMENT_LINES': 'This operation cannot proceed: the document has no lines',
+  'errors.ORDER_CONSUMPTION_PENDING_DOC_RACE_LOST':
+    'Another order created the pending consumption document first; please retry the operation.',
+  'errors.ORDER_CONSUMPTION_RECIPE_NOT_RESOLVED':
+    'An order line has no frozen recipe reference (order {{orderId}}, line {{orderLineId}}).',
+  'errors.ORDER_CONSUMPTION_RECIPE_HAS_NO_ITEMS':
+    'Recipe {{recipeId}} has no material items and cannot be consumed.',
+  'errors.ORDER_CONSUMPTION_MIXED_UOM':
+    'Material {{materialId}} appears with multiple units in order consumption; use one unit per material.',
+  'errors.ORDER_CONSUMPTION_ERROR_SERIALIZATION_FAILED':
+    'Could not save order consumption error details. Please retry.',
   'errors.RESOURCE_NOT_AVAILABLE_FOR_TENANT':
     'The requested item is not available to your account ({{entityType}} #{{entityId}})',
   'errors.DUPLICATE_CODE': "A {{entityType}} with code '{{code}}' already exists",
@@ -60,6 +70,10 @@ export const errorsEn: TranslationDictionary = {
   'errors.SYSTEM_TENANT_RESTRICTED':
     'This action ({{action}}) is not allowed in the system tenant context',
 
+  // RBAC module
+  'errors.BRANCH_REQUIRED_FOR_ROLE': 'Role {{roleName}} requires selecting a branch',
+  'errors.BRANCH_NOT_ALLOWED_FOR_ROLE': 'Role {{roleName}} cannot be assigned to a branch',
+
   // Common / cross-module
   'errors.DATA_INTEGRITY_VIOLATION':
     'The operation could not be completed because the data is linked to other records',
@@ -73,8 +87,42 @@ export const errorsEn: TranslationDictionary = {
     'This category cannot be deleted because it still has products assigned to it',
   'errors.DUPLICATE_MATERIAL_IN_RECIPE':
     'The material "{{materialName}}" is already included in this recipe',
+  'errors.VARIANT_CANNOT_BE_MENU_ITEM':
+    'A variant cannot be shown on the menu directly. Remove it from the menu, then try again.',
+  'errors.PARENT_PRODUCT_NOT_ORDERABLE':
+    'This is a variant group and cannot be ordered directly. Please choose one of its variants.',
+  'errors.PARENT_PRODUCT_HAS_NO_RECIPE':
+    'This product groups variants and cannot have its own recipe. Add recipes to its variants instead.',
+  'errors.PRODUCT_WITH_RECIPE_CANNOT_BE_PARENT':
+    'This product already has a recipe, so it cannot become a variant group.',
+  'errors.PRODUCT_HAS_VARIANTS':
+    'This product has variants linked to it. Unlink all variants first before deleting.',
+  'errors.PRODUCT_NOT_FOUND': 'Product not found.',
+  'errors.ADDON_HOST_MUST_BE_PARENT_ELIGIBLE':
+    'Add-ons can only be attached to top-level products, not to a variant.',
+  'errors.ADDON_CANNOT_BE_SELF': 'A product cannot be added as its own add-on.',
+  'errors.DUPLICATE_ADD_ON': 'This add-on is already linked to the product.',
+
+  // Orders module
+  'errors.PRODUCT_HAS_NO_ACTIVE_RECIPE':
+    "This product has no active recipe and can't be ordered yet. Please set up a recipe for it first.",
+  'errors.WAREHOUSE_NOT_FOUND': 'No active warehouse is configured for this branch.',
+  'errors.AMBIGUOUS_WAREHOUSE_FOR_BRANCH':
+    'More than one warehouse is configured for this branch ({{warehouseCount}} found).',
+
+  // Assets module
+  'errors.LINE_ASSET_MISMATCH':
+    'Asset line {{assetLineId}} does not belong to asset {{assetId}}.',
+
+  // Devices module
+  'errors.INVALID_DEVICE_SECRET': 'Invalid device secret',
+  'errors.DEVICE_INACTIVE': 'This device is inactive ({{entityType}} #{{entityId}})',
+  'errors.DEVICE_NOT_FOUND': 'The requested device was not found ({{entityType}} #{{entityId}})',
+  'errors.BRANCH_NOT_FOUND': 'The selected branch was not found ({{entityType}} #{{entityId}})',
 
   // Auth
   'errors.INVALID_CREDENTIALS':
     'Invalid credentials, check the restaurant code, username, and password',
+  'errors.POS_LOGIN_NOT_PERMITTED': 'This user is not allowed to open shifts on a POS device',
+  'errors.DEVICE_BRANCH_MISMATCH': 'This user is not assigned to the selected POS device branch',
 }

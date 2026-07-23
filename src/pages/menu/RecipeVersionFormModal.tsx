@@ -1,20 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Plus, Trash2 } from 'lucide-react'
-import { FormInput } from '../../components/fields'
 import { Button } from '../../components/ui/Button'
 import { ConfirmModal } from '../../components/ui/ConfirmModal'
 import { LoadingRows } from '../../components/ui/LoadingRows'
 import { Modal } from '../../components/ui/Modal'
-import { SelectFilter } from '../../components/ui/SelectFilter'
 import { useNotify } from '../../components/ui/NotificationContext'
-import {
-  DataTable,
-  TableBody,
-  TableHead,
-  TableRow,
-  Td,
-  Th,
-} from '../../components/ui/Table'
 import { useTranslation } from '../../i18n/useTranslation'
 import * as inventoryService from '../../services/inventoryService'
 import * as menuService from '../../services/menuService'
@@ -23,6 +12,7 @@ import type { MaterialResponse, UomResponse } from '../../types/inventory'
 import type { Product, RecipeItemRequest, RecipeItemView } from '../../types/menu'
 import { translateApiError } from '../../utils/errors'
 import { parsePositiveNumber } from './menuNumberUtils'
+import { RecipeIngredientsEditor } from './RecipeIngredientsEditor'
 import {
   createRow,
   getMaterialStockUomId,
@@ -30,7 +20,6 @@ import {
   serializeRows,
   type EditableRecipeRow,
 } from './recipeFormUtils'
-import { RecipeMaterialSelect } from './RecipeMaterialSelect'
 
 interface RecipeVersionFormModalProps {
   open: boolean
@@ -65,26 +54,6 @@ export function RecipeVersionFormModal({
 
   const isDirty = useMemo(() => serializeRows(rows) !== savedSnapshot, [rows, savedSnapshot])
 
-  const usedMaterialIds = useMemo(
-    () =>
-      rows
-        .map((row) => row.materialId)
-        .filter(Boolean)
-        .map((id) => Number(id)),
-    [rows],
-  )
-
-  const uomOptions = useMemo(
-    () =>
-      uoms
-        .filter((uom) => uom.active)
-        .map((uom) => ({
-          value: String(uom.id),
-          label: uom.symbol ?? uom.code ?? uom.name,
-        })),
-    [uoms],
-  )
-
   const loadLookups = useCallback(async () => {
     setLookupsLoading(true)
     setError('')
@@ -104,6 +73,8 @@ export function RecipeVersionFormModal({
 
   useEffect(() => {
     if (!open || !product) {
+      // Recipe rows are modal draft state and reset when the modal closes.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRows([])
       setSavedSnapshot('')
       setError('')
@@ -229,93 +200,24 @@ export function RecipeVersionFormModal({
       >
         {error ? <div className="page-error-banner">{error}</div> : null}
         {formError ? <div className="alert-error">{formError}</div> : null}
+        {!isFirstVersion ? (
+          <div className="recipe-builder-modal__version-note">{t('menu.recipe.versioningNote')}</div>
+        ) : null}
         {isDirty ? <div className="recipe-builder-modal__dirty">{t('menu.recipe.unsavedChanges')}</div> : null}
 
         {lookupsLoading ? (
           <LoadingRows columns={3} rows={4} />
         ) : (
-          <>
-            <div className="recipe-builder-modal__toolbar">
-              <Button variant="secondary" size="sm" onClick={addRow} disabled={saving}>
-                <Plus size={16} aria-hidden="true" />
-                {t('menu.recipe.addIngredient')}
-              </Button>
-            </div>
-
-            {rows.length === 0 ? (
-              <p className="recipe-builder-modal__empty">{t('menu.recipe.empty')}</p>
-            ) : (
-              <div className="recipe-builder-modal__table-wrap">
-                <DataTable>
-                  <TableHead>
-                    <TableRow>
-                      <Th>{t('menu.recipe.col.material')}</Th>
-                      <Th>{t('menu.recipe.col.quantity')}</Th>
-                      <Th>{t('menu.recipe.col.uom')}</Th>
-                      <Th>{t('menu.col.actions')}</Th>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {rows.map((row) => {
-                      const excludeIds = usedMaterialIds.filter(
-                        (id) => id !== Number(row.materialId),
-                      )
-
-                      return (
-                        <TableRow key={row.key}>
-                          <Td>
-                            <RecipeMaterialSelect
-                              value={row.materialId}
-                              onChange={(materialId) => updateRow(row.key, { materialId })}
-                              materials={materials}
-                              excludeMaterialIds={excludeIds}
-                              locale={locale}
-                              disabled={saving}
-                              placeholder={t('menu.recipe.selectMaterial')}
-                              searchPlaceholder={t('common.search')}
-                              ariaLabel={t('menu.recipe.selectMaterial')}
-                            />
-                          </Td>
-                          <Td>
-                            <FormInput
-                              type="number"
-                              ltr
-                              min={0}
-                              step="0.0001"
-                              value={row.quantity}
-                              onChange={(e) => updateRow(row.key, { quantity: e.target.value })}
-                              disabled={saving}
-                              aria-label={t('menu.recipe.col.quantity')}
-                            />
-                          </Td>
-                          <Td>
-                            <SelectFilter
-                              value={row.uomId}
-                              onChange={(uomId) => updateRow(row.key, { uomId })}
-                              options={uomOptions}
-                              ariaLabel={t('menu.recipe.col.uom')}
-                              disabled={saving || uomOptions.length === 0}
-                            />
-                          </Td>
-                          <Td>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeRow(row.key)}
-                              disabled={saving}
-                              aria-label={t('menu.recipe.removeIngredient')}
-                            >
-                              <Trash2 size={16} aria-hidden="true" />
-                            </Button>
-                          </Td>
-                        </TableRow>
-                      )
-                    })}
-                  </TableBody>
-                </DataTable>
-              </div>
-            )}
-          </>
+          <RecipeIngredientsEditor
+            rows={rows}
+            materials={materials}
+            uoms={uoms}
+            locale={locale}
+            disabled={saving}
+            onAdd={addRow}
+            onRemove={removeRow}
+            onChange={updateRow}
+          />
         )}
       </Modal>
 

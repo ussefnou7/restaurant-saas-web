@@ -1,9 +1,11 @@
 import axios from 'axios'
 import type {
   CreateMenuCategoryRequest,
+  CreateProductAddOnRequest,
   CreateProductRequest,
   MenuCategory,
   Product,
+  ProductAddOn,
   ProductListParams,
   Recipe,
   RecipeItemRequest,
@@ -62,6 +64,11 @@ export async function getProduct(id: number | string): Promise<Product> {
   return response.data
 }
 
+export async function getProductVariants(parentProductId: number | string): Promise<Product[]> {
+  const response = await api.get<Product[]>(`/api/menu/products/${parentProductId}/variants`)
+  return response.data
+}
+
 export async function createProduct(payload: CreateProductRequest): Promise<Product> {
   const response = await api.post<Product>('/api/menu/products', payload)
   return response.data
@@ -112,4 +119,24 @@ export async function createProductRecipe(
 ): Promise<Recipe> {
   const response = await api.post<Recipe>(`/api/menu/products/${productId}/recipes`, items)
   return response.data
+}
+
+export async function getProductAddOns(productId: number | string): Promise<ProductAddOn[]> {
+  const response = await api.get<ProductAddOn[]>(`/api/menu/products/${productId}/add-ons`)
+  return response.data
+}
+
+export async function createProductAddOn(
+  productId: number | string,
+  payload: CreateProductAddOnRequest,
+): Promise<ProductAddOn> {
+  const response = await api.post<ProductAddOn>(`/api/menu/products/${productId}/add-ons`, payload)
+  return response.data
+}
+
+export async function deleteProductAddOn(
+  productId: number | string,
+  addOnProductId: number | string,
+): Promise<void> {
+  await api.delete(`/api/menu/products/${productId}/add-ons/${addOnProductId}`)
 }

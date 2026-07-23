@@ -2,13 +2,19 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { Root } from './Root'
 import { ProtectedRoute } from '../guards/ProtectedRoute'
 import { ClientLayout } from '../layouts/ClientLayout'
+import { AssetDetailPage } from '../pages/assets/AssetDetailPage'
+import { AssetDisposalPage, AssetMaintenancePage } from '../pages/assets/AssetOperationForms'
+import { AssetsListPage } from '../pages/assets/AssetsListPage'
+import { AssetsReportPage } from '../pages/assets/AssetsReportPage'
 import { LoginPage } from '../pages/auth/LoginPage'
 import { BranchDetailsPage } from '../pages/branches/BranchDetailsPage'
 import { BranchesPage } from '../pages/branches/BranchesPage'
 import { MenuHubLayout } from '../pages/menu/MenuHubLayout'
 import { MenuCategoriesSection } from '../pages/menu/MenuCategoriesSection'
+import { ProductEditorPage } from '../pages/menu/ProductEditorPage'
 import { MenuProductsSection } from '../pages/menu/MenuProductsSection'
 import { DashboardPage } from '../pages/dashboard/DashboardPage'
+import { DevicesPage } from '../pages/devices/DevicesPage'
 import { AdminHubPage } from '../pages/hubs/AdminHubPage'
 import { HomeHubPage } from '../pages/hubs/HomeHubPage'
 import { HrHubPage } from '../pages/hubs/HrHubPage'
@@ -53,8 +59,14 @@ import { PhysicalCountCreatePage, PhysicalCountViewPage } from '../pages/invento
 import { WasteDocumentCreatePage } from '../pages/inventory/waste-documents/WasteDocumentCreatePage'
 import { WasteDocumentDetailPage } from '../pages/inventory/waste-documents/WasteDocumentDetailPage'
 import { WasteDocumentsPage } from '../pages/inventory/waste-documents/WasteDocumentsPage'
+import { OrderConsumptionListPage } from '../pages/inventory/order-consumption/OrderConsumptionListPage'
+import { OrderConsumptionDetailPage } from '../pages/inventory/order-consumption/OrderConsumptionDetailPage'
 import { NotFoundPage } from '../pages/NotFoundPage'
-import { OrdersPage } from '../pages/orders/OrdersPage'
+import { OrderDetailPage } from '../pages/orders/OrderDetailPage'
+import { OrderRequestDetailPage } from '../pages/orders/OrderRequestDetailPage'
+import { OrderRequestsListSection } from '../pages/orders/OrderRequestsListSection'
+import { OrdersHubLayout } from '../pages/orders/OrdersHubLayout'
+import { OrdersListSection } from '../pages/orders/OrdersListSection'
 import { PosPage } from '../pages/pos/PosPage'
 import { ReportsPage } from '../pages/reports/ReportsPage'
 import { SettingsPage } from '../pages/settings/SettingsPage'
@@ -98,7 +110,18 @@ export const router = createBrowserRouter([
           },
           {
             path: 'orders',
-            element: <OrdersPage />,
+            children: [
+              {
+                element: <OrdersHubLayout />,
+                children: [
+                  { index: true, element: <Navigate to="list" replace /> },
+                  { path: 'list', element: <OrdersListSection /> },
+                  { path: 'order-requests', element: <OrderRequestsListSection /> },
+                ],
+              },
+              { path: 'requests/:requestId', element: <OrderRequestDetailPage /> },
+              { path: ':orderId', element: <OrderDetailPage /> },
+            ],
           },
           {
             path: 'menu',
@@ -107,6 +130,8 @@ export const router = createBrowserRouter([
               { index: true, element: <Navigate to="/menu/categories" replace /> },
               { path: 'categories', element: <MenuCategoriesSection /> },
               { path: 'products', element: <MenuProductsSection /> },
+              { path: 'products/new', element: <ProductEditorPage /> },
+              { path: 'products/:id/edit', element: <ProductEditorPage /> },
             ],
           },
           {
@@ -123,6 +148,10 @@ export const router = createBrowserRouter([
               { index: true, element: <BranchesPage /> },
               { path: ':branchId', element: <BranchDetailsPage /> },
             ],
+          },
+          {
+            path: 'devices',
+            element: <DevicesPage />,
           },
           {
             path: 'inventory',
@@ -210,6 +239,13 @@ export const router = createBrowserRouter([
                 ],
               },
               {
+                path: 'order-consumption',
+                children: [
+                  { index: true, element: <OrderConsumptionListPage /> },
+                  { path: ':id', element: <OrderConsumptionDetailPage /> },
+                ],
+              },
+              {
                 path: 'stock-balances',
                 element: <StockBalancesPage />,
               },
@@ -233,6 +269,16 @@ export const router = createBrowserRouter([
                   { path: 'seed', element: <InventorySeedPage /> },
                 ],
               },
+            ],
+          },
+          {
+            path: 'assets',
+            children: [
+              { index: true, element: <AssetsListPage /> },
+              { path: 'reports', element: <AssetsReportPage /> },
+              { path: 'disposals/new', element: <AssetDisposalPage /> },
+              { path: 'maintenance/new', element: <AssetMaintenancePage /> },
+              { path: ':assetId', element: <AssetDetailPage /> },
             ],
           },
           {

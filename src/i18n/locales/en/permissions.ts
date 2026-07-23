@@ -27,6 +27,7 @@ export const permissionsEn: TranslationDictionary = {
   'permissions.modules.BRANCHES': 'Branches',
   'permissions.modules.CATEGORIES': 'Categories',
   'permissions.modules.DASHBOARD': 'Dashboard',
+  'permissions.modules.DEVICES': 'Devices',
   'permissions.modules.EMPLOYEES': 'Employees',
   'permissions.modules.HR': 'Human Resources',
   'permissions.modules.INVENTORY': 'Inventory',

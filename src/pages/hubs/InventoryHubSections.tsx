@@ -1,8 +1,8 @@
-import { ClipboardList, Package, Ruler, Tag, Trash2, Warehouse } from 'lucide-react'
+import { ClipboardList, Package, RotateCcw, Ruler, Tag, Trash2, Warehouse } from 'lucide-react'
 import { HubNavCard } from '../../components/hub/HubNavCard'
 import { HubNavChip } from '../../components/hub/HubNavChip'
 import { useTranslation } from '../../i18n/useTranslation'
-import { canViewInventoryStock } from '../../utils/inventoryAccess'
+import { canManageInventoryStock, canViewInventoryStock } from '../../utils/inventoryAccess'
 import type { InventoryHubUserPermissions } from './inventoryHubPermissions'
 
 export interface InventoryHubSectionsProps {
@@ -12,6 +12,7 @@ export interface InventoryHubSectionsProps {
 export function InventoryHubSections({ userPermissions }: InventoryHubSectionsProps) {
   const { t } = useTranslation()
   const canViewStock = canViewInventoryStock()
+  const canManageStock = canManageInventoryStock()
 
   const setupChips = []
 
@@ -56,6 +57,14 @@ export function InventoryHubSections({ userPermissions }: InventoryHubSectionsPr
             icon={ClipboardList}
             title={t('inventory.nav.physicalCounts')}
             to="/inventory/physical-counts"
+          />
+        ) : null}
+        {canManageStock ? (
+          <HubNavCard
+            id="order-consumption"
+            icon={RotateCcw}
+            title={t('orderConsumption.nav')}
+            to="/inventory/order-consumption"
           />
         ) : null}
         {canViewStock ? (

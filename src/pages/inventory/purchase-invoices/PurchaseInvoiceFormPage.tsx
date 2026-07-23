@@ -2,10 +2,10 @@ import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Check, CheckCircle, ChevronRight, Loader2, Pencil, Plus, Receipt, Send, Trash2, Undo2, X, XCircle } from 'lucide-react'
 import { ListPage } from '../../../components/ui/ListPage'
+import { MaterialSelect } from '../../../components/ui/MaterialSelect'
 import { IconActionButton } from '../../../components/ui/RowActions'
 import { useNotify } from '../../../components/ui/NotificationContext'
 import { PurchaseDocumentReasonModal } from '../../../components/inventory/PurchaseDocumentReasonModal'
-import { PurchaseInvoiceMaterialSelect } from './PurchaseInvoiceMaterialSelect'
 import { PurchaseInvoiceFormStatusPill } from './PurchaseInvoiceFormStatusPill'
 import { useTranslation } from '../../../i18n/useTranslation'
 import * as inventoryService from '../../../services/inventoryService'
@@ -216,11 +216,14 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
 
   const isCreate = mode === 'create'
   const isView = mode === 'view'
+  // Once a create-mode document is auto-persisted (first "add line" or explicit header save),
+  // persistedId becomes the source of truth instead of the route id, so the rest of the page
+  // behaves like edit/view without requiring navigation.
+  const persistedId = invoice != null ? String(invoice.id) : id
   const displayStatus: PurchaseInvoiceStatus = invoice?.status ?? 'DRAFT'
   const isDraft = displayStatus === 'DRAFT'
-  const headerFieldsEnabled = isCreate || isEditingHeader
+  const headerFieldsEnabled = !persistedId || isEditingHeader
   const headerInputsDisabled = !headerFieldsEnabled || headerSaving || lookupsLoading || actionLoading
-  const showLinesSection = !isCreate && invoice != null
   const showDraftLineActions = isDraft && canManage
 
   const loadLookups = useCallback(async () => {
@@ -246,12 +249,11 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
     }
   }, [])
 
-  const loadInvoice = useCallback(async () => {
-    if (!id) return
+  const loadInvoice = useCallback(async (targetId: string) => {
     setLoading(true)
     setError('')
     try {
-      const data = await purchaseInvoiceService.getPurchaseInvoice(id)
+      const data = await purchaseInvoiceService.getPurchaseInvoice(targetId)
       setInvoice(data)
       setHeader(mapInvoiceToHeader(data))
       setIsEditingHeader(false)
@@ -265,7 +267,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
     } finally {
       setLoading(false)
     }
-  }, [id, t])
+  }, [t])
 
   useEffect(() => {
     if (!canView) return
@@ -273,9 +275,9 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
   }, [canView, loadLookups])
 
   useEffect(() => {
-    if (!canView || isCreate) return
-    void loadInvoice()
-  }, [canView, isCreate, loadInvoice])
+    if (!canView || isCreate || !id) return
+    void loadInvoice(id)
+  }, [canView, isCreate, id, loadInvoice])
 
   const viewTotals = invoice
     ? {
@@ -351,7 +353,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
     setHeaderSaving(true)
     try {
       const payload = buildHeaderPayload()
-      if (isCreate) {
+      if (!persistedId) {
         const created = await purchaseInvoiceService.createPurchaseInvoice(payload)
         setInvoice(created)
         setHeader(mapInvoiceToHeader(created))
@@ -359,8 +361,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
         navigate(`/purchase/purchase-invoices/${created.id}`, { replace: true })
         return
       }
-      if (!id) return
-      const updated = await purchaseInvoiceService.updatePurchaseInvoiceHeader(id, payload)
+      const updated = await purchaseInvoiceService.updatePurchaseInvoiceHeader(persistedId, payload)
       setInvoice(updated)
       setHeader(mapInvoiceToHeader(updated))
       setIsEditingHeader(false)
@@ -370,6 +371,38 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
     } finally {
       setHeaderSaving(false)
     }
+  }
+
+  async function ensureInvoicePersisted(): Promise<boolean> {
+    if (persistedId) return true
+    const validationErrors = validateHeader()
+    if (validationErrors.warehouseId || validationErrors.invoiceDate || validationErrors.receiptDate) {
+      setFieldErrors(validationErrors)
+      scrollToFirstError()
+      return false
+    }
+    setFieldErrors({})
+    setHeaderSaving(true)
+    try {
+      const created = await purchaseInvoiceService.createPurchaseInvoice(buildHeaderPayload())
+      setInvoice(created)
+      setHeader(mapInvoiceToHeader(created))
+      notify.success(t('inventory.purchase.toast.createSuccess'))
+      return true
+    } catch {
+      return false
+    } finally {
+      setHeaderSaving(false)
+    }
+  }
+
+  async function handleAddItemClick() {
+    if (!(await ensureInvoicePersisted())) return
+    setAddingLine(true)
+    setNewLineForm(newLine())
+    setEditingLineId(null)
+    setEditLineForm(null)
+    setFieldErrors({})
   }
 
   function handleCancelHeaderEdit() {
@@ -385,7 +418,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
   }
 
   async function handleSaveNewLine() {
-    if (!id || !newLineForm) return
+    if (!persistedId || !newLineForm) return
     const lineError = validateLineForm(newLineForm, true)
     if (lineError) {
       setFieldErrors({ lineError })
@@ -394,7 +427,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
     setFieldErrors({})
     setLineSaving(true)
     try {
-      const updated = await purchaseInvoiceService.addPurchaseInvoiceLine(id, buildAddLinePayload(newLineForm))
+      const updated = await purchaseInvoiceService.addPurchaseInvoiceLine(persistedId, buildAddLinePayload(newLineForm))
       setInvoice(updated)
       setAddingLine(false)
       setNewLineForm(null)
@@ -421,7 +454,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
   }
 
   async function handleSaveEditLine(lineId: number) {
-    if (!id || !editLineForm) return
+    if (!persistedId || !editLineForm) return
     const lineError = validateLineForm(editLineForm, false)
     if (lineError) {
       setFieldErrors({ lineError })
@@ -431,7 +464,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
     setLineSaving(true)
     try {
       const updated = await purchaseInvoiceService.updatePurchaseInvoiceLine(
-        id,
+        persistedId,
         lineId,
         buildUpdateLinePayload(editLineForm),
       )
@@ -453,10 +486,10 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
   }
 
   async function handleDeleteLine(lineId: number) {
-    if (!id || !isDraft) return
+    if (!persistedId || !isDraft) return
     setLineSaving(true)
     try {
-      const updated = await purchaseInvoiceService.deletePurchaseInvoiceLine(id, lineId)
+      const updated = await purchaseInvoiceService.deletePurchaseInvoiceLine(persistedId, lineId)
       setInvoice(updated)
       if (editingLineId === String(lineId)) {
         setEditingLineId(null)
@@ -471,10 +504,10 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
   }
 
   async function handleCompleteInvoice() {
-    if (!id || displayStatus !== 'DRAFT') return
+    if (!persistedId || displayStatus !== 'DRAFT') return
     setActionLoading(true)
     try {
-      const updated = await purchaseInvoiceService.completePurchaseInvoice(id)
+      const updated = await purchaseInvoiceService.completePurchaseInvoice(persistedId)
       setInvoice(updated)
       setHeader(mapInvoiceToHeader(updated))
       setIsEditingHeader(false)
@@ -487,10 +520,10 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
   }
 
   async function handlePostInvoice() {
-    if (!id || displayStatus !== 'COMPLETE') return
+    if (!persistedId || displayStatus !== 'COMPLETE') return
     setActionLoading(true)
     try {
-      const updated = await purchaseInvoiceService.postPurchaseInvoice(id)
+      const updated = await purchaseInvoiceService.postPurchaseInvoice(persistedId)
       setInvoice(updated)
       notify.success(t('inventory.purchase.toast.postSuccess'))
       notifyStockBalancesRefresh()
@@ -502,11 +535,11 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
   }
 
   async function handleUncompleteInvoice(reason?: string) {
-    if (!id || displayStatus !== 'COMPLETE') return
+    if (!persistedId || displayStatus !== 'COMPLETE') return
     setActionLoading(true)
     try {
-      await purchaseInvoiceService.uncompletePurchaseInvoice(id, reason)
-      await loadInvoice()
+      await purchaseInvoiceService.uncompletePurchaseInvoice(persistedId, reason)
+      await loadInvoice(persistedId)
       notify.success(t('inventory.purchase.toast.uncompleteSuccess'))
       setUncompleteModalOpen(false)
     } catch {
@@ -517,10 +550,10 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
   }
 
   async function handleDeleteInvoice() {
-    if (!id || displayStatus !== 'DRAFT') return
+    if (!persistedId || displayStatus !== 'DRAFT') return
     setActionLoading(true)
     try {
-      await purchaseInvoiceService.deletePurchaseInvoice(id)
+      await purchaseInvoiceService.deletePurchaseInvoice(persistedId)
       notify.success(t('inventory.purchase.toast.deleteSuccess'))
       navigate('/purchase/purchase-invoices')
     } catch {
@@ -531,11 +564,11 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
   }
 
   async function handleUnpostInvoice(reason?: string) {
-    if (!id || displayStatus !== 'POSTED') return
+    if (!persistedId || displayStatus !== 'POSTED') return
     setActionLoading(true)
     try {
-      await purchaseInvoiceService.unpostPurchaseInvoice(id, reason)
-      await loadInvoice()
+      await purchaseInvoiceService.unpostPurchaseInvoice(persistedId, reason)
+      await loadInvoice(persistedId)
       notify.success(t('inventory.purchase.toast.unpostSuccess'))
       notifyStockBalancesRefresh()
       setUnpostModalOpen(false)
@@ -547,11 +580,11 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
   }
 
   async function handleCancelInvoice(reason?: string) {
-    if (!id || displayStatus !== 'DRAFT') return
+    if (!persistedId || displayStatus !== 'DRAFT') return
     setActionLoading(true)
     try {
-      await purchaseInvoiceService.cancelPurchaseInvoice(id, reason)
-      await loadInvoice()
+      await purchaseInvoiceService.cancelPurchaseInvoice(persistedId, reason)
+      await loadInvoice(persistedId)
       notify.success(t('inventory.purchase.toast.cancelSuccess'))
       setCancelInvoiceModalOpen(false)
     } catch {
@@ -618,7 +651,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
               </span>
             </div>
           ) : (
-            <PurchaseInvoiceMaterialSelect
+            <MaterialSelect
               value={form.materialId}
               onChange={(materialId) => options.onMaterialChange?.(materialId)}
               materials={materials}
@@ -772,7 +805,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                 <div className="pi-form-header-card__topbar-end">
                   {!loading && showFormActions ? (
                     <div className="pi-form-topbar__actions-bar">
-                      {canManage && id && displayStatus === 'DRAFT' ? (
+                      {canManage && persistedId && displayStatus === 'DRAFT' ? (
                         <button
                           type="button"
                           className="pi-form-actions__complete"
@@ -792,7 +825,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                           )}
                         </button>
                       ) : null}
-                      {canManage && id && displayStatus === 'COMPLETE' ? (
+                      {canManage && persistedId && displayStatus === 'COMPLETE' ? (
                         <button
                           type="button"
                           className="pi-form-actions__post"
@@ -812,7 +845,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                           )}
                         </button>
                       ) : null}
-                      {canUncomplete && id && displayStatus === 'COMPLETE' ? (
+                      {canUncomplete && persistedId && displayStatus === 'COMPLETE' ? (
                         <button
                           type="button"
                           className="pi-form-actions__unpost"
@@ -832,7 +865,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                           )}
                         </button>
                       ) : null}
-                      {canUnpost && id && displayStatus === 'POSTED' ? (
+                      {canUnpost && persistedId && displayStatus === 'POSTED' ? (
                         <button
                           type="button"
                           className="pi-form-actions__unpost"
@@ -852,7 +885,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                           )}
                         </button>
                       ) : null}
-                      {canManage && id && displayStatus === 'DRAFT' ? (
+                      {canManage && persistedId && displayStatus === 'DRAFT' ? (
                         <IconActionButton
                           className="action-btn action-btn--icon action-btn--cancel"
                           label={t('inventory.purchase.actions.cancelInvoice')}
@@ -862,7 +895,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                           <XCircle size={16} aria-hidden />
                         </IconActionButton>
                       ) : null}
-                      {canManage && id && displayStatus === 'DRAFT' ? (
+                      {canManage && persistedId && displayStatus === 'DRAFT' ? (
                         <IconActionButton
                           className="action-btn action-btn--icon action-btn--cancel"
                           label={t('inventory.purchase.actions.deleteInvoice')}
@@ -885,7 +918,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
 
                       <span className="pi-form-topbar__actions-divider" aria-hidden />
 
-                      {displayStatus === 'DRAFT' && !isEditingHeader && canManage && id ? (
+                      {displayStatus === 'DRAFT' && !isEditingHeader && canManage && persistedId ? (
                         <IconActionButton
                           className="action-btn action-btn--icon"
                           label={t('inventory.purchase.actions.editHeader')}
@@ -919,7 +952,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                           </IconActionButton>
                         </>
                       ) : null}
-                      {isCreate ? (
+                      {!persistedId ? (
                         <button
                           type="button"
                           className="pi-form-actions__submit"
@@ -950,7 +983,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
 
               <div className="pi-form-header-card__divider" />
 
-              {!isCreate && header.invoiceNumber ? (
+              {persistedId && header.invoiceNumber ? (
                 <div className="pi-form-header-card__invoice-line">
                   <span className="pi-form-header-card__invoice-number" dir="ltr">
                     {header.invoiceNumber}
@@ -1129,13 +1162,12 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
               </div>
             </section>
 
-            {showLinesSection && invoice ? (
-              <section className="pi-form-lines-card">
+            <section className="pi-form-lines-card">
                 <div className="pi-form-lines__header">
                   <h2 className="pi-form-lines__title">{t('inventory.purchase.lines.title')}</h2>
                 </div>
 
-                {invoice.lines.length === 0 && !addingLine ? (
+                {(invoice?.lines.length ?? 0) === 0 && !addingLine ? (
                   <div className="pi-form-lines__empty">
                     <Receipt className="pi-form-lines__empty-icon" size={40} strokeWidth={1.25} aria-hidden="true" />
                     <p className="pi-form-lines__empty-title">{t('inventory.purchase.lines.emptyTitle')}</p>
@@ -1189,7 +1221,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                         </tr>
                       </thead>
                       <tbody>
-                        {invoice.lines.map((line) =>
+                        {(invoice?.lines ?? []).map((line) =>
                           editingLineId === String(line.id) && editLineForm ? (
                             <tr key={line.id} className="pi-form-lines-table__row pi-form-lines-table__row--edit">
                               {renderLineEditRow(editLineForm, {
@@ -1284,14 +1316,8 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                     <button
                       type="button"
                       className="pi-form-lines__add-btn"
-                      onClick={() => {
-                        setAddingLine(true)
-                        setNewLineForm(newLine())
-                        setEditingLineId(null)
-                        setEditLineForm(null)
-                        setFieldErrors({})
-                      }}
-                      disabled={lineSaving || addingLine || editingLineId != null || isEditingHeader}
+                      onClick={() => void handleAddItemClick()}
+                      disabled={lineSaving || addingLine || editingLineId != null || isEditingHeader || headerSaving}
                     >
                       <Plus size={16} aria-hidden="true" />
                       {t('inventory.purchase.lines.add')}
@@ -1299,7 +1325,6 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                   </div>
                 ) : null}
               </section>
-            ) : null}
           </form>
         </>
       ) : null}

@@ -27,6 +27,7 @@ export const permissionsAr: TranslationDictionary = {
   'permissions.modules.BRANCHES': 'الفروع',
   'permissions.modules.CATEGORIES': 'التصنيفات',
   'permissions.modules.DASHBOARD': 'لوحة التحكم',
+  'permissions.modules.DEVICES': 'الأجهزة',
   'permissions.modules.EMPLOYEES': 'الموظفون',
   'permissions.modules.HR': 'الموارد البشرية',
   'permissions.modules.INVENTORY': 'المخزون',

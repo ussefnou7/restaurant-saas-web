@@ -1,0 +1,186 @@
+.order-consumption-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--space-sm);
+}
+
+.order-consumption-toolbar__date {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.order-consumption-toolbar__date-label,
+.order-consumption-detail__label {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.order-consumption-page__actions {
+  white-space: nowrap;
+}
+
+.order-consumption-status,
+.order-consumption-consumed {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 0.25em 0.65em;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.order-consumption-status--muted,
+.order-consumption-consumed--no {
+  background: var(--color-surface-soft);
+  color: var(--color-text-muted);
+}
+
+.order-consumption-status--warning {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+  border-color: var(--color-warning);
+}
+
+.order-consumption-status--success,
+.order-consumption-consumed--yes {
+  background: var(--color-success-soft);
+  color: var(--color-success-text);
+  border-color: var(--color-success);
+}
+
+.order-consumption-status--danger {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.order-consumption-recalculate-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+.order-consumption-recalculate-action:hover:not(:disabled) {
+  background: var(--color-surface-soft);
+}
+
+.order-consumption-recalculate-action:disabled {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.order-consumption-detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.order-consumption-detail__header-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-lg);
+  padding: var(--space-lg);
+}
+
+.order-consumption-detail__info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  min-width: 0;
+}
+
+.order-consumption-detail__value {
+  color: var(--color-text);
+  font-weight: 600;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.order-consumption-detail__empty,
+.order-consumption-conflicts__empty {
+  margin: 0;
+  padding: var(--space-lg);
+  color: var(--color-text-muted);
+}
+
+.order-consumption-conflicts {
+  padding: var(--space-lg);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-lg);
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.order-consumption-conflicts__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.order-consumption-conflicts__title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+}
+
+.order-consumption-conflicts__description {
+  margin-block: var(--space-sm);
+  color: var(--color-text);
+}
+
+.order-consumption-conflicts__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.order-consumption-conflicts__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding-block-start: var(--space-sm);
+  border-block-start: 1px solid var(--color-danger);
+  color: var(--color-text);
+}
+
+.order-consumption-conflicts__meta {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+@media (max-width: 900px) {
+  .order-consumption-detail__header-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .order-consumption-toolbar {
+    align-items: stretch;
+  }
+
+  .order-consumption-toolbar > *,
+  .order-consumption-detail__header-grid {
+    width: 100%;
+  }
+
+  .order-consumption-detail__header-grid {
+    grid-template-columns: 1fr;
+  }
+}

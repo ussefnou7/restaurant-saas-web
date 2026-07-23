@@ -270,14 +270,14 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
   const [newLineForm, setNewLineForm] = useState<LineFormState | null>(null)
 
   const isCreate = mode === 'create'
+  const persistedId = purchaseReturn != null ? String(purchaseReturn.id) : id
   const displayStatus = purchaseReturn?.status ?? 'DRAFT'
   const isDraft = displayStatus === 'DRAFT'
-  const headerFieldsEnabled = isCreate || isEditingHeader
+  const headerFieldsEnabled = !persistedId || isEditingHeader
   const headerInputsDisabled =
     !headerFieldsEnabled || headerSaving || lookupsLoading || actionLoading
-  const showLinesSection = !isCreate && purchaseReturn != null
   const showDraftLineActions = isDraft && canManage
-  const originalInvoiceLocked = !isCreate
+  const originalInvoiceLocked = persistedId != null
 
   const loadPostedInvoices = useCallback(async () => {
     setLookupsLoading(true)
@@ -297,13 +297,13 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
   }, [])
 
   const loadReturnableLines = useCallback(async () => {
-    if (!id || !isDraft) {
+    if (!persistedId || !isDraft) {
       setReturnableLines([])
       return
     }
     setReturnableLoading(true)
     try {
-      const data = await purchaseReturnService.getReturnableLines(id)
+      const data = await purchaseReturnService.getReturnableLines(persistedId)
       setReturnableLines(data)
     } catch (err) {
       setReturnableLines([])
@@ -311,14 +311,13 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
     } finally {
       setReturnableLoading(false)
     }
-  }, [id, isDraft, t, notify])
+  }, [persistedId, isDraft, t, notify])
 
-  const loadReturn = useCallback(async () => {
-    if (!id) return
+  const loadReturn = useCallback(async (targetId: string) => {
     setLoading(true)
     setError('')
     try {
-      const data = await purchaseReturnService.getPurchaseReturn(id)
+      const data = await purchaseReturnService.getPurchaseReturn(targetId)
       setPurchaseReturn(data)
       setHeader(mapReturnToHeader(data))
       setIsEditingHeader(false)
@@ -332,7 +331,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
     } finally {
       setLoading(false)
     }
-  }, [id, t])
+  }, [t])
 
   useEffect(() => {
     if (!canView) return
@@ -340,14 +339,14 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
   }, [canView, loadPostedInvoices])
 
   useEffect(() => {
-    if (!canView || isCreate) return
-    void loadReturn()
-  }, [canView, isCreate, loadReturn])
+    if (!canView || isCreate || !id) return
+    void loadReturn(id)
+  }, [canView, isCreate, id, loadReturn])
 
   useEffect(() => {
-    if (!canView || isCreate || !isDraft) return
+    if (!canView || !persistedId || !isDraft) return
     void loadReturnableLines()
-  }, [canView, isCreate, isDraft, loadReturnableLines, purchaseReturn?.lines.length])
+  }, [canView, persistedId, isDraft, loadReturnableLines, purchaseReturn?.lines.length])
 
   const selectedReturnableLine = newLineForm?.originalLineId
     ? returnableLines.find((line) => String(line.originalLineId) === newLineForm.originalLineId)
@@ -425,7 +424,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
         reason: header.reason as PurchaseReturnReason,
         notes: header.notes.trim() || null,
       }
-      if (isCreate) {
+      if (!persistedId) {
         const created = await purchaseReturnService.createPurchaseReturn({
           originalInvoiceId: Number(header.originalInvoiceId),
           ...payload,
@@ -434,8 +433,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
         navigate(`/purchase/purchase-returns/${created.id}`, { replace: true })
         return
       }
-      if (!id) return
-      const updated = await purchaseReturnService.updatePurchaseReturnHeader(id, {
+      const updated = await purchaseReturnService.updatePurchaseReturnHeader(persistedId, {
         originalInvoiceId: Number(header.originalInvoiceId),
         ...payload,
       })
@@ -450,6 +448,54 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
     }
   }
 
+  async function ensureReturnPersisted(): Promise<PurchaseReturnResponse | null> {
+    if (purchaseReturn) return purchaseReturn
+    const validationErrors = validateHeader()
+    if (Object.keys(validationErrors).length > 0) {
+      setFieldErrors(validationErrors)
+      scrollToFirstError()
+      return null
+    }
+    setFieldErrors({})
+    setHeaderSaving(true)
+    try {
+      const created = await purchaseReturnService.createPurchaseReturn({
+        originalInvoiceId: Number(header.originalInvoiceId),
+        returnDate: header.returnDate,
+        reason: header.reason as PurchaseReturnReason,
+        notes: header.notes.trim() || null,
+      })
+      setPurchaseReturn(created)
+      setHeader(mapReturnToHeader(created))
+      notify.success(t('inventory.purchaseReturn.toast.createSuccess'))
+      return created
+    } catch {
+      return null
+    } finally {
+      setHeaderSaving(false)
+    }
+  }
+
+  async function handleAddItemClick() {
+    const doc = await ensureReturnPersisted()
+    if (!doc) return
+    setAddingLine(true)
+    setNewLineForm(emptyLineForm())
+    setEditingLineId(null)
+    setEditLineForm(null)
+    setFieldErrors({})
+    setReturnableLoading(true)
+    try {
+      const lines = await purchaseReturnService.getReturnableLines(String(doc.id))
+      setReturnableLines(lines)
+    } catch (err) {
+      setReturnableLines([])
+      notify.error(translateApiError(err, t).message)
+    } finally {
+      setReturnableLoading(false)
+    }
+  }
+
   function handleCancelHeaderEdit() {
     if (purchaseReturn) setHeader(mapReturnToHeader(purchaseReturn))
     setFieldErrors({})
@@ -457,7 +503,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
   }
 
   async function handleSaveNewLine() {
-    if (!id || !newLineForm) return
+    if (!persistedId || !newLineForm) return
     const lineError = validateLineForm(newLineForm, true)
     if (lineError) {
       setFieldErrors({ lineError })
@@ -466,7 +512,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
     setFieldErrors({})
     setLineSaving(true)
     try {
-      const updated = await purchaseReturnService.addPurchaseReturnLine(id, {
+      const updated = await purchaseReturnService.addPurchaseReturnLine(persistedId, {
         originalLineId: Number(newLineForm.originalLineId),
         quantity: Number(newLineForm.quantity),
         uomId: Number(newLineForm.uomId),
@@ -503,7 +549,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
   }
 
   async function handleSaveEditLine(lineId: number) {
-    if (!id || !editLineForm) return
+    if (!persistedId || !editLineForm) return
     const lineError = validateLineForm(editLineForm, false)
     if (lineError) {
       setFieldErrors({ lineError })
@@ -512,7 +558,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
     setFieldErrors({})
     setLineSaving(true)
     try {
-      const updated = await purchaseReturnService.updatePurchaseReturnLine(id, lineId, {
+      const updated = await purchaseReturnService.updatePurchaseReturnLine(persistedId, lineId, {
         quantity: Number(editLineForm.quantity),
         uomId: Number(editLineForm.uomId),
         notes: editLineForm.notes.trim() || null,
@@ -535,10 +581,10 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
   }
 
   async function handleDeleteLine(lineId: number) {
-    if (!id || !isDraft) return
+    if (!persistedId || !isDraft) return
     setLineSaving(true)
     try {
-      const updated = await purchaseReturnService.deletePurchaseReturnLine(id, lineId)
+      const updated = await purchaseReturnService.deletePurchaseReturnLine(persistedId, lineId)
       setPurchaseReturn(updated)
       if (editingLineId === String(lineId)) {
         setEditingLineId(null)
@@ -553,10 +599,10 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
   }
 
   async function handleCompleteReturn() {
-    if (!id || displayStatus !== 'DRAFT') return
+    if (!persistedId || displayStatus !== 'DRAFT') return
     setActionLoading(true)
     try {
-      const updated = await purchaseReturnService.completePurchaseReturn(id)
+      const updated = await purchaseReturnService.completePurchaseReturn(persistedId)
       setPurchaseReturn(updated)
       setHeader(mapReturnToHeader(updated))
       setIsEditingHeader(false)
@@ -569,10 +615,10 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
   }
 
   async function handlePostReturn() {
-    if (!id || displayStatus !== 'COMPLETE') return
+    if (!persistedId || displayStatus !== 'COMPLETE') return
     setActionLoading(true)
     try {
-      const updated = await purchaseReturnService.postPurchaseReturn(id)
+      const updated = await purchaseReturnService.postPurchaseReturn(persistedId)
       setPurchaseReturn(updated)
       notify.success(t('inventory.purchaseReturn.toast.postSuccess'))
       notifyStockBalancesRefresh()
@@ -584,11 +630,11 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
   }
 
   async function handleUncompleteReturn(reason?: string) {
-    if (!id || displayStatus !== 'COMPLETE') return
+    if (!persistedId || displayStatus !== 'COMPLETE') return
     setActionLoading(true)
     try {
-      await purchaseReturnService.uncompletePurchaseReturn(id, reason)
-      await loadReturn()
+      await purchaseReturnService.uncompletePurchaseReturn(persistedId, reason)
+      await loadReturn(persistedId)
       notify.success(t('inventory.purchaseReturn.toast.uncompleteSuccess'))
       setUncompleteModalOpen(false)
     } catch {
@@ -599,11 +645,11 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
   }
 
   async function handleUnpostReturn(reason?: string) {
-    if (!id || displayStatus !== 'POSTED') return
+    if (!persistedId || displayStatus !== 'POSTED') return
     setActionLoading(true)
     try {
-      await purchaseReturnService.unpostPurchaseReturn(id, reason)
-      await loadReturn()
+      await purchaseReturnService.unpostPurchaseReturn(persistedId, reason)
+      await loadReturn(persistedId)
       notify.success(t('inventory.purchaseReturn.toast.unpostSuccess'))
       notifyStockBalancesRefresh()
       setUnpostModalOpen(false)
@@ -615,10 +661,10 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
   }
 
   async function handleCancelReturn(reason: string) {
-    if (!id) return
+    if (!persistedId) return
     setActionLoading(true)
     try {
-      await purchaseReturnService.cancelPurchaseReturn(id, reason)
+      await purchaseReturnService.cancelPurchaseReturn(persistedId, reason)
       notify.success(t('inventory.purchaseReturn.toast.cancelSuccess'))
       navigate('/purchase/purchase-returns')
     } catch {
@@ -781,7 +827,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
 
       {!loading ? (
         <>
-          {!isCreate && purchaseReturn?.status === 'POSTED' ? (
+          {persistedId && purchaseReturn?.status === 'POSTED' ? (
             <div className="alert-success purchase-invoice-posted-banner">
               {t('inventory.purchaseReturn.postedBanner')}
               {purchaseReturn.postedAt ? (
@@ -808,7 +854,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                 <div className="pi-form-header-card__topbar-end">
                   {!loading && showFormActions ? (
                     <div className="pi-form-topbar__actions-bar">
-                      {canManage && id && displayStatus === 'DRAFT' ? (
+                      {canManage && persistedId && displayStatus === 'DRAFT' ? (
                         <button
                           type="button"
                           className="pi-form-actions__complete"
@@ -835,7 +881,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                           )}
                         </button>
                       ) : null}
-                      {canManage && id && displayStatus === 'COMPLETE' ? (
+                      {canManage && persistedId && displayStatus === 'COMPLETE' ? (
                         <button
                           type="button"
                           className="pi-form-actions__post"
@@ -855,7 +901,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                           )}
                         </button>
                       ) : null}
-                      {canUncomplete && id && displayStatus === 'COMPLETE' ? (
+                      {canUncomplete && persistedId && displayStatus === 'COMPLETE' ? (
                         <button
                           type="button"
                           className="pi-form-actions__unpost"
@@ -875,7 +921,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                           )}
                         </button>
                       ) : null}
-                      {canUnpost && id && displayStatus === 'POSTED' ? (
+                      {canUnpost && persistedId && displayStatus === 'POSTED' ? (
                         <button
                           type="button"
                           className="pi-form-actions__unpost"
@@ -896,7 +942,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                         </button>
                       ) : null}
                       {canManage &&
-                      id &&
+                      persistedId &&
                       (displayStatus === 'DRAFT' || displayStatus === 'COMPLETE') ? (
                         <IconActionButton
                           className="action-btn action-btn--icon action-btn--cancel"
@@ -920,7 +966,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
 
                       <span className="pi-form-topbar__actions-divider" aria-hidden />
 
-                      {displayStatus === 'DRAFT' && !isEditingHeader && canManage && id ? (
+                      {displayStatus === 'DRAFT' && !isEditingHeader && canManage && persistedId ? (
                         <IconActionButton
                           className="action-btn action-btn--icon"
                           label={t('inventory.purchase.actions.editHeader')}
@@ -954,7 +1000,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                           </IconActionButton>
                         </>
                       ) : null}
-                      {isCreate ? (
+                      {!persistedId ? (
                         <button
                           type="button"
                           className="pi-form-actions__submit"
@@ -985,7 +1031,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
 
               <div className="pi-form-header-card__divider" />
 
-              {!isCreate && purchaseReturn?.returnNumber ? (
+              {persistedId && purchaseReturn?.returnNumber ? (
                 <div className="pi-form-header-card__invoice-line">
                   <span className="pi-form-header-card__invoice-number" dir="ltr">
                     {purchaseReturn.returnNumber}
@@ -996,7 +1042,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
               <div className="pi-form-header-grid">
                 <PrFormField
                   label={t('inventory.purchaseReturn.fields.originalInvoice')}
-                  required={isCreate}
+                  required={!persistedId}
                   error={fieldErrors.originalInvoiceId}
                 >
                   {originalInvoiceLocked ? (
@@ -1081,7 +1127,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                   />
                 </PrFormField>
 
-                {!isCreate && purchaseReturn ? (
+                {purchaseReturn ? (
                   <div className="pi-form-header-totals">
                     <div className="pi-form-header-totals__row pi-form-header-totals__row--grand">
                       <span>{t('inventory.purchase.totals.total')}</span>
@@ -1097,13 +1143,12 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
               </div>
             </section>
 
-            {showLinesSection && purchaseReturn ? (
-              <section className="pi-form-lines-card">
+            <section className="pi-form-lines-card">
                 <div className="pi-form-lines__header">
                   <h2 className="pi-form-lines__title">{t('inventory.purchaseReturn.lines.title')}</h2>
                 </div>
 
-                {purchaseReturn.lines.length === 0 && !addingLine ? (
+                {(purchaseReturn?.lines.length ?? 0) === 0 && !addingLine ? (
                   <div className="pi-form-lines__empty">
                     <p className="pi-form-lines__empty-title">
                       {t('inventory.purchaseReturn.lines.emptyTitle')}
@@ -1148,7 +1193,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                         </tr>
                       </thead>
                       <tbody>
-                        {purchaseReturn.lines.map((line) => {
+                        {(purchaseReturn?.lines ?? []).map((line) => {
                           const returnableLine = returnableLines.find(
                             (item) => item.originalLineId === line.originalLineId,
                           )
@@ -1290,21 +1335,14 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                     <button
                       type="button"
                       className="pi-form-lines__add-btn"
-                      onClick={() => {
-                        setAddingLine(true)
-                        setNewLineForm(emptyLineForm())
-                        setEditingLineId(null)
-                        setEditLineForm(null)
-                        setFieldErrors({})
-                        void loadReturnableLines()
-                      }}
+                      onClick={() => void handleAddItemClick()}
                       disabled={
                         lineSaving ||
                         addingLine ||
                         editingLineId != null ||
                         isEditingHeader ||
-                        returnableLoading ||
-                        availableReturnableLines.length === 0
+                        headerSaving ||
+                        (persistedId != null && (returnableLoading || availableReturnableLines.length === 0))
                       }
                     >
                       <Plus size={16} aria-hidden />
@@ -1313,7 +1351,6 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                   </div>
                 ) : null}
               </section>
-            ) : null}
           </form>
         </>
       ) : null}

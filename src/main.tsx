@@ -10,8 +10,11 @@ import './styles/entity-details.css'
 import './styles/fields.css'
 import './styles/entity-detail-page.css'
 import './styles/inventory.css'
+import './styles/assets.css'
 import './styles/menu.css'
 import './styles/hub.css'
+import './styles/orders.css'
+import './styles/devices.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

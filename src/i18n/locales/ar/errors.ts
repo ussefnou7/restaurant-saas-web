@@ -21,6 +21,16 @@ export const errorsAr: TranslationDictionary = {
     'لا يمكن تسجيل هدر للمادة {{materialName}} لأن فرق الجرد موجب',
   'errors.UOM_CONVERSION_FAILED': 'تعذر التحويل من الوحدة {{fromUom}} إلى الوحدة {{toUom}}',
   'errors.EMPTY_DOCUMENT_LINES': 'لا يمكن تنفيذ العملية: المستند لا يحتوي على أي بنود',
+  'errors.ORDER_CONSUMPTION_PENDING_DOC_RACE_LOST':
+    'تم إنشاء مستند استهلاك الطلبات المعلّق بواسطة عملية أخرى؛ يرجى إعادة المحاولة.',
+  'errors.ORDER_CONSUMPTION_RECIPE_NOT_RESOLVED':
+    'يوجد بند طلب بدون وصفة مثبتة (الطلب {{orderId}}، البند {{orderLineId}}).',
+  'errors.ORDER_CONSUMPTION_RECIPE_HAS_NO_ITEMS':
+    'الوصفة {{recipeId}} لا تحتوي على مواد ولا يمكن استهلاكها.',
+  'errors.ORDER_CONSUMPTION_MIXED_UOM':
+    'المادة {{materialId}} مستخدمة بأكثر من وحدة في استهلاك الطلبات؛ استخدم وحدة واحدة لكل مادة.',
+  'errors.ORDER_CONSUMPTION_ERROR_SERIALIZATION_FAILED':
+    'تعذر حفظ تفاصيل أخطاء استهلاك الطلبات. يرجى إعادة المحاولة.',
   'errors.RESOURCE_NOT_AVAILABLE_FOR_TENANT':
     'العنصر المطلوب غير متاح لحسابك ({{entityType}} رقم {{entityId}})',
   'errors.DUPLICATE_CODE': "يوجد بالفعل {{entityType}} بالرمز '{{code}}'",
@@ -57,6 +67,10 @@ export const errorsAr: TranslationDictionary = {
     'لا يمكن أن يكون رصيد الإجازة المتبقي سالبًا ({{remainingDays}})',
   'errors.SYSTEM_TENANT_RESTRICTED': 'هذا الإجراء ({{action}}) غير مسموح في سياق المطعم النظامي',
 
+  // RBAC module
+  'errors.BRANCH_REQUIRED_FOR_ROLE': 'الدور {{roleName}} يتطلب تحديد فرع',
+  'errors.BRANCH_NOT_ALLOWED_FOR_ROLE': 'لا يمكن ربط الدور {{roleName}} بفرع',
+
   // Common / cross-module
   'errors.DATA_INTEGRITY_VIOLATION': 'تعذر إتمام العملية لارتباط البيانات بسجلات أخرى',
   'errors.ACCESS_DENIED': 'ليس لديك صلاحية لتنفيذ هذا الإجراء',
@@ -68,8 +82,42 @@ export const errorsAr: TranslationDictionary = {
   'errors.CATEGORY_HAS_PRODUCTS': 'لا يمكن حذف هذا التصنيف لأنه مرتبط بمنتجات',
   'errors.DUPLICATE_MATERIAL_IN_RECIPE':
     'المادة "{{materialName}}" موجودة بالفعل في هذه الوصفة',
+  'errors.VARIANT_CANNOT_BE_MENU_ITEM':
+    'لا يمكن عرض الصنف الفرعي على المنيو مباشرة. أزِله من المنيو ثم حاول مرة أخرى.',
+  'errors.PARENT_PRODUCT_NOT_ORDERABLE':
+    'هذه مجموعة أصناف ولا يمكن طلبها مباشرة. من فضلك اختر أحد أصنافها الفرعية.',
+  'errors.PARENT_PRODUCT_HAS_NO_RECIPE':
+    'هذا المنتج يجمع أصنافًا فرعية ولا يمكن أن تكون له وصفة خاصة. أضِف الوصفات لأصنافه الفرعية بدلًا من ذلك.',
+  'errors.PRODUCT_WITH_RECIPE_CANNOT_BE_PARENT':
+    'هذا المنتج له وصفة بالفعل، لذلك لا يمكن تحويله إلى مجموعة أصناف.',
+  'errors.PRODUCT_HAS_VARIANTS':
+    'هذا المنتج لديه أصناف مرتبطة به. قم بإلغاء ربط جميع الأصناف أولاً قبل الحذف.',
+  'errors.PRODUCT_NOT_FOUND': 'المنتج غير موجود.',
+  'errors.ADDON_HOST_MUST_BE_PARENT_ELIGIBLE':
+    'يمكن ربط الإضافات بالمنتجات الرئيسية فقط وليس بالأصناف الفرعية.',
+  'errors.ADDON_CANNOT_BE_SELF': 'لا يمكن إضافة المنتج كإضافة لنفسه.',
+  'errors.DUPLICATE_ADD_ON': 'هذه الإضافة مرتبطة بالمنتج بالفعل.',
+
+  // Orders module
+  'errors.PRODUCT_HAS_NO_ACTIVE_RECIPE':
+    'المنتج ده مفيهوش ريسيبي مفعّلة، مينفعش يتباع لحد ما تضاف له ريسيبي الأول.',
+  'errors.WAREHOUSE_NOT_FOUND': 'لا يوجد مخزن نشط مضبوط لهذا الفرع.',
+  'errors.AMBIGUOUS_WAREHOUSE_FOR_BRANCH':
+    'يوجد أكثر من مخزن مضبوط لهذا الفرع (العدد {{warehouseCount}}).',
+
+  // Assets module
+  'errors.LINE_ASSET_MISMATCH':
+    'بند الأصل {{assetLineId}} لا يتبع الأصل {{assetId}}.',
+
+  // Devices module
+  'errors.INVALID_DEVICE_SECRET': 'مفتاح الجهاز غير صحيح',
+  'errors.DEVICE_INACTIVE': 'هذا الجهاز غير نشط ({{entityType}} رقم {{entityId}})',
+  'errors.DEVICE_NOT_FOUND': 'الجهاز المطلوب غير موجود ({{entityType}} رقم {{entityId}})',
+  'errors.BRANCH_NOT_FOUND': 'الفرع المحدد غير موجود ({{entityType}} رقم {{entityId}})',
 
   // Auth
   'errors.INVALID_CREDENTIALS':
     'بيانات الدخول غير صحيحة، تحقق من رمز المطعم واسم المستخدم وكلمة المرور',
+  'errors.POS_LOGIN_NOT_PERMITTED': 'هذا المستخدم غير مسموح له بفتح الورديات على جهاز نقاط البيع',
+  'errors.DEVICE_BRANCH_MISMATCH': 'هذا المستخدم غير مرتبط بفرع جهاز نقاط البيع المحدد',
 }

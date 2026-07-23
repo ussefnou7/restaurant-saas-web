@@ -1,0 +1,105 @@
+.devices-page__table .data-table__td--actions {
+  min-width: 9rem;
+}
+
+.devices-page__deactivate-btn {
+  color: var(--color-danger);
+}
+
+.device-create-modal__secret-reveal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.device-create-modal__warning {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-warning);
+  border-radius: var(--radius-lg);
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.device-create-modal__warning svg {
+  flex: 0 0 auto;
+  margin-block-start: 0.125rem;
+}
+
+.device-create-modal__warning p {
+  margin: 0;
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+.device-create-modal__secret-row {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-3);
+}
+
+.device-create-modal__secret-field {
+  min-width: 0;
+  flex: 1;
+  padding-block: var(--space-3);
+  padding-inline: var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-soft);
+  color: var(--color-text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: var(--font-size-base);
+  text-align: start;
+}
+
+.device-create-modal__secret-field:focus {
+  border-color: var(--color-focus-border);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+.device-create-modal__copy-btn {
+  flex: 0 0 auto;
+}
+
+.device-create-modal__qr {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-soft);
+}
+
+.device-create-modal__qr svg {
+  flex: 0 0 auto;
+  background: #fff;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+}
+
+.device-create-modal__qr-title {
+  margin: 0 0 var(--space-1);
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.device-create-modal__qr-note {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+@media (max-width: 640px) {
+  .device-create-modal__secret-row {
+    flex-direction: column;
+  }
+
+  .device-create-modal__qr {
+    flex-direction: column;
+    text-align: center;
+  }
+}

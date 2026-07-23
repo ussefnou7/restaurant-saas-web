@@ -1,11 +1,21 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react'
 import { createPortal } from 'react-dom'
 import { ChevronDown, Loader2, Search } from 'lucide-react'
 import type { Locale } from '../../i18n/types'
 import type { MaterialResponse } from '../../types/inventory'
 import { getInventoryLocalizedName } from '../../utils/inventoryDisplay'
+import './MaterialSelect.css'
 
-interface RecipeMaterialSelectProps {
+interface MaterialSelectProps {
   value: string
   onChange: (materialId: string) => void
   materials: MaterialResponse[]
@@ -19,7 +29,9 @@ interface RecipeMaterialSelectProps {
   ariaLabel: string
 }
 
-export function RecipeMaterialSelect({
+const MATERIAL_SELECT_Z_INDEX = 10001
+
+export function MaterialSelect({
   value,
   onChange,
   materials,
@@ -31,7 +43,7 @@ export function RecipeMaterialSelect({
   placeholder,
   searchPlaceholder,
   ariaLabel,
-}: RecipeMaterialSelectProps) {
+}: MaterialSelectProps) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [panelStyle, setPanelStyle] = useState<CSSProperties>({})
@@ -39,46 +51,52 @@ export function RecipeMaterialSelect({
   const triggerRef = useRef<HTMLButtonElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
-  const listId = useMemo(() => `recipe-material-select-${Math.random().toString(36).slice(2)}`, [])
+  const listId = useId()
 
   const excludedSet = useMemo(() => new Set(excludeMaterialIds), [excludeMaterialIds])
   const availableMaterials = useMemo(
-    () => materials.filter((material) => !excludedSet.has(material.id) || String(material.id) === value),
+    () =>
+      materials.filter(
+        (material) => !excludedSet.has(material.id) || String(material.id) === value,
+      ),
     [excludedSet, materials, value],
   )
 
   const selected = materials.find((material) => String(material.id) === value)
 
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase()
-    if (!q) return availableMaterials
+    const query = search.trim().toLowerCase()
+    if (!query) return availableMaterials
+
     return availableMaterials.filter((material) => {
       const name = getInventoryLocalizedName(material, locale).toLowerCase()
       const code = (material.code ?? '').toLowerCase()
-      return name.includes(q) || code.includes(q)
+      return name.includes(query) || code.includes(query)
     })
   }, [availableMaterials, locale, search])
+
+  const closeSelect = useCallback(() => {
+    setOpen(false)
+    setSearch('')
+  }, [])
 
   const updatePanelPosition = useCallback(() => {
     const trigger = triggerRef.current
     if (!trigger) return
+
     const rect = trigger.getBoundingClientRect()
     setPanelStyle({
       position: 'fixed',
       top: rect.bottom + 4,
       left: rect.left,
       width: rect.width,
-      maxHeight: '240px',
-      overflowY: 'auto',
-      zIndex: 10001,
+      zIndex: MATERIAL_SELECT_Z_INDEX,
     })
   }, [])
 
   useEffect(() => {
-    if (!open) {
-      setSearch('')
-      return
-    }
+    if (!open) return
+
     const timer = window.setTimeout(() => searchRef.current?.focus(), 0)
     return () => window.clearTimeout(timer)
   }, [open])
@@ -90,6 +108,7 @@ export function RecipeMaterialSelect({
 
   useEffect(() => {
     if (!open) return
+
     window.addEventListener('scroll', updatePanelPosition, true)
     window.addEventListener('resize', updatePanelPosition)
     return () => {
@@ -106,12 +125,12 @@ export function RecipeMaterialSelect({
         !rootRef.current?.contains(event.target as Node) &&
         !panelRef.current?.contains(event.target as Node)
       ) {
-        setOpen(false)
+        closeSelect()
       }
     }
 
     function handleEscape(event: KeyboardEvent) {
-      if (event.key === 'Escape') setOpen(false)
+      if (event.key === 'Escape') closeSelect()
     }
 
     document.addEventListener('mousedown', handlePointerDown)
@@ -120,7 +139,7 @@ export function RecipeMaterialSelect({
       document.removeEventListener('mousedown', handlePointerDown)
       document.removeEventListener('keydown', handleEscape)
     }
-  }, [open])
+  }, [closeSelect, open])
 
   return (
     <div
@@ -136,7 +155,7 @@ export function RecipeMaterialSelect({
         aria-expanded={open}
         aria-haspopup="listbox"
         aria-controls={open ? listId : undefined}
-        onClick={() => setOpen((current) => !current)}
+        onClick={() => (open ? closeSelect() : setOpen(true))}
       >
         {loading ? (
           <Loader2 className="pi-material-select__spinner" size={16} aria-hidden="true" />
@@ -164,7 +183,7 @@ export function RecipeMaterialSelect({
                   type="search"
                   className="pi-material-select__search"
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(event) => setSearch(event.target.value)}
                   placeholder={searchPlaceholder}
                   aria-label={searchPlaceholder}
                 />
@@ -186,7 +205,7 @@ export function RecipeMaterialSelect({
                           className={`pi-material-select__option${isSelected ? ' pi-material-select__option--selected' : ''}`}
                           onClick={() => {
                             onChange(String(material.id))
-                            setOpen(false)
+                            closeSelect()
                           }}
                         >
                           {getInventoryLocalizedName(material, locale)}

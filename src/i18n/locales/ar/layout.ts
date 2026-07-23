@@ -19,6 +19,7 @@ export const layoutAr: TranslationDictionary = {
   'layout.nav.categories': 'التصنيفات',
   'layout.nav.branches': 'الفروع',
   'layout.nav.inventory': 'المخزون',
+  'layout.nav.assets': 'الأصول',
   'layout.nav.purchase': 'المشتريات',
   'layout.nav.materials': 'المواد',
   'layout.nav.users': 'المستخدمون',

@@ -16,12 +16,12 @@ import { PurchaseDocumentReasonModal } from '../../../components/inventory/Purch
 import { Button } from '../../../components/ui/Button'
 import { ConfirmModal } from '../../../components/ui/ConfirmModal'
 import { ListPage } from '../../../components/ui/ListPage'
+import { MaterialSelect } from '../../../components/ui/MaterialSelect'
 import { Modal } from '../../../components/ui/Modal'
 import { IconActionButton } from '../../../components/ui/RowActions'
 import { useNotify } from '../../../components/ui/NotificationContext'
 import { FormField, FormTextarea } from '../../../components/fields'
 import { useTranslation } from '../../../i18n/useTranslation'
-import { PurchaseInvoiceMaterialSelect } from '../purchase-invoices/PurchaseInvoiceMaterialSelect'
 import * as inventoryService from '../../../services/inventoryService'
 import * as wasteDocumentService from '../../../services/wasteDocumentService'
 import type { MaterialResponse, UomResponse, WarehouseResponse } from '../../../types/inventory'
@@ -63,6 +63,12 @@ type FieldErrors = {
   lineError?: string
 }
 
+type FormMode = 'create' | 'detail'
+
+function todayDateInput(): string {
+  return new Date().toISOString().slice(0, 10)
+}
+
 function toDateInputValue(value?: string | null): string {
   if (!value) return ''
   return value.slice(0, 10)
@@ -71,7 +77,7 @@ function toDateInputValue(value?: string | null): string {
 function emptyHeader(): HeaderFormState {
   return {
     warehouseId: '',
-    wasteDate: '',
+    wasteDate: todayDateInput(),
     reasonCode: 'SPOILED',
     notes: '',
   }
@@ -128,7 +134,7 @@ function PiFormField({ label, htmlFor, required, error, children }: PiFormFieldP
   )
 }
 
-export function WasteDocumentDetailPage() {
+function WasteDocumentForm({ mode }: { mode: FormMode }) {
   const { id } = useParams<{ id: string }>()
   const { t, locale } = useTranslation()
   const navigate = useNavigate()
@@ -137,13 +143,15 @@ export function WasteDocumentDetailPage() {
   const canManage = canManageInventoryStock()
   const canUncomplete = canUncompleteWasteDocuments()
 
+  const isCreate = mode === 'create'
+
   const [document, setDocument] = useState<WasteDocumentResponse | null>(null)
   const [header, setHeader] = useState<HeaderFormState>(emptyHeader())
   const [warehouses, setWarehouses] = useState<WarehouseResponse[]>([])
   const [materials, setMaterials] = useState<MaterialResponse[]>([])
   const [uoms, setUoms] = useState<UomResponse[]>([])
   const [lookupsLoading, setLookupsLoading] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(!isCreate)
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [actionLoading, setActionLoading] = useState(false)
@@ -162,11 +170,15 @@ export function WasteDocumentDetailPage() {
   const [cancelReason, setCancelReason] = useState('')
   const [uncompleteModalOpen, setUncompleteModalOpen] = useState(false)
 
+  // Once a create-mode document is auto-persisted (first "add line" or explicit header save),
+  // persistedId becomes the source of truth instead of the route id, so the rest of the page
+  // behaves like the detail view without requiring navigation.
+  const persistedId = document != null ? String(document.id) : id
   const displayStatus: DocumentStatus = document?.status ?? 'DRAFT'
   const isDraft = displayStatus === 'DRAFT'
   const isComplete = displayStatus === 'COMPLETE'
   const isReadOnly = displayStatus === 'POSTED' || displayStatus === 'CANCELLED'
-  const headerFieldsEnabled = isDraft && isEditingHeader
+  const headerFieldsEnabled = !persistedId || (isDraft && isEditingHeader)
   const headerInputsDisabled =
     !headerFieldsEnabled || headerSaving || lookupsLoading || actionLoading || isReadOnly
   const showDraftLineActions = isDraft && canManage
@@ -193,11 +205,10 @@ export function WasteDocumentDetailPage() {
     }
   }, [])
 
-  const loadDocument = useCallback(async () => {
-    if (!id) return
+  const loadDocument = useCallback(async (targetId: string) => {
     setError('')
     try {
-      const data = await wasteDocumentService.getWasteDocument(id)
+      const data = await wasteDocumentService.getWasteDocument(targetId)
       setDocument(data)
       setHeader(mapDocumentToHeader(data))
       setIsEditingHeader(false)
@@ -209,7 +220,7 @@ export function WasteDocumentDetailPage() {
       setDocument(null)
       setError(translateApiError(err, t).message)
     }
-  }, [id, t])
+  }, [t])
 
   useEffect(() => {
     if (!canView) return
@@ -217,10 +228,10 @@ export function WasteDocumentDetailPage() {
   }, [canView, loadLookups])
 
   useEffect(() => {
-    if (!canView || !id) return
+    if (!canView || isCreate || !id) return
     setLoading(true)
-    void loadDocument().finally(() => setLoading(false))
-  }, [canView, id, loadDocument])
+    void loadDocument(id).finally(() => setLoading(false))
+  }, [canView, isCreate, id, loadDocument])
 
   function validateHeader(): FieldErrors {
     const errors: FieldErrors = {}
@@ -243,7 +254,7 @@ export function WasteDocumentDetailPage() {
   }
 
   async function handleSaveHeader() {
-    if (!id || !isDraft) return
+    if (!isDraft) return
     const validationErrors = validateHeader()
     if (validationErrors.warehouseId || validationErrors.wasteDate) {
       setFieldErrors(validationErrors)
@@ -252,7 +263,20 @@ export function WasteDocumentDetailPage() {
     setFieldErrors({})
     setHeaderSaving(true)
     try {
-      const updated = await wasteDocumentService.updateWasteDocument(id, {
+      if (!persistedId) {
+        const created = await wasteDocumentService.createWasteDocument({
+          warehouseId: Number(header.warehouseId),
+          wasteDate: header.wasteDate,
+          reasonCode: header.reasonCode,
+          notes: header.notes.trim() || undefined,
+        })
+        setDocument(created)
+        setHeader(mapDocumentToHeader(created))
+        notify.success(t('inventory.waste.toast.createSuccess'))
+        navigate(`/inventory/waste-documents/${created.id}`, { replace: true })
+        return
+      }
+      const updated = await wasteDocumentService.updateWasteDocument(persistedId, {
         warehouseId: Number(header.warehouseId),
         wasteDate: header.wasteDate,
         reasonCode: header.reasonCode,
@@ -269,6 +293,41 @@ export function WasteDocumentDetailPage() {
     }
   }
 
+  async function ensureDocumentPersisted(): Promise<WasteDocumentResponse | null> {
+    if (document) return document
+    const validationErrors = validateHeader()
+    if (validationErrors.warehouseId || validationErrors.wasteDate) {
+      setFieldErrors(validationErrors)
+      return null
+    }
+    setFieldErrors({})
+    setHeaderSaving(true)
+    try {
+      const created = await wasteDocumentService.createWasteDocument({
+        warehouseId: Number(header.warehouseId),
+        wasteDate: header.wasteDate,
+        reasonCode: header.reasonCode,
+        notes: header.notes.trim() || undefined,
+      })
+      setDocument(created)
+      setHeader(mapDocumentToHeader(created))
+      notify.success(t('inventory.waste.toast.createSuccess'))
+      return created
+    } catch {
+      return null
+    } finally {
+      setHeaderSaving(false)
+    }
+  }
+
+  async function handleAddItemClick() {
+    const doc = await ensureDocumentPersisted()
+    if (!doc) return
+    setAddingLine(true)
+    setNewLineForm(createEmptyLineForm())
+    setFieldErrors({})
+  }
+
   function handleCancelHeaderEdit() {
     if (document) setHeader(mapDocumentToHeader(document))
     setFieldErrors({})
@@ -282,7 +341,7 @@ export function WasteDocumentDetailPage() {
   }
 
   async function handleSaveNewLine() {
-    if (!id || !newLineForm) return
+    if (!persistedId || !newLineForm) return
     const lineError = validateLineForm(newLineForm, true)
     if (lineError) {
       setFieldErrors({ lineError })
@@ -291,7 +350,7 @@ export function WasteDocumentDetailPage() {
     setFieldErrors({})
     setLineSaving(true)
     try {
-      const updated = await wasteDocumentService.addWasteLine(id, {
+      const updated = await wasteDocumentService.addWasteLine(persistedId, {
         materialId: Number(newLineForm.materialId),
         quantity: Number(newLineForm.quantity),
         uomId: Number(newLineForm.uomId),
@@ -323,7 +382,7 @@ export function WasteDocumentDetailPage() {
   }
 
   async function handleSaveEditLine(lineId: number) {
-    if (!id || !editLineForm) return
+    if (!persistedId || !editLineForm) return
     const lineError = validateLineForm(editLineForm, false)
     if (lineError) {
       setFieldErrors({ lineError })
@@ -332,7 +391,7 @@ export function WasteDocumentDetailPage() {
     setFieldErrors({})
     setLineSaving(true)
     try {
-      const updated = await wasteDocumentService.updateWasteLine(id, lineId, {
+      const updated = await wasteDocumentService.updateWasteLine(persistedId, lineId, {
         quantity: Number(editLineForm.quantity),
         uomId: Number(editLineForm.uomId),
         notes: editLineForm.notes.trim() || undefined,
@@ -355,10 +414,10 @@ export function WasteDocumentDetailPage() {
   }
 
   async function handleDeleteLine(lineId: number) {
-    if (!id || !isDraft) return
+    if (!persistedId || !isDraft) return
     setLineSaving(true)
     try {
-      const updated = await wasteDocumentService.deleteWasteLine(id, lineId)
+      const updated = await wasteDocumentService.deleteWasteLine(persistedId, lineId)
       setDocument(updated)
       if (editingLineId === String(lineId)) {
         setEditingLineId(null)
@@ -373,10 +432,10 @@ export function WasteDocumentDetailPage() {
   }
 
   async function handleComplete() {
-    if (!id || !isDraft) return
+    if (!persistedId || !isDraft) return
     setActionLoading(true)
     try {
-      const updated = await wasteDocumentService.completeWasteDocument(id)
+      const updated = await wasteDocumentService.completeWasteDocument(persistedId)
       setDocument(updated)
       setHeader(mapDocumentToHeader(updated))
       setIsEditingHeader(false)
@@ -390,10 +449,10 @@ export function WasteDocumentDetailPage() {
   }
 
   async function handlePost() {
-    if (!id || !isComplete) return
+    if (!persistedId || !isComplete) return
     setActionLoading(true)
     try {
-      const updated = await wasteDocumentService.postWasteDocument(id)
+      const updated = await wasteDocumentService.postWasteDocument(persistedId)
       setDocument(updated)
       setPostConfirmOpen(false)
       notify.success(t('inventory.waste.toast.postSuccess'))
@@ -406,11 +465,11 @@ export function WasteDocumentDetailPage() {
   }
 
   async function handleUncomplete(reason?: string) {
-    if (!id || !isComplete) return
+    if (!persistedId || !isComplete) return
     setActionLoading(true)
     try {
-      await wasteDocumentService.uncompleteWasteDocument(id, reason)
-      await loadDocument()
+      await wasteDocumentService.uncompleteWasteDocument(persistedId, reason)
+      await loadDocument(persistedId)
       notify.success(t('inventory.waste.toast.uncompleteSuccess'))
       setUncompleteModalOpen(false)
     } catch {
@@ -421,10 +480,10 @@ export function WasteDocumentDetailPage() {
   }
 
   async function handleCancel() {
-    if (!id || isReadOnly) return
+    if (!persistedId || isReadOnly) return
     setActionLoading(true)
     try {
-      const updated = await wasteDocumentService.cancelWasteDocument(id, {
+      const updated = await wasteDocumentService.cancelWasteDocument(persistedId, {
         reason: cancelReason.trim() || undefined,
       })
       setDocument(updated)
@@ -446,9 +505,8 @@ export function WasteDocumentDetailPage() {
   }))
 
   const showFormActions =
-    document &&
-    !isReadOnly &&
-    (canManage || (canUncomplete && isComplete))
+    isCreate ||
+    (document != null && !isReadOnly && (canManage || (canUncomplete && isComplete)))
 
   function renderLineEditCells(
     form: LineFormState,
@@ -482,7 +540,7 @@ export function WasteDocumentDetailPage() {
               <span className="entity-cell__code">{options.materialReadOnly.materialCode}</span>
             </div>
           ) : (
-            <PurchaseInvoiceMaterialSelect
+            <MaterialSelect
               value={form.materialId}
               onChange={(materialId) => options.onMaterialChange?.(materialId)}
               materials={materials}
@@ -574,12 +632,12 @@ export function WasteDocumentDetailPage() {
 
       {error ? <div className="page-error-banner">{error}</div> : null}
 
-      {!loading && document ? (
+      {!loading && (isCreate || document) ? (
         <>
           {displayStatus === 'POSTED' ? (
             <div className="alert-success purchase-invoice-posted-banner">
               {t('inventory.waste.postedBanner')}
-              {document.postedAt ? (
+              {document?.postedAt ? (
                 <span className="purchase-invoice-posted-banner__date" dir="ltr">
                   {' '}
                   · {formatDate(document.postedAt)}
@@ -591,7 +649,7 @@ export function WasteDocumentDetailPage() {
           {displayStatus === 'CANCELLED' ? (
             <div className="waste-document-cancelled-banner">
               {t('inventory.waste.cancelledBanner')}
-              {document.cancelledAt ? (
+              {document?.cancelledAt ? (
                 <span dir="ltr"> · {formatDate(document.cancelledAt)}</span>
               ) : null}
             </div>
@@ -606,13 +664,15 @@ export function WasteDocumentDetailPage() {
             <section className="pi-form-header-card" dir="rtl">
               <div className="pi-form-header-card__topbar">
                 <div className="pi-form-header-card__topbar-start">
-                  <h1 className="pi-form-topbar__title">{t('inventory.waste.form.viewTitle')}</h1>
+                  <h1 className="pi-form-topbar__title">
+                    {isCreate ? t('inventory.waste.form.createTitle') : t('inventory.waste.form.viewTitle')}
+                  </h1>
                   <WasteDocumentStatusPill status={displayStatus} />
                 </div>
                 <div className="pi-form-header-card__topbar-end">
                   {showFormActions ? (
                     <div className="pi-form-topbar__actions-bar">
-                      {canManage && isDraft ? (
+                      {canManage && persistedId && isDraft ? (
                         <button
                           type="button"
                           className="pi-form-actions__complete"
@@ -623,7 +683,7 @@ export function WasteDocumentDetailPage() {
                             isEditingHeader ||
                             addingLine ||
                             editingLineId != null ||
-                            (document.lines?.length ?? 0) === 0
+                            (document?.lines?.length ?? 0) === 0
                           }
                           onClick={() => setCompleteConfirmOpen(true)}
                         >
@@ -633,7 +693,7 @@ export function WasteDocumentDetailPage() {
                           </span>
                         </button>
                       ) : null}
-                      {canManage && isComplete ? (
+                      {canManage && persistedId && isComplete ? (
                         <button
                           type="button"
                           className="pi-form-actions__post"
@@ -646,7 +706,7 @@ export function WasteDocumentDetailPage() {
                           </span>
                         </button>
                       ) : null}
-                      {canUncomplete && isComplete ? (
+                      {canUncomplete && persistedId && isComplete ? (
                         <button
                           type="button"
                           className="pi-form-actions__unpost"
@@ -666,7 +726,7 @@ export function WasteDocumentDetailPage() {
                           )}
                         </button>
                       ) : null}
-                      {canManage && (isDraft || isComplete) ? (
+                      {canManage && persistedId && (isDraft || isComplete) ? (
                         <Button
                           type="button"
                           variant="ghost"
@@ -689,7 +749,7 @@ export function WasteDocumentDetailPage() {
 
                       <span className="pi-form-topbar__actions-divider" aria-hidden />
 
-                      {isDraft && !isEditingHeader && canManage ? (
+                      {isDraft && !isEditingHeader && canManage && persistedId ? (
                         <IconActionButton
                           className="action-btn action-btn--icon"
                           label={t('inventory.waste.actions.editHeader')}
@@ -723,6 +783,23 @@ export function WasteDocumentDetailPage() {
                           </IconActionButton>
                         </>
                       ) : null}
+                      {!persistedId ? (
+                        <button
+                          type="button"
+                          className="pi-form-actions__submit"
+                          disabled={headerSaving || lookupsLoading}
+                          onClick={() => void handleSaveHeader()}
+                        >
+                          {headerSaving ? (
+                            <>
+                              <Loader2 size={16} className="pi-form-actions__submit-spinner" aria-hidden />
+                              {t('common.loading')}
+                            </>
+                          ) : (
+                            t('inventory.waste.form.saveHeader')
+                          )}
+                        </button>
+                      ) : null}
                     </div>
                   ) : (
                     <Link to="/inventory/waste-documents" className="pi-form-topbar__back">
@@ -742,11 +819,13 @@ export function WasteDocumentDetailPage() {
 
               <div className="pi-form-header-card__divider" />
 
-              <div className="pi-form-header-card__invoice-line">
-                <span className="pi-form-header-card__invoice-number" dir="ltr">
-                  {document.code}
-                </span>
-              </div>
+              {persistedId && document?.code ? (
+                <div className="pi-form-header-card__invoice-line">
+                  <span className="pi-form-header-card__invoice-number" dir="ltr">
+                    {document.code}
+                  </span>
+                </div>
+              ) : null}
 
               <div className="pi-form-header-grid">
                 <PiFormField
@@ -821,7 +900,7 @@ export function WasteDocumentDetailPage() {
                   />
                 </PiFormField>
 
-                {document.completedAt ? (
+                {document?.completedAt ? (
                   <PiFormField label={t('inventory.waste.fields.completedAt')}>
                     <input
                       type="text"
@@ -843,12 +922,8 @@ export function WasteDocumentDetailPage() {
                   <button
                     type="button"
                     className="pi-form-lines__add-btn"
-                    disabled={lineSaving || actionLoading || isEditingHeader}
-                    onClick={() => {
-                      setAddingLine(true)
-                      setNewLineForm(createEmptyLineForm())
-                      setFieldErrors({})
-                    }}
+                    disabled={lineSaving || actionLoading || isEditingHeader || headerSaving}
+                    onClick={() => void handleAddItemClick()}
                   >
                     <Plus size={16} aria-hidden="true" />
                     {t('inventory.waste.lines.add')}
@@ -898,7 +973,7 @@ export function WasteDocumentDetailPage() {
                         )
                       : null}
 
-                    {document.lines.length === 0 && !addingLine ? (
+                    {(document?.lines.length ?? 0) === 0 && !addingLine ? (
                       <tr>
                         <td
                           colSpan={showDraftLineActions ? 5 : 4}
@@ -909,7 +984,7 @@ export function WasteDocumentDetailPage() {
                       </tr>
                     ) : null}
 
-                    {document.lines.map((line) => {
+                    {(document?.lines ?? []).map((line) => {
                       const isEditing = editingLineId === String(line.id) && editLineForm
                       if (isEditing && editLineForm) {
                         return (
@@ -1071,4 +1146,12 @@ export function WasteDocumentDetailPage() {
       </Modal>
     </ListPage>
   )
+}
+
+export function WasteDocumentCreatePage() {
+  return <WasteDocumentForm mode="create" />
+}
+
+export function WasteDocumentDetailPage() {
+  return <WasteDocumentForm mode="detail" />
 }

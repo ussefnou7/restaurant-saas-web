@@ -1,9 +1,11 @@
-import { Settings, Store, Users } from 'lucide-react'
+import { MonitorSmartphone, Settings, Store, Users } from 'lucide-react'
 import { ModuleHubPage } from '../../components/hub/ModuleHubPage'
 import { useTranslation } from '../../i18n/useTranslation'
+import { canManageDevices } from '../../utils/deviceAccess'
 
 export function AdminHubPage() {
   const { t } = useTranslation()
+  const showDevices = canManageDevices()
 
   return (
     <ModuleHubPage
@@ -23,6 +25,16 @@ export function AdminHubPage() {
           title: t('hubs.admin.users.title'),
           to: '/users',
         },
+        ...(showDevices
+          ? [
+              {
+                id: 'devices',
+                icon: MonitorSmartphone,
+                title: t('hubs.admin.devices.title'),
+                to: '/devices',
+              },
+            ]
+          : []),
         {
           id: 'settings',
           icon: Settings,

@@ -77,6 +77,8 @@ export const hubsAr: TranslationDictionary = {
   'hubs.admin.branches.description': 'إدارة فروع المطعم وبياناتها',
   'hubs.admin.users.title': 'المستخدمين والصلاحيات',
   'hubs.admin.users.description': 'حسابات الدخول والأدوار والصلاحيات',
+  'hubs.admin.devices.title': 'الأجهزة',
+  'hubs.admin.devices.description': 'تسجيل وإدارة أجهزة نقاط البيع',
   'hubs.admin.settings.title': 'الإعدادات',
   'hubs.admin.settings.description': 'إعدادات عامة للنظام والمطعم',
 }
