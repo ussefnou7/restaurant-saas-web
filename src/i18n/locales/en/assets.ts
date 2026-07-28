@@ -13,6 +13,8 @@ export const assetsEn: TranslationDictionary = {
   'assets.list.empty.title': 'No assets yet',
   'assets.list.empty.description': 'Create the first fixed asset for this tenant.',
   'assets.common.notAvailable': '—',
+  'assets.hub.assets': 'Assets',
+  'assets.hub.reportsSection': 'Reports',
 
   'assets.columns.name': 'Name',
   'assets.columns.category': 'Category',

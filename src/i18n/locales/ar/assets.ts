@@ -13,6 +13,8 @@ export const assetsAr: TranslationDictionary = {
   'assets.list.empty.title': 'لا توجد أصول بعد',
   'assets.list.empty.description': 'أنشئ أول أصل ثابت لهذا المطعم.',
   'assets.common.notAvailable': '—',
+  'assets.hub.assets': 'الأصول',
+  'assets.hub.reportsSection': 'التقارير',
 
   'assets.columns.name': 'الاسم',
   'assets.columns.category': 'التصنيف',
