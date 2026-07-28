@@ -42,7 +42,7 @@ const topNavItems: TopNavItem[] = [
     path: '/assets',
     icon: Landmark,
     subItems: [
-      { labelKey: 'layout.nav.assetsRegister', path: '/assets', icon: Landmark },
+      { labelKey: 'layout.nav.assetsRegister', path: '/assets/list', icon: Landmark },
       { labelKey: 'layout.nav.assetDisposals', path: '/assets/disposals', icon: Package },
       { labelKey: 'layout.nav.assetMaintenance', path: '/assets/maintenance', icon: Wrench },
     ],
