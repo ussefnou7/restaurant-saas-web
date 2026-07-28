@@ -3,6 +3,8 @@ import { Root } from './Root'
 import { ProtectedRoute } from '../guards/ProtectedRoute'
 import { ClientLayout } from '../layouts/ClientLayout'
 import { AssetDetailPage } from '../pages/assets/AssetDetailPage'
+import { AssetDisposalsPage } from '../pages/assets/AssetDisposalsPage'
+import { AssetMaintenanceListPage } from '../pages/assets/AssetMaintenanceListPage'
 import { AssetDisposalPage, AssetMaintenancePage } from '../pages/assets/AssetOperationForms'
 import { AssetsListPage } from '../pages/assets/AssetsListPage'
 import { AssetsReportPage } from '../pages/assets/AssetsReportPage'
@@ -276,6 +278,8 @@ export const router = createBrowserRouter([
             children: [
               { index: true, element: <AssetsListPage /> },
               { path: 'reports', element: <AssetsReportPage /> },
+              { path: 'disposals', element: <AssetDisposalsPage /> },
+              { path: 'maintenance', element: <AssetMaintenanceListPage /> },
               { path: 'disposals/new', element: <AssetDisposalPage /> },
               { path: 'maintenance/new', element: <AssetMaintenancePage /> },
               { path: ':assetId', element: <AssetDetailPage /> },

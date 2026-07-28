@@ -1,4 +1,4 @@
-import { BarChart3, Package, Plus } from 'lucide-react'
+import { BarChart3, Package, Plus, Wrench } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../../components/ui/Button'
@@ -76,9 +76,13 @@ export function AssetsListPage() {
         description={t('assets.list.subtitle')}
         action={
           <div className="page-header__actions">
-            <Button variant="secondary" onClick={() => navigate('/assets/disposals/new')}>
+            <Button variant="secondary" onClick={() => navigate('/assets/disposals')}>
               <Package size={16} aria-hidden />
-              {t('assets.disposal.record')}
+              {t('assets.disposals.nav')}
+            </Button>
+            <Button variant="secondary" onClick={() => navigate('/assets/maintenance')}>
+              <Wrench size={16} aria-hidden />
+              {t('assets.maintenanceList.nav')}
             </Button>
             <Button variant="secondary" onClick={() => navigate('/assets/reports')}>
               <BarChart3 size={16} aria-hidden />
