@@ -7,12 +7,10 @@ import {
   Landmark,
   LayoutDashboard,
   LogOut,
-  Package,
   Receipt,
   Shield,
   ShoppingCart,
   UtensilsCrossed,
-  Wrench,
 } from 'lucide-react'
 import { LanguageSwitcher } from '../components/ui/LanguageSwitcher'
 import { useTranslation } from '../i18n/useTranslation'
@@ -24,11 +22,6 @@ type TopNavItem = {
   labelKey: TranslationKey
   path: string
   icon: LucideIcon
-  subItems?: Array<{
-    labelKey: TranslationKey
-    path: string
-    icon: LucideIcon
-  }>
 }
 
 const topNavItems: TopNavItem[] = [
@@ -36,17 +29,7 @@ const topNavItems: TopNavItem[] = [
   { id: 'menu', labelKey: 'layout.nav.menu', path: '/menu', icon: UtensilsCrossed },
   { id: 'sales', labelKey: 'layout.nav.sales', path: '/sales', icon: Receipt },
   { id: 'inventory', labelKey: 'layout.nav.inventory', path: '/inventory', icon: Boxes },
-  {
-    id: 'assets',
-    labelKey: 'layout.nav.assets',
-    path: '/assets',
-    icon: Landmark,
-    subItems: [
-      { labelKey: 'layout.nav.assetsRegister', path: '/assets/list', icon: Landmark },
-      { labelKey: 'layout.nav.assetDisposals', path: '/assets/disposals', icon: Package },
-      { labelKey: 'layout.nav.assetMaintenance', path: '/assets/maintenance', icon: Wrench },
-    ],
-  },
+  { id: 'assets', labelKey: 'layout.nav.assets', path: '/assets', icon: Landmark },
   { id: 'purchase', labelKey: 'layout.nav.purchase', path: '/purchase', icon: ShoppingCart },
   { id: 'hr', labelKey: 'layout.nav.hr', path: '/hr', icon: BriefcaseBusiness },
   { id: 'reports', labelKey: 'layout.nav.reports', path: '/reports', icon: BarChart3 },
@@ -112,35 +95,14 @@ export function ClientLayout() {
             const Icon = item.icon
             const active = isNavItemActive(pathname, item)
             return (
-              <div key={item.id} className="sidebar-nav-group">
-                <NavLink
-                  to={item.path}
-                  className={`sidebar-nav-item${active ? ' active' : ''}`}
-                >
-                  <Icon className="sidebar-nav-item__icon" aria-hidden="true" />
-                  <span>{t(item.labelKey)}</span>
-                </NavLink>
-                {active && item.subItems ? (
-                  <div className="sidebar-subnav">
-                    {item.subItems.map((subItem) => {
-                      const SubIcon = subItem.icon
-                      return (
-                        <NavLink
-                          key={subItem.path}
-                          to={subItem.path}
-                          end={subItem.path === item.path}
-                          className={({ isActive }) =>
-                            `sidebar-subnav-item${isActive ? ' active' : ''}`
-                          }
-                        >
-                          <SubIcon className="sidebar-subnav-item__icon" aria-hidden="true" />
-                          <span>{t(subItem.labelKey)}</span>
-                        </NavLink>
-                      )
-                    })}
-                  </div>
-                ) : null}
-              </div>
+              <NavLink
+                key={item.id}
+                to={item.path}
+                className={`sidebar-nav-item${active ? ' active' : ''}`}
+              >
+                <Icon className="sidebar-nav-item__icon" aria-hidden="true" />
+                <span>{t(item.labelKey)}</span>
+              </NavLink>
             )
           })}
         </nav>
