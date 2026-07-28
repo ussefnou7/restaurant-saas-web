@@ -1,7 +1,6 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import type { LucideIcon } from 'lucide-react'
 import {
-  BarChart3,
   Boxes,
   BriefcaseBusiness,
   Landmark,
@@ -30,7 +29,6 @@ const topNavItems: TopNavItem[] = [
   { id: 'assets', labelKey: 'layout.nav.assets', path: '/assets', icon: Landmark },
   { id: 'purchase', labelKey: 'layout.nav.purchase', path: '/purchase', icon: ShoppingCart },
   { id: 'hr', labelKey: 'layout.nav.hr', path: '/hr', icon: BriefcaseBusiness },
-  { id: 'reports', labelKey: 'layout.nav.reports', path: '/reports', icon: BarChart3 },
   { id: 'admin', labelKey: 'layout.nav.management', path: '/admin', icon: Shield },
 ]
 
@@ -56,8 +54,6 @@ function isNavItemActive(pathname: string, item: TopNavItem): boolean {
       return pathname.startsWith('/purchase')
     case 'hr':
       return pathname.startsWith('/hr')
-    case 'reports':
-      return pathname.startsWith('/reports')
     case 'admin':
       return (
         pathname === '/admin' ||

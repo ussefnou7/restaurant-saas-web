@@ -22,7 +22,6 @@ export const layoutAr: TranslationDictionary = {
   'layout.nav.purchase': 'المشتريات',
   'layout.nav.materials': 'المواد',
   'layout.nav.users': 'المستخدمون',
-  'layout.nav.reports': 'التقارير',
   'layout.nav.settings': 'الإعدادات',
   'layout.nav.jobs': 'الوظائف',
   'layout.nav.employees': 'الموظفون',

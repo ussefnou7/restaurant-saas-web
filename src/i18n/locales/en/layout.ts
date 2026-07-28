@@ -22,7 +22,6 @@ export const layoutEn: TranslationDictionary = {
   'layout.nav.purchase': 'Purchasing',
   'layout.nav.materials': 'Materials',
   'layout.nav.users': 'Users',
-  'layout.nav.reports': 'Reports',
   'layout.nav.settings': 'Settings',
   'layout.nav.jobs': 'Jobs',
   'layout.nav.employees': 'Employees',
