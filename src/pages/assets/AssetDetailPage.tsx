@@ -82,7 +82,7 @@ export function AssetDetailPage() {
         description={asset ? getAssetCategoryLabel(asset.category, t) : t('assets.detail.subtitle')}
         action={
           <div className="page-header__actions">
-            <Button variant="secondary" onClick={() => navigate('/assets')}>
+            <Button variant="secondary" onClick={() => navigate('/assets/list')}>
               {t('assets.actions.back')}
             </Button>
             {asset ? (

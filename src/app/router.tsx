@@ -6,6 +6,7 @@ import { AssetDetailPage } from '../pages/assets/AssetDetailPage'
 import { AssetDisposalsPage } from '../pages/assets/AssetDisposalsPage'
 import { AssetMaintenanceListPage } from '../pages/assets/AssetMaintenanceListPage'
 import { AssetDisposalPage, AssetMaintenancePage } from '../pages/assets/AssetOperationForms'
+import { AssetsHubPage } from '../pages/assets/AssetsHubPage'
 import { AssetsListPage } from '../pages/assets/AssetsListPage'
 import { AssetsReportPage } from '../pages/assets/AssetsReportPage'
 import { LoginPage } from '../pages/auth/LoginPage'
@@ -276,7 +277,8 @@ export const router = createBrowserRouter([
           {
             path: 'assets',
             children: [
-              { index: true, element: <AssetsListPage /> },
+              { index: true, element: <AssetsHubPage /> },
+              { path: 'list', element: <AssetsListPage /> },
               { path: 'reports', element: <AssetsReportPage /> },
               { path: 'disposals', element: <AssetDisposalsPage /> },
               { path: 'maintenance', element: <AssetMaintenanceListPage /> },
