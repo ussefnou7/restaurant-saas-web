@@ -111,8 +111,11 @@ export const errorsEn: TranslationDictionary = {
     'More than one warehouse is configured for this branch ({{warehouseCount}} found).',
 
   // Assets module
+  'errors.INVALID_DATE_RANGE': 'Date from must be on or before date to.',
   'errors.LINE_ASSET_MISMATCH':
     'Asset line {{assetLineId}} does not belong to asset {{assetId}}.',
+  'errors.DISPOSAL_EXCEEDS_REMAINING':
+    'Quantity disposed cannot exceed the selected line remaining quantity.',
 
   // Devices module
   'errors.INVALID_DEVICE_SECRET': 'Invalid device secret',

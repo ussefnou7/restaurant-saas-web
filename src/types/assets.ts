@@ -37,6 +37,23 @@ export interface AssetDisposalResponse {
   createdAt: string
 }
 
+export interface AssetDisposalListItemResponse {
+  id: number
+  assetId: number
+  assetName: string
+  assetNameAr?: string | null
+  category: AssetCategory
+  branchId: number
+  assetLineId: number
+  assetLineLabel?: string | null
+  unitCost: string
+  quantityDisposed: string
+  disposalValue: string
+  disposalDate: string
+  reason: AssetDisposalReason
+  notes?: string | null
+}
+
 export interface AssetMaintenanceResponse {
   id: number
   assetId: number
@@ -47,6 +64,33 @@ export interface AssetMaintenanceResponse {
   vendor?: string
   createdBy?: number
   createdAt: string
+}
+
+export interface AssetMaintenanceListItemResponse {
+  id: number
+  assetId: number
+  assetName: string
+  assetNameAr?: string | null
+  category: AssetCategory
+  branchId: number
+  assetLineId: number
+  assetLineLabel?: string | null
+  cost: string
+  maintenanceDate: string
+  description?: string | null
+  vendor?: string | null
+}
+
+export interface AssetOperationListParams {
+  assetId?: number | string
+  assetLineId?: number | string
+  category?: AssetCategory | ''
+  branchId?: number | string
+  dateFrom?: string
+  dateTo?: string
+  page?: number
+  size?: number
+  sort?: string
 }
 
 export interface CreateAssetRequest {

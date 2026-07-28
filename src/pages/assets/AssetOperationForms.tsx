@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactElement } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { Button } from '../../components/ui/Button'
+import { Dropdown } from '../../components/ui/Dropdown'
 import { Modal } from '../../components/ui/Modal'
 import { useTranslation } from '../../i18n/useTranslation'
 import * as assetService from '../../services/assetService'
@@ -12,18 +14,19 @@ import type {
 import {
   compareDecimalStrings,
   formatAssetLineLabel,
+  formatDecimalString,
   getAssetDisposalReasonLabel,
 } from '../../utils/assetDisplay'
 import { translateApiError } from '../../utils/errors'
+import { formatDate } from '../../utils/format'
 import { getInventoryLocalizedName } from '../../utils/inventoryDisplay'
 
 const disposalReasons: AssetDisposalReason[] = ['DAMAGED', 'LOST', 'OBSOLETE', 'SOLD']
 
-type OperationMode = 'modal' | 'page'
+type OperationStep = 'asset' | 'line' | 'fields'
 
 interface SharedOperationProps {
   open?: boolean
-  mode?: OperationMode
   initialAssetId?: number | null
   initialLineId?: number | null
   onClose?: () => void
@@ -34,7 +37,17 @@ function today(): string {
   return new Date().toISOString().slice(0, 10)
 }
 
-function useAssetLineSelection(initialAssetId?: number | null, initialLineId?: number | null) {
+function initialStep(initialAssetId?: number | null, initialLineId?: number | null): OperationStep {
+  if (initialAssetId && initialLineId) return 'fields'
+  if (initialAssetId) return 'line'
+  return 'asset'
+}
+
+function useAssetLineSelection(
+  open: boolean,
+  initialAssetId?: number | null,
+  initialLineId?: number | null,
+) {
   const { t } = useTranslation()
   const [assets, setAssets] = useState<AssetResponse[]>([])
   const [lines, setLines] = useState<AssetLineResponse[]>([])
@@ -43,6 +56,11 @@ function useAssetLineSelection(initialAssetId?: number | null, initialLineId?: n
   const [loadingAssets, setLoadingAssets] = useState(false)
   const [loadingLines, setLoadingLines] = useState(false)
   const [loadError, setLoadError] = useState('')
+
+  const selectedAsset = useMemo(
+    () => assets.find((asset) => String(asset.id) === assetId) ?? null,
+    [assetId, assets],
+  )
 
   const selectedLine = useMemo(
     () => lines.find((line) => String(line.id) === lineId) ?? null,
@@ -72,15 +90,8 @@ function useAssetLineSelection(initialAssetId?: number | null, initialLineId?: n
     try {
       const data = await assetService.getAssetLines(nextAssetId)
       setLines(data)
-      const activeLines = data.filter((line) => line.status === 'ACTIVE')
       const hasPreferred = preferredLineId && data.some((line) => String(line.id) === preferredLineId)
-      if (hasPreferred) {
-        setLineId(preferredLineId)
-      } else if (activeLines.length === 1) {
-        setLineId(String(activeLines[0].id))
-      } else {
-        setLineId('')
-      }
+      setLineId(hasPreferred ? preferredLineId : '')
     } catch (err) {
       setLoadError(translateApiError(err, t).message)
       setLines([])
@@ -91,74 +102,189 @@ function useAssetLineSelection(initialAssetId?: number | null, initialLineId?: n
   }, [t])
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setAssetId(initialAssetId ? String(initialAssetId) : '')
-      setLineId(initialLineId ? String(initialLineId) : '')
-    }, 0)
+    if (!open) return
+    setAssetId(initialAssetId ? String(initialAssetId) : '')
+    setLineId(initialLineId ? String(initialLineId) : '')
+    setLoadError('')
+    const timer = window.setTimeout(() => void loadAssets(), 0)
     return () => window.clearTimeout(timer)
-  }, [initialAssetId, initialLineId])
+  }, [initialAssetId, initialLineId, loadAssets, open])
+
+  useEffect(() => {
+    if (!open || !assetId) return
+    const preferredLineId =
+      initialAssetId && String(initialAssetId) === assetId && initialLineId
+        ? String(initialLineId)
+        : undefined
+    const timer = window.setTimeout(() => void loadLines(assetId, preferredLineId), 0)
+    return () => window.clearTimeout(timer)
+  }, [assetId, initialAssetId, initialLineId, loadLines, open])
 
   return {
     assets,
     lines,
     assetId,
     lineId,
+    selectedAsset,
     selectedLine,
     loadingAssets,
     loadingLines,
     loadError,
     setAssetId,
     setLineId,
-    loadAssets,
-    loadLines,
   }
 }
 
-interface OperationShellProps extends SharedOperationProps {
-  title: string
-  children: (close: () => void) => ReactElement
+function lineOptionLabel(line: AssetLineResponse, t: (key: string, values?: Record<string, string | number>) => string) {
+  return t('assets.operation.lineOption', {
+    label: formatAssetLineLabel(line.label, line.id, t),
+    purchaseDate: formatDate(line.purchaseDate),
+    unitCost: formatDecimalString(line.unitCost),
+    remainingQuantity: formatDecimalString(line.remainingQuantity),
+  })
 }
 
-function OperationShell({ open = true, mode = 'modal', title, children, onClose }: OperationShellProps) {
-  const navigate = useNavigate()
-  const close = useCallback(() => {
-    if (onClose) {
-      onClose()
-    } else if (mode === 'page') {
-      navigate('/assets')
-    }
-  }, [mode, navigate, onClose])
-
-  if (mode === 'page') {
-    return (
-      <div className="page list-page assets-page">
-        <div className="asset-operation-page">
-          <h1>{title}</h1>
-          {children(close)}
-        </div>
-      </div>
-    )
-  }
-
+function StepIndicator({ step }: { step: OperationStep }) {
+  const { t } = useTranslation()
+  const steps: OperationStep[] = ['asset', 'line', 'fields']
   return (
-    <Modal open={open} title={title} onClose={close} size="medium">
-      {children(close)}
-    </Modal>
+    <ol className="asset-operation-steps" aria-label={t('assets.operation.steps')}>
+      {steps.map((item, index) => (
+        <li
+          key={item}
+          className={`asset-operation-steps__item${item === step ? ' asset-operation-steps__item--active' : ''}`}
+        >
+          <span>{index + 1}</span>
+          {t(`assets.operation.step.${item}`)}
+        </li>
+      ))}
+    </ol>
+  )
+}
+
+function AssetStep({
+  assets,
+  assetId,
+  loading,
+  onAssetChange,
+}: {
+  assets: AssetResponse[]
+  assetId: string
+  loading: boolean
+  onAssetChange: (value: string) => void
+}) {
+  const { t, locale } = useTranslation()
+  return (
+    <div className="asset-operation-step">
+      <label className="form-field">
+        <span>{t('assets.operation.asset')}</span>
+        <Dropdown
+          value={assetId}
+          onChange={onAssetChange}
+          options={[
+            { value: '', label: t('assets.operation.selectAsset') },
+            ...assets.map((asset) => ({
+              value: String(asset.id),
+              label: getInventoryLocalizedName(asset, locale),
+            })),
+          ]}
+          ariaLabel={t('assets.operation.asset')}
+          disabled={loading}
+          searchable
+          searchPlaceholder={t('common.search')}
+        />
+      </label>
+    </div>
+  )
+}
+
+function DisposalLineStep({
+  lines,
+  lineId,
+  loading,
+  disabled,
+  onLineChange,
+}: {
+  lines: AssetLineResponse[]
+  lineId: string
+  loading: boolean
+  disabled: boolean
+  onLineChange: (value: string) => void
+}) {
+  const { t } = useTranslation()
+  return (
+    <div className="asset-operation-step">
+      <label className="form-field form-field--wide">
+        <span>{t('assets.operation.line')}</span>
+        <select
+          value={lineId}
+          onChange={(event) => onLineChange(event.target.value)}
+          disabled={disabled || loading}
+          required
+        >
+          <option value="">{t('assets.operation.selectLine')}</option>
+          {lines.map((line) => (
+            <option
+              key={line.id}
+              value={line.id}
+              disabled={compareDecimalStrings(line.remainingQuantity, '0') === 0}
+            >
+              {lineOptionLabel(line, t)}
+            </option>
+          ))}
+        </select>
+      </label>
+    </div>
+  )
+}
+
+function MaintenanceLineStep({
+  lines,
+  lineId,
+  loading,
+  disabled,
+  onLineChange,
+}: {
+  lines: AssetLineResponse[]
+  lineId: string
+  loading: boolean
+  disabled: boolean
+  onLineChange: (value: string) => void
+}) {
+  const { t } = useTranslation()
+  return (
+    <div className="asset-operation-step">
+      <label className="form-field form-field--wide">
+        <span>{t('assets.operation.line')}</span>
+        <select
+          value={lineId}
+          onChange={(event) => onLineChange(event.target.value)}
+          disabled={disabled || loading}
+          required
+        >
+          <option value="">{t('assets.operation.selectLine')}</option>
+          {lines.map((line) => (
+            <option key={line.id} value={line.id}>
+              {lineOptionLabel(line, t)}
+            </option>
+          ))}
+        </select>
+      </label>
+    </div>
   )
 }
 
 export function AssetDisposalForm({
   open = true,
-  mode = 'modal',
   initialAssetId,
   initialLineId,
   onClose,
   onSaved,
 }: SharedOperationProps) {
-  const { t, locale } = useTranslation()
+  const { t } = useTranslation()
   const navigate = useNavigate()
-  const selection = useAssetLineSelection(initialAssetId, initialLineId)
-  const { assetId, loadAssets, loadLines } = selection
+  const selection = useAssetLineSelection(open, initialAssetId, initialLineId)
+  const [step, setStep] = useState<OperationStep>(initialStep(initialAssetId, initialLineId))
   const [quantityDisposed, setQuantityDisposed] = useState('')
   const [reason, setReason] = useState<AssetDisposalReason>('DAMAGED')
   const [disposalDate, setDisposalDate] = useState(today())
@@ -168,19 +294,21 @@ export function AssetDisposalForm({
 
   useEffect(() => {
     if (!open) return
-    const timer = window.setTimeout(() => void loadAssets(), 0)
-    return () => window.clearTimeout(timer)
-  }, [loadAssets, open])
+    setStep(initialStep(initialAssetId, initialLineId))
+    setQuantityDisposed('')
+    setReason('DAMAGED')
+    setDisposalDate(today())
+    setNotes('')
+    setError('')
+  }, [initialAssetId, initialLineId, open])
 
-  useEffect(() => {
-    if (!open) return
-    const preferredLineId =
-      initialAssetId && String(initialAssetId) === assetId && initialLineId
-        ? String(initialLineId)
-        : undefined
-    const timer = window.setTimeout(() => void loadLines(assetId, preferredLineId), 0)
-    return () => window.clearTimeout(timer)
-  }, [assetId, initialAssetId, initialLineId, loadLines, open])
+  const close = useCallback(() => {
+    if (onClose) {
+      onClose()
+    } else {
+      navigate('/assets/disposals')
+    }
+  }, [navigate, onClose])
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -206,11 +334,7 @@ export function AssetDisposalForm({
         notes: notes.trim() || undefined,
       })
       onSaved?.()
-      if (onClose) {
-        onClose()
-      } else if (mode === 'page') {
-        navigate('/assets')
-      }
+      close()
     } catch (err) {
       setError(translateApiError(err, t).message)
     } finally {
@@ -219,49 +343,98 @@ export function AssetDisposalForm({
   }
 
   return (
-    <OperationShell
-      open={open}
-      mode={mode}
-      title={t('assets.disposal.title')}
-      onClose={onClose}
-    >
-      {(close) => (
-        <form className="asset-disposal-form asset-operation-form" onSubmit={handleSubmit}>
-          {selection.loadError || error ? (
-            <div className="page-error-banner">{error || selection.loadError}</div>
-          ) : null}
-          <AssetLinePickers selection={selection} locale={locale} />
-          <label className="form-field">
-            <span>{t('assets.disposal.quantityDisposed')}</span>
-            <input
-              inputMode="decimal"
-              value={quantityDisposed}
-              onChange={(event) => setQuantityDisposed(event.target.value)}
-              required
-            />
-          </label>
-          <label className="form-field">
-            <span>{t('assets.disposal.reason')}</span>
-            <select value={reason} onChange={(event) => setReason(event.target.value as AssetDisposalReason)}>
-              {disposalReasons.map((item) => (
-                <option key={item} value={item}>
-                  {getAssetDisposalReasonLabel(item, t)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="form-field">
-            <span>{t('assets.disposal.disposalDate')}</span>
-            <input type="date" value={disposalDate} onChange={(event) => setDisposalDate(event.target.value)} required />
-          </label>
-          <label className="form-field form-field--wide">
-            <span>{t('assets.disposal.notes')}</span>
-            <textarea value={notes} onChange={(event) => setNotes(event.target.value)} rows={3} />
-          </label>
-          <div className="asset-operation-form__actions">
-            <Button variant="secondary" onClick={close} disabled={saving}>
-              {t('common.cancel')}
+    <Modal open={open} title={t('assets.disposal.title')} onClose={close} size="medium">
+      <form className="asset-disposal-form asset-operation-form" onSubmit={handleSubmit}>
+        <StepIndicator step={step} />
+        {selection.loadError || error ? (
+          <div className="page-error-banner asset-operation-form__error">
+            {error || selection.loadError}
+          </div>
+        ) : null}
+
+        {step === 'asset' ? (
+          <AssetStep
+            assets={selection.assets}
+            assetId={selection.assetId}
+            loading={selection.loadingAssets}
+            onAssetChange={(value) => {
+              selection.setAssetId(value)
+              selection.setLineId('')
+            }}
+          />
+        ) : null}
+
+        {step === 'line' ? (
+          <DisposalLineStep
+            lines={selection.lines}
+            lineId={selection.lineId}
+            loading={selection.loadingLines}
+            disabled={!selection.assetId}
+            onLineChange={selection.setLineId}
+          />
+        ) : null}
+
+        {step === 'fields' ? (
+          <>
+            <label className="form-field">
+              <span>{t('assets.disposal.quantityDisposed')}</span>
+              <input
+                inputMode="decimal"
+                value={quantityDisposed}
+                max={selection.selectedLine?.remainingQuantity}
+                onChange={(event) => setQuantityDisposed(event.target.value)}
+                required
+              />
+            </label>
+            <label className="form-field">
+              <span>{t('assets.disposal.reason')}</span>
+              <select value={reason} onChange={(event) => setReason(event.target.value as AssetDisposalReason)}>
+                {disposalReasons.map((item) => (
+                  <option key={item} value={item}>
+                    {getAssetDisposalReasonLabel(item, t)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="form-field">
+              <span>{t('assets.disposal.disposalDate')}</span>
+              <input
+                type="date"
+                value={disposalDate}
+                onChange={(event) => setDisposalDate(event.target.value)}
+                required
+              />
+            </label>
+            <label className="form-field form-field--wide">
+              <span>{t('assets.disposal.notes')}</span>
+              <textarea value={notes} onChange={(event) => setNotes(event.target.value)} rows={3} />
+            </label>
+          </>
+        ) : null}
+
+        <div className="asset-operation-form__actions">
+          <Button variant="secondary" onClick={close} disabled={saving}>
+            {t('common.cancel')}
+          </Button>
+          {step !== 'asset' ? (
+            <Button
+              variant="secondary"
+              onClick={() => setStep(step === 'fields' ? 'line' : 'asset')}
+              disabled={saving}
+            >
+              <ArrowLeft size={16} aria-hidden />
+              {t('assets.operation.back')}
             </Button>
+          ) : null}
+          {step !== 'fields' ? (
+            <Button
+              onClick={() => setStep(step === 'asset' ? 'line' : 'fields')}
+              disabled={step === 'asset' ? !selection.assetId : !selection.lineId}
+            >
+              {t('assets.operation.next')}
+              <ArrowRight size={16} aria-hidden />
+            </Button>
+          ) : (
             <Button
               type="submit"
               disabled={
@@ -276,25 +449,24 @@ export function AssetDisposalForm({
             >
               {saving ? t('assets.actions.saving') : t('assets.disposal.submit')}
             </Button>
-          </div>
-        </form>
-      )}
-    </OperationShell>
+          )}
+        </div>
+      </form>
+    </Modal>
   )
 }
 
 export function AssetMaintenanceForm({
   open = true,
-  mode = 'modal',
   initialAssetId,
   initialLineId,
   onClose,
   onSaved,
 }: SharedOperationProps) {
-  const { t, locale } = useTranslation()
+  const { t } = useTranslation()
   const navigate = useNavigate()
-  const selection = useAssetLineSelection(initialAssetId, initialLineId)
-  const { assetId, loadAssets, loadLines } = selection
+  const selection = useAssetLineSelection(open, initialAssetId, initialLineId)
+  const [step, setStep] = useState<OperationStep>(initialStep(initialAssetId, initialLineId))
   const [cost, setCost] = useState('')
   const [maintenanceDate, setMaintenanceDate] = useState(today())
   const [description, setDescription] = useState('')
@@ -304,19 +476,21 @@ export function AssetMaintenanceForm({
 
   useEffect(() => {
     if (!open) return
-    const timer = window.setTimeout(() => void loadAssets(), 0)
-    return () => window.clearTimeout(timer)
-  }, [loadAssets, open])
+    setStep(initialStep(initialAssetId, initialLineId))
+    setCost('')
+    setMaintenanceDate(today())
+    setDescription('')
+    setVendor('')
+    setError('')
+  }, [initialAssetId, initialLineId, open])
 
-  useEffect(() => {
-    if (!open) return
-    const preferredLineId =
-      initialAssetId && String(initialAssetId) === assetId && initialLineId
-        ? String(initialLineId)
-        : undefined
-    const timer = window.setTimeout(() => void loadLines(assetId, preferredLineId), 0)
-    return () => window.clearTimeout(timer)
-  }, [assetId, initialAssetId, initialLineId, loadLines, open])
+  const close = useCallback(() => {
+    if (onClose) {
+      onClose()
+    } else {
+      navigate('/assets/maintenance')
+    }
+  }, [navigate, onClose])
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -332,11 +506,7 @@ export function AssetMaintenanceForm({
         vendor: vendor.trim() || undefined,
       })
       onSaved?.()
-      if (onClose) {
-        onClose()
-      } else if (mode === 'page') {
-        navigate('/assets')
-      }
+      close()
     } catch (err) {
       setError(translateApiError(err, t).message)
     } finally {
@@ -345,38 +515,86 @@ export function AssetMaintenanceForm({
   }
 
   return (
-    <OperationShell
-      open={open}
-      mode={mode}
-      title={t('assets.maintenance.title')}
-      onClose={onClose}
-    >
-      {(close) => (
-        <form className="asset-maintenance-form asset-operation-form" onSubmit={handleSubmit}>
-          {selection.loadError || error ? (
-            <div className="page-error-banner">{error || selection.loadError}</div>
-          ) : null}
-          <AssetLinePickers selection={selection} locale={locale} />
-          <label className="form-field">
-            <span>{t('assets.maintenance.cost')}</span>
-            <input inputMode="decimal" value={cost} onChange={(event) => setCost(event.target.value)} required />
-          </label>
-          <label className="form-field">
-            <span>{t('assets.maintenance.maintenanceDate')}</span>
-            <input type="date" value={maintenanceDate} onChange={(event) => setMaintenanceDate(event.target.value)} required />
-          </label>
-          <label className="form-field">
-            <span>{t('assets.maintenance.vendor')}</span>
-            <input value={vendor} onChange={(event) => setVendor(event.target.value)} />
-          </label>
-          <label className="form-field form-field--wide">
-            <span>{t('assets.maintenance.description')}</span>
-            <textarea value={description} onChange={(event) => setDescription(event.target.value)} rows={3} />
-          </label>
-          <div className="asset-operation-form__actions">
-            <Button variant="secondary" onClick={close} disabled={saving}>
-              {t('common.cancel')}
+    <Modal open={open} title={t('assets.maintenance.title')} onClose={close} size="medium">
+      <form className="asset-maintenance-form asset-operation-form" onSubmit={handleSubmit}>
+        <StepIndicator step={step} />
+        {selection.loadError || error ? (
+          <div className="page-error-banner asset-operation-form__error">
+            {error || selection.loadError}
+          </div>
+        ) : null}
+
+        {step === 'asset' ? (
+          <AssetStep
+            assets={selection.assets}
+            assetId={selection.assetId}
+            loading={selection.loadingAssets}
+            onAssetChange={(value) => {
+              selection.setAssetId(value)
+              selection.setLineId('')
+            }}
+          />
+        ) : null}
+
+        {step === 'line' ? (
+          <MaintenanceLineStep
+            lines={selection.lines}
+            lineId={selection.lineId}
+            loading={selection.loadingLines}
+            disabled={!selection.assetId}
+            onLineChange={selection.setLineId}
+          />
+        ) : null}
+
+        {step === 'fields' ? (
+          <>
+            <label className="form-field">
+              <span>{t('assets.maintenance.cost')}</span>
+              <input inputMode="decimal" value={cost} onChange={(event) => setCost(event.target.value)} required />
+            </label>
+            <label className="form-field">
+              <span>{t('assets.maintenance.maintenanceDate')}</span>
+              <input
+                type="date"
+                value={maintenanceDate}
+                onChange={(event) => setMaintenanceDate(event.target.value)}
+                required
+              />
+            </label>
+            <label className="form-field">
+              <span>{t('assets.maintenance.vendor')}</span>
+              <input value={vendor} onChange={(event) => setVendor(event.target.value)} />
+            </label>
+            <label className="form-field form-field--wide">
+              <span>{t('assets.maintenance.description')}</span>
+              <textarea value={description} onChange={(event) => setDescription(event.target.value)} rows={3} />
+            </label>
+          </>
+        ) : null}
+
+        <div className="asset-operation-form__actions">
+          <Button variant="secondary" onClick={close} disabled={saving}>
+            {t('common.cancel')}
+          </Button>
+          {step !== 'asset' ? (
+            <Button
+              variant="secondary"
+              onClick={() => setStep(step === 'fields' ? 'line' : 'asset')}
+              disabled={saving}
+            >
+              <ArrowLeft size={16} aria-hidden />
+              {t('assets.operation.back')}
             </Button>
+          ) : null}
+          {step !== 'fields' ? (
+            <Button
+              onClick={() => setStep(step === 'asset' ? 'line' : 'fields')}
+              disabled={step === 'asset' ? !selection.assetId : !selection.lineId}
+            >
+              {t('assets.operation.next')}
+              <ArrowRight size={16} aria-hidden />
+            </Button>
+          ) : (
             <Button
               type="submit"
               disabled={
@@ -391,83 +609,19 @@ export function AssetMaintenanceForm({
             >
               {saving ? t('assets.actions.saving') : t('assets.maintenance.submit')}
             </Button>
-          </div>
-        </form>
-      )}
-    </OperationShell>
-  )
-}
-
-function AssetLinePickers({
-  selection,
-  locale,
-}: {
-  selection: ReturnType<typeof useAssetLineSelection>
-  locale: 'en' | 'ar'
-}) {
-  const { t } = useTranslation()
-  return (
-    <>
-      <label className="form-field">
-        <span>{t('assets.operation.asset')}</span>
-        <select
-          value={selection.assetId}
-          onChange={(event) => {
-            selection.setAssetId(event.target.value)
-          }}
-          disabled={selection.loadingAssets}
-          required
-        >
-          <option value="">{t('assets.operation.selectAsset')}</option>
-          {selection.assets.map((asset) => (
-            <option key={asset.id} value={asset.id}>
-              {getInventoryLocalizedName(asset, locale)}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="form-field">
-        <span>{t('assets.operation.line')}</span>
-        <select
-          value={selection.lineId}
-          onChange={(event) => selection.setLineId(event.target.value)}
-          disabled={!selection.assetId || selection.loadingLines}
-          required
-        >
-          <option value="">{t('assets.operation.selectLine')}</option>
-          {selection.lines.map((line) => (
-            <option key={line.id} value={line.id}>
-              {formatAssetLineLabel(line.label, line.id, t)}
-            </option>
-          ))}
-        </select>
-      </label>
-    </>
+          )}
+        </div>
+      </form>
+    </Modal>
   )
 }
 
 export function AssetDisposalPage() {
   const [searchParams] = useSearchParams()
-  const assetId = searchParams.get('assetId')
-  const lineId = searchParams.get('lineId')
-  return (
-    <AssetDisposalForm
-      mode="page"
-      initialAssetId={assetId ? Number(assetId) : null}
-      initialLineId={lineId ? Number(lineId) : null}
-    />
-  )
+  return <Navigate to={`/assets/disposals${searchParams.toString() ? `?${searchParams.toString()}` : ''}`} replace />
 }
 
 export function AssetMaintenancePage() {
   const [searchParams] = useSearchParams()
-  const assetId = searchParams.get('assetId')
-  const lineId = searchParams.get('lineId')
-  return (
-    <AssetMaintenanceForm
-      mode="page"
-      initialAssetId={assetId ? Number(assetId) : null}
-      initialLineId={lineId ? Number(lineId) : null}
-    />
-  )
+  return <Navigate to={`/assets/maintenance${searchParams.toString() ? `?${searchParams.toString()}` : ''}`} replace />
 }

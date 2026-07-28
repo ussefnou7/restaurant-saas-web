@@ -3,7 +3,8 @@
 }
 
 .assets-list-page .page-header__actions,
-.asset-detail-page .page-header__actions {
+.asset-detail-page .page-header__actions,
+.asset-operations-page .page-header__actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-sm);
@@ -107,6 +108,83 @@
   white-space: nowrap;
 }
 
+.asset-operations-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: end;
+}
+
+.asset-operations-toolbar__date {
+  display: flex;
+  min-width: 150px;
+  flex-direction: column;
+  gap: var(--space-xs);
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.asset-operations-toolbar__date input {
+  min-height: 40px;
+}
+
+.asset-operation-steps,
+.asset-operation-form__error,
+.asset-operation-step {
+  grid-column: 1 / -1;
+}
+
+.asset-operation-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.asset-operation-steps__item {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.asset-operation-steps__item span {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.asset-operation-steps__item--active {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.asset-operation-steps__item--active span {
+  background: var(--color-primary);
+  color: var(--color-surface);
+}
+
+.asset-operation-step .form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
 .asset-line-row__actions .button-secondary {
   margin-inline-start: var(--space-xs);
 }
@@ -137,5 +215,9 @@
 
   .asset-operation-form__actions button {
     flex: 1;
+  }
+
+  .asset-operation-steps {
+    grid-template-columns: 1fr;
   }
 }

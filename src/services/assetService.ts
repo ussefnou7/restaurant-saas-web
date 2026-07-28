@@ -2,9 +2,12 @@ import { ASSETS_API } from '../api/assetsApi'
 import type { PageResult, SpringPageResponse } from '../types/pagination'
 import type {
   AssetDisposalReportRow,
+  AssetDisposalListItemResponse,
   AssetDisposalResponse,
   AssetLineResponse,
+  AssetMaintenanceListItemResponse,
   AssetMaintenanceResponse,
+  AssetOperationListParams,
   AssetResponse,
   AssetSummaryReportResponse,
   CreateAssetDisposalRequest,
@@ -89,6 +92,27 @@ export async function createAssetDisposal(
   return response.data
 }
 
+export async function getAllAssetDisposals(
+  params: AssetOperationListParams = {},
+): Promise<PageResult<AssetDisposalListItemResponse>> {
+  const page = params.page ?? 0
+  const size = params.size ?? 20
+  const response = await api.get<SpringPageResponse<AssetDisposalListItemResponse>>(
+    `${ASSETS_API.allDisposals}${toSearchParams({
+      assetId: params.assetId,
+      assetLineId: params.assetLineId,
+      category: params.category,
+      branchId: params.branchId,
+      dateFrom: params.dateFrom,
+      dateTo: params.dateTo,
+      page,
+      size,
+      sort: params.sort,
+    })}`,
+  )
+  return normalizePageResult(response.data, page, size)
+}
+
 export async function getAssetMaintenance(
   assetId: number | string,
   lineId: number | string,
@@ -97,6 +121,27 @@ export async function getAssetMaintenance(
     ASSETS_API.maintenance(assetId, lineId),
   )
   return response.data
+}
+
+export async function getAllAssetMaintenance(
+  params: AssetOperationListParams = {},
+): Promise<PageResult<AssetMaintenanceListItemResponse>> {
+  const page = params.page ?? 0
+  const size = params.size ?? 20
+  const response = await api.get<SpringPageResponse<AssetMaintenanceListItemResponse>>(
+    `${ASSETS_API.allMaintenance}${toSearchParams({
+      assetId: params.assetId,
+      assetLineId: params.assetLineId,
+      category: params.category,
+      branchId: params.branchId,
+      dateFrom: params.dateFrom,
+      dateTo: params.dateTo,
+      page,
+      size,
+      sort: params.sort,
+    })}`,
+  )
+  return normalizePageResult(response.data, page, size)
 }
 
 export async function createAssetMaintenance(

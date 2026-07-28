@@ -6,8 +6,10 @@ export const ASSETS_API = {
     `/api/assets/${assetId}/lines/${lineId}`,
   disposals: (assetId: number | string, lineId: number | string) =>
     `/api/assets/${assetId}/lines/${lineId}/disposals`,
+  allDisposals: '/api/assets/disposals',
   maintenance: (assetId: number | string, lineId: number | string) =>
     `/api/assets/${assetId}/lines/${lineId}/maintenance`,
+  allMaintenance: '/api/assets/maintenance',
   summaryReport: '/api/assets/reports/summary',
   disposalsReport: '/api/assets/reports/disposals',
 } as const

@@ -106,8 +106,11 @@ export const errorsAr: TranslationDictionary = {
     'يوجد أكثر من مخزن مضبوط لهذا الفرع (العدد {{warehouseCount}}).',
 
   // Assets module
+  'errors.INVALID_DATE_RANGE': 'يجب أن يكون تاريخ البداية قبل تاريخ النهاية أو مساويًا له.',
   'errors.LINE_ASSET_MISMATCH':
     'بند الأصل {{assetLineId}} لا يتبع الأصل {{assetId}}.',
+  'errors.DISPOSAL_EXCEEDS_REMAINING':
+    'الكمية المتخلص منها لا يمكن أن تتجاوز المتبقي في البند المختار.',
 
   // Devices module
   'errors.INVALID_DEVICE_SECRET': 'مفتاح الجهاز غير صحيح',
