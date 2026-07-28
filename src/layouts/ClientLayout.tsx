@@ -10,7 +10,6 @@ import {
   Receipt,
   Shield,
   ShoppingCart,
-  UtensilsCrossed,
 } from 'lucide-react'
 import { LanguageSwitcher } from '../components/ui/LanguageSwitcher'
 import { useTranslation } from '../i18n/useTranslation'
@@ -26,7 +25,6 @@ type TopNavItem = {
 
 const topNavItems: TopNavItem[] = [
   { id: 'home', labelKey: 'layout.nav.main', path: '/dashboard', icon: LayoutDashboard },
-  { id: 'menu', labelKey: 'layout.nav.menu', path: '/menu', icon: UtensilsCrossed },
   { id: 'sales', labelKey: 'layout.nav.sales', path: '/sales', icon: Receipt },
   { id: 'inventory', labelKey: 'layout.nav.inventory', path: '/inventory', icon: Boxes },
   { id: 'assets', labelKey: 'layout.nav.assets', path: '/assets', icon: Landmark },
@@ -47,10 +45,9 @@ function isNavItemActive(pathname: string, item: TopNavItem): boolean {
     case 'sales':
       return (
         pathname === '/sales' ||
-        pathname.startsWith('/orders')
+        pathname.startsWith('/orders') ||
+        pathname.startsWith('/menu')
       )
-    case 'menu':
-      return pathname.startsWith('/menu')
     case 'inventory':
       return pathname.startsWith('/inventory')
     case 'assets':

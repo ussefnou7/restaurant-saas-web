@@ -1,4 +1,4 @@
-import { BookOpen, ClipboardList } from 'lucide-react'
+import { ClipboardList, UtensilsCrossed } from 'lucide-react'
 import { ModuleHubPage } from '../../components/hub/ModuleHubPage'
 import { useTranslation } from '../../i18n/useTranslation'
 
@@ -13,7 +13,7 @@ export function SalesHubPage() {
       cards={[
         {
           id: 'menu',
-          icon: BookOpen,
+          icon: UtensilsCrossed,
           title: t('hubs.sales.menu.title'),
           to: '/menu',
         },

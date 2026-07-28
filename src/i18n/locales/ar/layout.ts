@@ -3,7 +3,6 @@ import type { TranslationDictionary } from '../../types'
 export const layoutAr: TranslationDictionary = {
   'layout.nav.main': 'الرئيسية',
   'layout.nav.sales': 'المبيعات',
-  'layout.nav.menu': 'القائمة',
   'layout.nav.operations': 'العمليات',
   'layout.nav.inventorySetup': 'إعداد المخزون',
   'layout.nav.inventoryOperations': 'الشراء والحركات',
