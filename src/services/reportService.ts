@@ -6,8 +6,6 @@ function toReportParams(filters: ReportFilters): Record<string, string | undefin
     branchId: filters.branchId || undefined,
     warehouseId: filters.warehouseId || undefined,
     categoryId: filters.categoryId || undefined,
-    dateFrom: filters.dateFrom || undefined,
-    dateTo: filters.dateTo || undefined,
   }
 }
 

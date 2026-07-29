@@ -13,7 +13,6 @@ import { PageHeader } from '../ui/PageHeader'
 import { ReportFilterBar } from './ReportFilterBar'
 import { ReportTable } from './ReportTable'
 import { useTranslation } from '../../i18n/useTranslation'
-import { authService } from '../../services/authService'
 import * as branchService from '../../services/branchService'
 import * as inventoryService from '../../services/inventoryService'
 import * as reportService from '../../services/reportService'
@@ -23,50 +22,39 @@ import type { ReportConfig, ReportFilters, ReportRow } from '../../types/reports
 import { exportCsv, exportPdf } from '../../utils/reportExport'
 import { translateApiError } from '../../utils/errors'
 
-type GenericReportPageProps = {
-  config: ReportConfig
+type GenericReportPageProps<T extends ReportRow> = {
+  config: ReportConfig<T>
 }
 
 const initialFilters: ReportFilters = {
   branchId: '',
   warehouseId: '',
   categoryId: '',
-  dateFrom: '',
-  dateTo: '',
 }
 
-function hasPermission(permission: string): boolean {
-  const user = authService.getAuthUser()
-  if (!user) return false
-  if (user.roleCode === 'SYS_ADMIN' || user.roleCode === 'OWNER') return true
-  return user.permissions.includes(permission)
-}
-
-function localizeColumns(config: ReportConfig, t: (key: string) => string) {
+function localizeColumns<T extends ReportRow>(config: ReportConfig<T>, t: (key: string) => string) {
   return config.columns.map((column) => ({
     ...column,
-    label: t(column.label),
+    labelKey: t(column.labelKey),
   }))
 }
 
-export function GenericReportPage({ config }: GenericReportPageProps) {
+export function GenericReportPage<T extends ReportRow>({ config }: GenericReportPageProps<T>) {
   const { t } = useTranslation()
-  const canView = hasPermission(config.permission)
   const [filters, setFilters] = useState<ReportFilters>(initialFilters)
   const [branches, setBranches] = useState<BranchResponse[]>([])
   const [warehouses, setWarehouses] = useState<WarehouseResponse[]>([])
   const [categories, setCategories] = useState<MaterialCategoryResponse[]>([])
-  const [rows, setRows] = useState<ReportRow[]>([])
+  const [rows, setRows] = useState<T[]>([])
   const [loadingOptions, setLoadingOptions] = useState(true)
   const [loadingRows, setLoadingRows] = useState(true)
   const [error, setError] = useState('')
 
   const loadRows = useCallback(async () => {
-    if (!canView) return
     setLoadingRows(true)
     setError('')
     try {
-      const data = await reportService.getReportRows<ReportRow>(config.endpoint, filters)
+      const data = await reportService.getReportRows<T>(config.endpoint, filters)
       setRows(data)
     } catch (err) {
       setError(translateApiError(err, t).message)
@@ -74,10 +62,9 @@ export function GenericReportPage({ config }: GenericReportPageProps) {
     } finally {
       setLoadingRows(false)
     }
-  }, [canView, config.endpoint, filters, t])
+  }, [config.endpoint, filters, t])
 
   useEffect(() => {
-    if (!canView) return
     setLoadingOptions(true)
     void Promise.all([
       branchService.getBranches().catch(() => []),
@@ -88,10 +75,9 @@ export function GenericReportPage({ config }: GenericReportPageProps) {
         setCategories(categoryData)
       })
       .finally(() => setLoadingOptions(false))
-  }, [canView])
+  }, [])
 
   useEffect(() => {
-    if (!canView) return
     if (!filters.branchId) {
       setWarehouses([])
       return
@@ -107,7 +93,7 @@ export function GenericReportPage({ config }: GenericReportPageProps) {
         )
       })
       .catch(() => setWarehouses([]))
-  }, [canView, filters.branchId])
+  }, [filters.branchId])
 
   useEffect(() => {
     void loadRows()
@@ -115,19 +101,11 @@ export function GenericReportPage({ config }: GenericReportPageProps) {
 
   const exportColumns = useMemo(() => localizeColumns(config, t), [config, t])
 
-  if (!canView) {
-    return (
-      <ListPage className="reports-page">
-        <PageHeader title={t(config.titleKey)} description={t('reports.accessDenied')} />
-      </ListPage>
-    )
-  }
-
   return (
     <ListPage className="reports-page">
       <PageHeader
         title={t(config.titleKey)}
-        description={t('reports.stockValuation.subtitle')}
+        description={t(`${config.titleKey}.subtitle`)}
         action={
           <div className="reports-page__actions">
             <Button variant="secondary" onClick={loadRows} disabled={loadingRows}>
@@ -188,7 +166,7 @@ export function GenericReportPage({ config }: GenericReportPageProps) {
           </ListCardBody>
         ) : (
           <div className="list-card-content table-wrap">
-            <ReportTable columns={config.columns} rows={rows} paginated={config.paginated} />
+            <ReportTable columns={config.columns} rows={rows} />
           </div>
         )}
       </ListCard>

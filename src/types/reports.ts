@@ -1,37 +1,32 @@
-export type ReportColumnType = 'text' | 'number' | 'currency' | 'date'
+export type ReportColumnType = 'text' | 'number' | 'currency'
 
-export type ColumnMeta = {
-  key: string
-  label: string
+export type ColumnMeta<T> = {
+  key: keyof T
+  labelKey: string
   type: ReportColumnType
 }
 
-export type ReportFilterId = 'branch' | 'warehouse' | 'category' | 'dateRange'
+export type ReportFilterId = 'branch' | 'warehouse' | 'category'
 
-export type FilterConfig = {
-  id: ReportFilterId
-  required?: boolean
-}
+export type FilterConfig = ReportFilterId
 
-export type ReportConfig = {
+export type ReportConfig<T> = {
   id: string
   titleKey: string
   endpoint: string
-  permission: string
   filters: FilterConfig[]
-  columns: ColumnMeta[]
-  paginated: boolean
+  columns: ColumnMeta<T>[]
 }
 
 export type ReportFilters = {
   branchId: string
   warehouseId: string
   categoryId: string
-  dateFrom: string
-  dateTo: string
 }
 
-export type ReportRow = Record<string, string | number | null | undefined>
+export type ReportCellValue = string | number | null | undefined
+
+export type ReportRow = object
 
 export type StockValuationRow = {
   warehouseId: number
@@ -46,4 +41,19 @@ export type StockValuationRow = {
   quantity: string
   averageCost: string
   totalValue: string
+}
+
+export type LowStockRow = {
+  warehouseId: number
+  warehouseName: string
+  warehouseNameAr: string | null
+  materialId: number
+  materialName: string
+  materialNameAr: string | null
+  categoryId: number
+  categoryName: string
+  categoryNameAr: string | null
+  quantity: string
+  minQuantity: string
+  shortfall: string
 }

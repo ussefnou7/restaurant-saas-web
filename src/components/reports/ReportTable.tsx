@@ -1,4 +1,3 @@
-import { ListPagination } from '../ui/ListPagination'
 import {
   DataTable,
   TableBody,
@@ -8,53 +7,69 @@ import {
   Th,
 } from '../ui/Table'
 import { useTranslation } from '../../i18n/useTranslation'
-import type { ColumnMeta, ReportRow } from '../../types/reports'
-import { formatDate } from '../../utils/format'
+import type { ColumnMeta, ReportCellValue, ReportRow } from '../../types/reports'
 
 type ReportTableProps<T extends ReportRow> = {
-  columns: ColumnMeta[]
+  columns: ColumnMeta<T>[]
   rows: T[]
-  paginated: boolean
+  paginated?: boolean
   page?: number
-  size?: number
-  total?: number
   onPageChange?: (page: number) => void
 }
 
-function formatNumberValue(value: string | number | null | undefined, locale: string): string {
-  if (value === null || value === undefined || value === '') return '-'
-  const numeric = Number(value)
-  if (!Number.isFinite(numeric)) return String(value)
-  return new Intl.NumberFormat(locale === 'ar' ? 'ar-EG-u-nu-latn' : 'en-US-u-nu-latn', {
-    maximumFractionDigits: 6,
-  }).format(numeric)
+function splitDecimal(value: string): { sign: string; integer: string; fraction: string } | null {
+  const trimmed = value.trim()
+  const match = /^(-?)(\d+)(?:\.(\d+))?$/.exec(trimmed)
+  if (!match) return null
+  return {
+    sign: match[1],
+    integer: match[2],
+    fraction: match[3] ?? '',
+  }
 }
 
-function formatCurrencyValue(value: string | number | null | undefined, locale: string): string {
+function groupInteger(integer: string, locale: string): string {
+  const groupSeparator = locale === 'ar' ? ',' : ','
+  return integer.replace(/\B(?=(\d{3})+(?!\d))/g, groupSeparator)
+}
+
+function trimFraction(fraction: string, minimumDigits: number): string {
+  const trimmed = fraction.replace(/0+$/, '')
+  if (trimmed.length >= minimumDigits) return trimmed
+  return trimmed.padEnd(minimumDigits, '0')
+}
+
+function formatDecimalString(
+  value: ReportCellValue,
+  locale: string,
+  minimumFractionDigits = 0,
+): string {
   if (value === null || value === undefined || value === '') return '-'
-  const numeric = Number(value)
-  if (!Number.isFinite(numeric)) return String(value)
-  return new Intl.NumberFormat(locale === 'ar' ? 'ar-EG-u-nu-latn' : 'en-US-u-nu-latn', {
-    style: 'currency',
-    currency: 'EGP',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 6,
-  }).format(numeric)
+  const textValue = String(value)
+  const decimal = splitDecimal(textValue)
+  if (!decimal) return textValue
+  const fraction = trimFraction(decimal.fraction, minimumFractionDigits)
+  const formattedInteger = groupInteger(decimal.integer, locale)
+  return `${decimal.sign}${formattedInteger}${fraction ? `.${fraction}` : ''}`
+}
+
+function formatCurrencyValue(value: ReportCellValue, locale: string): string {
+  const formatted = formatDecimalString(value, locale, 2)
+  if (formatted === '-') return formatted
+  return locale === 'ar' ? `${formatted} ج.م` : `EGP ${formatted}`
 }
 
 function formatCell(
   row: ReportRow,
-  column: ColumnMeta,
+  column: ColumnMeta<ReportRow>,
   locale: string,
 ): string {
-  const value = row[column.key]
+  const value = (row as Record<string, ReportCellValue>)[String(column.key)]
   switch (column.type) {
     case 'currency':
       return formatCurrencyValue(value, locale)
     case 'number':
-      return formatNumberValue(value, locale)
-    case 'date':
-      return formatDate(typeof value === 'string' ? value : undefined, locale)
+      return formatDecimalString(value, locale)
     case 'text':
     default:
       return value === null || value === undefined || value === '' ? '-' : String(value)
@@ -64,54 +79,41 @@ function formatCell(
 export function ReportTable<T extends ReportRow>({
   columns,
   rows,
-  paginated,
-  page = 0,
-  size = 20,
-  total = rows.length,
+  paginated = false,
+  page,
   onPageChange,
 }: ReportTableProps<T>) {
   const { t, locale } = useTranslation()
-  const totalPages = Math.max(1, Math.ceil(total / size))
+  void paginated
+  void page
+  void onPageChange
 
   return (
-    <>
-      <DataTable className="report-table">
-        <TableHead>
-          <TableRow>
+    <DataTable className="report-table">
+      <TableHead>
+        <TableRow>
+          {columns.map((column) => (
+            <Th key={String(column.key)}>
+              {t(column.labelKey)}
+            </Th>
+          ))}
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {rows.map((row, rowIndex) => (
+          <TableRow key={String((row as { id?: ReportCellValue }).id ?? rowIndex)}>
             {columns.map((column) => (
-              <Th key={column.key} column={column.type === 'date' ? 'date' : 'default'}>
-                {t(column.label)}
-              </Th>
+              <Td
+                key={String(column.key)}
+                cellAlign={column.type === 'number' || column.type === 'currency' ? 'end' : 'start'}
+                dir={column.type === 'number' || column.type === 'currency' ? 'ltr' : undefined}
+              >
+                {formatCell(row, column as ColumnMeta<ReportRow>, locale)}
+              </Td>
             ))}
           </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map((row, rowIndex) => (
-            <TableRow key={String(row.id ?? rowIndex)}>
-              {columns.map((column) => (
-                <Td
-                  key={column.key}
-                  cellAlign={column.type === 'number' || column.type === 'currency' ? 'end' : 'start'}
-                  column={column.type === 'date' ? 'date' : 'default'}
-                  dir={column.type === 'number' || column.type === 'currency' || column.type === 'date' ? 'ltr' : undefined}
-                >
-                  {formatCell(row, column, locale)}
-                </Td>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </DataTable>
-      {paginated && onPageChange ? (
-        <ListPagination
-          page={page}
-          totalPages={totalPages}
-          totalElements={total}
-          pageSize={size}
-          onPageChange={onPageChange}
-          translationPrefix="reports.pagination"
-        />
-      ) : null}
-    </>
+        ))}
+      </TableBody>
+    </DataTable>
   )
 }
