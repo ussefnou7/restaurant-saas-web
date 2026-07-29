@@ -1,4 +1,13 @@
-import { ClipboardList, Package, RotateCcw, Ruler, Tag, Trash2, Warehouse } from 'lucide-react'
+import {
+  BarChart3,
+  ClipboardList,
+  Package,
+  RotateCcw,
+  Ruler,
+  Tag,
+  Trash2,
+  Warehouse,
+} from 'lucide-react'
 import { HubNavCard } from '../../components/hub/HubNavCard'
 import { HubNavChip } from '../../components/hub/HubNavChip'
 import { useTranslation } from '../../i18n/useTranslation'
@@ -75,6 +84,12 @@ export function InventoryHubSections({ userPermissions }: InventoryHubSectionsPr
             to="/inventory/waste-documents"
           />
         ) : null}
+        <HubNavCard
+          id="reports"
+          icon={BarChart3}
+          title={t('reports.hub.title')}
+          to="/inventory/reports"
+        />
       </div>
 
       {setupChips.length > 0 ? (

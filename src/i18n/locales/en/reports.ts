@@ -1,7 +1,9 @@
 import type { TranslationDictionary } from '../../types'
 
 export const reportsEn: TranslationDictionary = {
-  'reports.accessDenied': 'You do not have permission to view reports.',
+  'reports.hub.title': 'Reports',
+  'reports.hub.subtitle': 'Inventory reports for stock value and replenishment attention',
+
   'reports.loading': 'Loading report...',
   'reports.actions.refresh': 'Refresh',
   'reports.actions.exportCsv': 'CSV',
@@ -11,8 +13,6 @@ export const reportsEn: TranslationDictionary = {
   'reports.filters.branch': 'Branch',
   'reports.filters.warehouse': 'Storage Location',
   'reports.filters.category': 'Material Group',
-  'reports.filters.dateFrom': 'From',
-  'reports.filters.dateTo': 'To',
   'reports.filters.allBranches': 'All branches',
   'reports.filters.allWarehouses': 'All storage locations',
   'reports.filters.allCategories': 'All material groups',
@@ -21,8 +21,10 @@ export const reportsEn: TranslationDictionary = {
   'reports.empty.title': 'No report rows',
   'reports.empty.subtitle': 'Adjust the filters and refresh the report.',
 
-  'reports.stockValuation.title': 'Stock Valuation',
+  'reports.stockValuation': 'Stock Valuation',
   'reports.stockValuation.subtitle': 'Inventory value by material and storage location.',
+  'reports.lowStock': 'Low Stock',
+  'reports.lowStock.subtitle': 'Materials below minimum quantity by storage location.',
 
   'reports.columns.warehouseId': 'Warehouse ID',
   'reports.columns.warehouseName': 'Warehouse',
@@ -36,9 +38,6 @@ export const reportsEn: TranslationDictionary = {
   'reports.columns.quantity': 'Quantity',
   'reports.columns.averageCost': 'Average Cost',
   'reports.columns.totalValue': 'Total Value',
-
-  'reports.pagination.summary': '{{from}}-{{to}} of {{total}}',
-  'reports.pagination.prev': 'Previous',
-  'reports.pagination.next': 'Next',
-  'reports.pagination.pageOf': 'Page {{page}} of {{totalPages}}',
+  'reports.columns.minQuantity': 'Minimum Quantity',
+  'reports.columns.shortfall': 'Shortfall',
 }

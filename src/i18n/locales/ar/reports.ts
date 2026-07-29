@@ -1,7 +1,9 @@
 import type { TranslationDictionary } from '../../types'
 
 export const reportsAr: TranslationDictionary = {
-  'reports.accessDenied': 'ليست لديك صلاحية عرض التقارير.',
+  'reports.hub.title': 'التقارير',
+  'reports.hub.subtitle': 'تقارير المخزون لقيمة الرصيد والتنبيه لنقص المواد',
+
   'reports.loading': 'جاري تحميل التقرير...',
   'reports.actions.refresh': 'تحديث',
   'reports.actions.exportCsv': 'CSV',
@@ -11,8 +13,6 @@ export const reportsAr: TranslationDictionary = {
   'reports.filters.branch': 'الفرع',
   'reports.filters.warehouse': 'مكان التخزين',
   'reports.filters.category': 'مجموعة المواد',
-  'reports.filters.dateFrom': 'من',
-  'reports.filters.dateTo': 'إلى',
   'reports.filters.allBranches': 'كل الفروع',
   'reports.filters.allWarehouses': 'كل أماكن التخزين',
   'reports.filters.allCategories': 'كل مجموعات المواد',
@@ -21,8 +21,10 @@ export const reportsAr: TranslationDictionary = {
   'reports.empty.title': 'لا توجد صفوف في التقرير',
   'reports.empty.subtitle': 'عدّل الفلاتر وحدّث التقرير.',
 
-  'reports.stockValuation.title': 'تقييم المخزون',
+  'reports.stockValuation': 'تقييم المخزون',
   'reports.stockValuation.subtitle': 'قيمة المخزون حسب المادة ومكان التخزين.',
+  'reports.lowStock': 'المخزون المنخفض',
+  'reports.lowStock.subtitle': 'المواد الأقل من الحد الأدنى حسب مكان التخزين.',
 
   'reports.columns.warehouseId': 'معرّف المستودع',
   'reports.columns.warehouseName': 'المستودع',
@@ -36,9 +38,6 @@ export const reportsAr: TranslationDictionary = {
   'reports.columns.quantity': 'الكمية',
   'reports.columns.averageCost': 'متوسط التكلفة',
   'reports.columns.totalValue': 'القيمة الإجمالية',
-
-  'reports.pagination.summary': '{{from}}-{{to}} من {{total}}',
-  'reports.pagination.prev': 'السابق',
-  'reports.pagination.next': 'التالي',
-  'reports.pagination.pageOf': 'صفحة {{page}} من {{totalPages}}',
+  'reports.columns.minQuantity': 'الحد الأدنى',
+  'reports.columns.shortfall': 'النقص',
 }

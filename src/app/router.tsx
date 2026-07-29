@@ -64,6 +64,9 @@ import { WasteDocumentDetailPage } from '../pages/inventory/waste-documents/Wast
 import { WasteDocumentsPage } from '../pages/inventory/waste-documents/WasteDocumentsPage'
 import { OrderConsumptionListPage } from '../pages/inventory/order-consumption/OrderConsumptionListPage'
 import { OrderConsumptionDetailPage } from '../pages/inventory/order-consumption/OrderConsumptionDetailPage'
+import { LowStockReport } from '../pages/inventory/reports/LowStockReport'
+import { ReportsHub } from '../pages/inventory/reports/ReportsHub'
+import { StockValuationReport } from '../pages/inventory/reports/StockValuationReport'
 import { NotFoundPage } from '../pages/NotFoundPage'
 import { OrderDetailPage } from '../pages/orders/OrderDetailPage'
 import { OrderRequestDetailPage } from '../pages/orders/OrderRequestDetailPage'
@@ -73,7 +76,6 @@ import { OrdersListSection } from '../pages/orders/OrdersListSection'
 import { PosPage } from '../pages/pos/PosPage'
 import { ReportsPage } from '../pages/reports/ReportsPage'
 import { SettingsPage } from '../pages/settings/SettingsPage'
-import { StockValuationReport } from '../pages/reports/StockValuationReport'
 import { UserDetailsPage } from '../pages/users/UserDetailsPage'
 import { UsersPage } from '../pages/users/UsersPage'
 import { EmployeeDetailsPage } from '../pages/hr/employees/EmployeeDetailsPage'
@@ -268,6 +270,14 @@ export const router = createBrowserRouter([
                   {
                     path: 'material-categories',
                     element: <AdminMaterialCategoriesPage />,
+              {
+                path: 'reports',
+                children: [
+                  { index: true, element: <ReportsHub /> },
+                  { path: 'stock-valuation', element: <StockValuationReport /> },
+                  { path: 'low-stock', element: <LowStockReport /> },
+                ],
+              },
                   },
                   { path: 'material-catalog', element: <AdminMaterialCatalogPage /> },
                   { path: 'seed', element: <InventorySeedPage /> },
@@ -355,7 +365,6 @@ export const router = createBrowserRouter([
             element: <SettingsPage />,
           },
         ],
-              { path: 'stock-valuation', element: <StockValuationReport /> },
       },
       {
         path: '*',
