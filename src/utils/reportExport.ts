@@ -1,8 +1,8 @@
 import autoTable from 'jspdf-autotable'
 import { jsPDF } from 'jspdf'
-import type { ColumnMeta, ReportRow } from '../types/reports'
+import type { ColumnMeta, ReportCellValue, ReportRow } from '../types/reports'
 
-function serializeValue(value: string | number | null | undefined): string {
+function serializeValue(value: ReportCellValue): string {
   if (value === null || value === undefined) return ''
   return String(value)
 }
@@ -21,18 +21,24 @@ function downloadBlob(blob: Blob, filename: string) {
   URL.revokeObjectURL(url)
 }
 
-export function exportCsv(columns: ColumnMeta[], rows: ReportRow[], filename: string): void {
-  const header = columns.map((column) => csvEscape(column.label)).join(',')
+export function exportCsv<T extends ReportRow>(
+  columns: ColumnMeta<T>[],
+  rows: T[],
+  filename: string,
+): void {
+  const header = columns.map((column) => csvEscape(column.labelKey)).join(',')
   const body = rows.map((row) =>
-    columns.map((column) => csvEscape(serializeValue(row[column.key]))).join(','),
+    columns.map((column) =>
+      csvEscape(serializeValue((row as Record<string, ReportCellValue>)[String(column.key)])),
+    ).join(','),
   )
   const csv = [header, ...body].join('\n')
   downloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `${filename}.csv`)
 }
 
-export function exportPdf(
-  columns: ColumnMeta[],
-  rows: ReportRow[],
+export function exportPdf<T extends ReportRow>(
+  columns: ColumnMeta<T>[],
+  rows: T[],
   filename: string,
   title: string,
 ): void {
@@ -40,8 +46,12 @@ export function exportPdf(
   document.text(title, 14, 14)
   autoTable(document, {
     startY: 20,
-    head: [columns.map((column) => column.label)],
-    body: rows.map((row) => columns.map((column) => serializeValue(row[column.key]))),
+    head: [columns.map((column) => column.labelKey)],
+    body: rows.map((row) =>
+      columns.map((column) =>
+        serializeValue((row as Record<string, ReportCellValue>)[String(column.key)]),
+      ),
+    ),
     styles: {
       fontSize: 8,
       cellPadding: 2,
