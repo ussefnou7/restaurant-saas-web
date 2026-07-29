@@ -1,5 +1,5 @@
-import { RefreshCw } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { Download, FileText, RefreshCw } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Button } from '../ui/Button'
 import { EmptyState } from '../ui/EmptyState'
 import {
@@ -20,6 +20,7 @@ import * as reportService from '../../services/reportService'
 import type { BranchResponse } from '../../types/branch'
 import type { MaterialCategoryResponse, WarehouseResponse } from '../../types/inventory'
 import type { ReportConfig, ReportFilters, ReportRow } from '../../types/reports'
+import { exportCsv, exportPdf } from '../../utils/reportExport'
 import { translateApiError } from '../../utils/errors'
 
 type GenericReportPageProps = {
@@ -39,6 +40,13 @@ function hasPermission(permission: string): boolean {
   if (!user) return false
   if (user.roleCode === 'SYS_ADMIN' || user.roleCode === 'OWNER') return true
   return user.permissions.includes(permission)
+}
+
+function localizeColumns(config: ReportConfig, t: (key: string) => string) {
+  return config.columns.map((column) => ({
+    ...column,
+    label: t(column.label),
+  }))
 }
 
 export function GenericReportPage({ config }: GenericReportPageProps) {
@@ -105,6 +113,8 @@ export function GenericReportPage({ config }: GenericReportPageProps) {
     void loadRows()
   }, [loadRows])
 
+  const exportColumns = useMemo(() => localizeColumns(config, t), [config, t])
+
   if (!canView) {
     return (
       <ListPage className="reports-page">
@@ -123,6 +133,22 @@ export function GenericReportPage({ config }: GenericReportPageProps) {
             <Button variant="secondary" onClick={loadRows} disabled={loadingRows}>
               <RefreshCw size={16} />
               {t('reports.actions.refresh')}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => exportCsv(exportColumns, rows, config.id)}
+              disabled={loadingRows || rows.length === 0}
+            >
+              <Download size={16} />
+              {t('reports.actions.exportCsv')}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => exportPdf(exportColumns, rows, config.id, t(config.titleKey))}
+              disabled={loadingRows || rows.length === 0}
+            >
+              <FileText size={16} />
+              {t('reports.actions.exportPdf')}
             </Button>
           </div>
         }
