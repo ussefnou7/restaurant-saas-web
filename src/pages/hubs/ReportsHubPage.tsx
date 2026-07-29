@@ -20,8 +20,8 @@ export function ReportsHubPage() {
         {
           id: 'inventory-reports',
           icon: Boxes,
-          title: t('hubs.reports.inventory.title'),
-          to: '/inventory/stock-balances',
+          title: t('reports.stockValuation.title'),
+          to: '/reports/stock-valuation',
         },
       ]}
     />

@@ -21,6 +21,7 @@ import { leaveTypesEn } from './leaveTypes'
 import { payrollEn } from './payroll'
 import { permissionsEn } from './permissions'
 import { userDetailsEn } from './userDetails'
+import { reportsEn } from './reports'
 import { usersEn } from './users'
 
 export const en = mergeMessages(
@@ -48,3 +49,4 @@ export const en = mergeMessages(
   orderConsumptionEn,
   errorsEn,
 )
+  reportsEn,
