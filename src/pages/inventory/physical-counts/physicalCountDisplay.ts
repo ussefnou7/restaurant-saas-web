@@ -40,17 +40,11 @@ export function getLineVarianceDisplay(line: PhysicalCountLineResponse): LineVar
     }
   }
 
-  const expectedBase = line.expectedQuantity
-  const provisionalVariance = line.countedQuantity - expectedBase
+  return null
+}
 
-  return {
-    expectedDisplay: expectedBase,
-    variance: provisionalVariance,
-    varianceValue:
-      line.varianceValue ??
-      (line.unitCostAtFreeze != null ? provisionalVariance * line.unitCostAtFreeze : null),
-    isProvisional: true,
-  }
+export function getExpectedQuantityDisplay(line: PhysicalCountLineResponse): number {
+  return line.adjustedExpectedQuantity ?? line.expectedQuantity
 }
 
 export function formatSignedMoney(value: number | null | undefined): string {
