@@ -1,6 +1,6 @@
+import axios from 'axios'
 import { useEffect, useMemo, useState } from 'react'
-import { Trash2, Undo2 } from 'lucide-react'
-import { Badge } from '../../../components/ui/Badge'
+import { Info, Trash2, Undo2 } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
 import { IconActionButton } from '../../../components/ui/RowActions'
 import { Modal } from '../../../components/ui/Modal'
@@ -12,33 +12,36 @@ import {
   Td,
   Th,
 } from '../../../components/ui/Table'
+import type { Locale } from '../../../i18n/types'
 import type {
   PhysicalCountLineResponse,
+  PostFreezeMaterialMovementResponse,
+  PostFreezeMovementsResponse,
   PhysicalCountResponse,
-  ReconcileLineAction,
 } from '../../../types/inventoryOperations'
-import { formatDate, formatDateTime } from '../../../utils/format'
+import * as physicalCountService from '../../../services/physicalCountService'
 import {
   getLineVarianceDisplay,
   getMaterialDisplayName,
-  getStatusVariant,
+  getPhysicalCountUomDisplay,
   getVarianceCellClass,
-  getActionLabel,
+  hasEstimatedVarianceValue,
   formatSignedMoney,
   formatVarianceQuantity,
   sumLineVarianceValues,
 } from './physicalCountDisplay'
+import { PhysicalCountDocumentHeader } from './PhysicalCountDocumentHeader'
 
 interface PhysicalCountReconcileViewProps {
   count: PhysicalCountResponse
-  locale: string
+  locale: Locale
   canManage: boolean
   canRevert: boolean
   canDelete: boolean
   actionLoading: boolean
   reconciling: boolean
   reconcileError: string
-  onReconcile: (lines: Array<{ lineId: number; action: ReconcileLineAction }>) => void
+  onReconcile: () => void
   onBackToCounting: () => void
   onRevertToDraft: () => void
   onDelete: () => void
@@ -60,8 +63,9 @@ export function PhysicalCountReconcileView({
   onDelete,
   t,
 }: PhysicalCountReconcileViewProps) {
-  const [lineActions, setLineActions] = useState<Record<number, ReconcileLineAction>>({})
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [movements, setMovements] = useState<PostFreezeMovementsResponse | null>(null)
+  const [movementsOpen, setMovementsOpen] = useState(false)
 
   const lineDisplays = useMemo(
     () =>
@@ -72,21 +76,31 @@ export function PhysicalCountReconcileView({
     [count.lines],
   )
 
-  const hasProvisionalRows = lineDisplays.some(({ display }) => display?.isProvisional)
-
   useEffect(() => {
-    setLineActions((current) => {
-      const next: Record<number, ReconcileLineAction> = { ...current }
-      for (const { line, display } of lineDisplays) {
-        if (!display || display.variance === 0) continue
-        if (next[line.id] == null) next[line.id] = 'ADJUSTMENT'
-        if (display.variance > 0 && next[line.id] === 'WASTE') {
-          next[line.id] = 'ADJUSTMENT'
+    let cancelled = false
+
+    async function loadMovements() {
+      try {
+        const data = await physicalCountService.getPostFreezeMovements(count.id)
+        if (!cancelled) {
+          setMovements(data.totalMovementCount > 0 ? data : null)
+          setMovementsOpen(false)
         }
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 409) {
+          if (!cancelled) setMovements(null)
+          return
+        }
+        console.error('[physical-counts] Failed to load post-freeze movements', error)
+        if (!cancelled) setMovements(null)
       }
-      return next
-    })
-  }, [lineDisplays])
+    }
+
+    void loadMovements()
+    return () => {
+      cancelled = true
+    }
+  }, [count.id])
 
   const totalVarianceValue = useMemo(() => sumLineVarianceValues(count.lines), [count.lines])
 
@@ -95,47 +109,15 @@ export function PhysicalCountReconcileView({
     [lineDisplays],
   )
 
-  function setLineAction(lineId: number, action: ReconcileLineAction) {
-    setLineActions((current) => ({ ...current, [lineId]: action }))
-  }
-
-  function handleConfirmReconcile() {
-    const lines = varianceLines.map(({ line }) => ({
-      lineId: line.id,
-      action: lineActions[line.id] ?? 'ADJUSTMENT',
-    }))
-
-    onReconcile(lines)
-  }
+  const hasEstimatedValues = useMemo(
+    () => count.lines.some(hasEstimatedVarianceValue),
+    [count.lines],
+  )
 
   return (
     <>
       <div className="physical-count-detail">
-        <div className="physical-count-detail__header">
-          <div className="physical-count-detail__info">
-            <div className="physical-count-detail__code" dir="ltr">{count.code}</div>
-            <div className="physical-count-detail__warehouse">{count.warehouseName}</div>
-            <div className="physical-count-detail__meta-inline">
-              <span className="physical-count-detail__meta-label">{t('inventory.physicalCounts.col.scheduledDate')}</span>
-              <span className="physical-count-detail__meta-value" dir="ltr">{formatDate(count.scheduledDate)}</span>
-            </div>
-            {count.frozenAt ? (
-              <div className="physical-count-detail__meta-inline">
-                <span className="physical-count-detail__meta-label">{t('inventory.physicalCounts.col.frozenAt')}</span>
-                <span className="physical-count-detail__meta-value" dir="ltr">{formatDateTime(count.frozenAt)}</span>
-              </div>
-            ) : null}
-            {count.notes ? (
-              <div className="physical-count-detail__notes">
-                <span className="physical-count-detail__meta-label">{t('inventory.physicalCounts.fields.notes')}</span>
-                <span className="physical-count-detail__meta-value">{count.notes}</span>
-              </div>
-            ) : null}
-          </div>
-          <Badge variant={getStatusVariant(count.status)}>
-            {t(`inventory.physicalCounts.status.${count.status}`)}
-          </Badge>
-        </div>
+        <PhysicalCountDocumentHeader count={count} locale={locale} t={t} />
 
         <div className="physical-count-detail__lines">
           <div className="physical-count-reconcile__header">
@@ -148,23 +130,24 @@ export function PhysicalCountReconcileView({
             </Button>
           </div>
 
-          {hasProvisionalRows ? (
-            <div className="physical-count-reconcile__provisional-banner">
-              {t('inventory.physicalCounts.reconcile.provisionalBanner')}
-            </div>
-          ) : null}
+          <PostFreezeMovementsBanner
+            movements={movements}
+            open={movementsOpen}
+            onToggle={() => setMovementsOpen((current) => !current)}
+            locale={locale}
+            t={t}
+          />
 
           {reconcileError ? <div className="form-error-banner">{reconcileError}</div> : null}
 
-          <DataTable>
+          <DataTable className="physical-count-reconcile__table">
             <TableHead>
               <TableRow>
                 <Th column="entity">{t('inventory.physicalCounts.lines.material')}</Th>
-                <Th className="table-cell--numeric">{t('inventory.physicalCounts.reconcile.col.adjustedExpected')}</Th>
+                <Th className="table-cell--numeric">{t('inventory.physicalCounts.reconcile.col.expected')}</Th>
                 <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.counted')}</Th>
                 <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.variance')}</Th>
                 <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.varianceValue')}</Th>
-                <Th>{t('inventory.physicalCounts.reconcile.col.action')}</Th>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -174,10 +157,6 @@ export function PhysicalCountReconcileView({
                   line={line}
                   display={display}
                   locale={locale}
-                  action={lineActions[line.id] ?? 'ADJUSTMENT'}
-                  canManage={canManage}
-                  disabled={reconciling}
-                  onActionChange={(action) => setLineAction(line.id, action)}
                   t={t}
                 />
               ))}
@@ -196,11 +175,15 @@ export function PhysicalCountReconcileView({
               className={`physical-count-reconcile__total-value ${getVarianceCellClass(totalVarianceValue)}`}
               dir="ltr"
             >
-              {formatSignedMoney(totalVarianceValue)}
+              <VarianceValueDisplay
+                value={totalVarianceValue}
+                estimated={hasEstimatedValues}
+                t={t}
+              />
             </span>
-            {hasProvisionalRows ? (
+            {hasEstimatedValues ? (
               <span className="physical-count-reconcile__total-note">
-                {t('inventory.physicalCounts.reconcile.provisionalTotalNote')}
+                {t('inventory.physicalCounts.reconcile.estimateTotalNote')}
               </span>
             ) : null}
           </div>
@@ -244,6 +227,7 @@ export function PhysicalCountReconcileView({
         open={confirmOpen}
         title={t('inventory.physicalCounts.confirm.reconcileTitle')}
         size="wide"
+        className="physical-count-reconcile-confirm-modal"
         onClose={() => !reconciling && setConfirmOpen(false)}
         footer={
           <>
@@ -255,8 +239,8 @@ export function PhysicalCountReconcileView({
               {t('inventory.physicalCounts.confirm.reconcileBack')}
             </Button>
             <Button
-              variant="primary"
-              onClick={handleConfirmReconcile}
+              variant="dangerConfirm"
+              onClick={onReconcile}
               disabled={reconciling || varianceLines.length === 0}
             >
               {reconciling
@@ -270,6 +254,34 @@ export function PhysicalCountReconcileView({
           <p className="confirm-modal-message">
             {t('inventory.physicalCounts.confirm.reconcileIntro')}
           </p>
+          <div className="physical-count-reconcile-confirm__summary">
+            <div className="physical-count-reconcile-confirm__summary-item">
+              <span className="physical-count-reconcile-confirm__summary-label">
+                {t('inventory.physicalCounts.reconcile.totalVarianceValue')}
+              </span>
+              <span
+                className={`physical-count-reconcile-confirm__summary-value ${getVarianceCellClass(totalVarianceValue)}`}
+                dir="ltr"
+              >
+                <VarianceValueDisplay
+                  value={totalVarianceValue}
+                  estimated={hasEstimatedValues}
+                  t={t}
+                />
+              </span>
+            </div>
+            <div className="physical-count-reconcile-confirm__summary-item">
+              <span className="physical-count-reconcile-confirm__summary-label">
+                {t('inventory.physicalCounts.confirm.movementLines')}
+              </span>
+              <span className="physical-count-reconcile-confirm__summary-value" dir="ltr">
+                {varianceLines.length}
+              </span>
+            </div>
+          </div>
+          <p className="physical-count-reconcile-confirm__finality">
+            {t('inventory.physicalCounts.confirm.reconcileFinality')}
+          </p>
           <div className="physical-count-reconcile-confirm__table-wrap">
             <table className="physical-count-reconcile-confirm__table">
               <thead>
@@ -277,21 +289,21 @@ export function PhysicalCountReconcileView({
                   <th>{t('inventory.physicalCounts.lines.material')}</th>
                   <th>{t('inventory.physicalCounts.confirm.reconcileColExpectedCounted')}</th>
                   <th>{t('inventory.physicalCounts.lines.variance')}</th>
-                  <th>{t('inventory.physicalCounts.reconcile.col.action')}</th>
                   <th>{t('inventory.physicalCounts.lines.varianceValue')}</th>
                 </tr>
               </thead>
               <tbody>
                 {varianceLines.map(({ line, display }) => {
                   if (!display) return null
-                  const action = lineActions[line.id] ?? 'ADJUSTMENT'
                   return (
                     <tr key={line.id}>
                       <td>
                         <span className="physical-count-reconcile-confirm__material">
                           {getMaterialDisplayName(line, locale)}
                         </span>
-                        <span className="entity-cell__code">{line.uomSymbol}</span>
+                        <span className="entity-cell__code">
+                          {getPhysicalCountUomDisplay(line.uomSymbol, locale, t).label}
+                        </span>
                       </td>
                       <td dir="ltr" className="physical-count-reconcile-confirm__num">
                         {display.expectedDisplay} → {line.countedQuantity}
@@ -302,12 +314,15 @@ export function PhysicalCountReconcileView({
                       >
                         {formatVarianceQuantity(display.variance)}
                       </td>
-                      <td>{getActionLabel(action, t)}</td>
                       <td
                         dir="ltr"
                         className={`physical-count-reconcile-confirm__num ${getVarianceCellClass(display.varianceValue)}`}
                       >
-                        {formatSignedMoney(display.varianceValue)}
+                        <VarianceValueDisplay
+                          value={display.varianceValue}
+                          estimated={hasEstimatedVarianceValue(line)}
+                          t={t}
+                        />
                       </td>
                     </tr>
                   )
@@ -323,7 +338,11 @@ export function PhysicalCountReconcileView({
               className={`physical-count-reconcile-confirm__total-value ${getVarianceCellClass(totalVarianceValue)}`}
               dir="ltr"
             >
-              {formatSignedMoney(totalVarianceValue)}
+              <VarianceValueDisplay
+                value={totalVarianceValue}
+                estimated={hasEstimatedValues}
+                t={t}
+              />
             </span>
           </div>
         </div>
@@ -335,11 +354,7 @@ export function PhysicalCountReconcileView({
 interface ReconcileLineRowProps {
   line: PhysicalCountLineResponse
   display: ReturnType<typeof getLineVarianceDisplay>
-  locale: string
-  action: ReconcileLineAction
-  canManage: boolean
-  disabled: boolean
-  onActionChange: (action: ReconcileLineAction) => void
+  locale: Locale
   t: (key: string, params?: Record<string, string | number>) => string
 }
 
@@ -347,10 +362,6 @@ function ReconcileLineRow({
   line,
   display,
   locale,
-  action,
-  canManage,
-  disabled,
-  onActionChange,
   t,
 }: ReconcileLineRowProps) {
   if (!display) {
@@ -358,150 +369,186 @@ function ReconcileLineRow({
       <TableRow>
         <Td column="entity">
           <span>{getMaterialDisplayName(line, locale)}</span>
-          <span className="entity-cell__code">{line.materialCode}</span>
         </Td>
-        <Td colSpan={5}>
+        <Td colSpan={4}>
           <span className="text-muted">{t('inventory.physicalCounts.reconcile.lineNotCounted')}</span>
         </Td>
       </TableRow>
     )
   }
 
-  const { expectedDisplay, variance, varianceValue, isProvisional, usesFrozenExpected } = display
+  const { expectedDisplay, variance, varianceValue, isProvisional } = display
   const isZeroVariance = variance === 0
-  const isSurplus = variance > 0
+  const uomDisplay = getPhysicalCountUomDisplay(line.uomSymbol, locale, t)
 
   return (
     <TableRow className={isProvisional ? 'physical-count-line--provisional' : ''}>
       <Td column="entity">
         <span>{getMaterialDisplayName(line, locale)}</span>
-        <span className="entity-cell__code">{line.materialCode}</span>
-        <span className="entity-cell__code">{line.uomSymbol}</span>
+        <span className="entity-cell__code">{uomDisplay.label}</span>
       </Td>
       <Td dir="ltr" className="table-cell--numeric">
         <span>{expectedDisplay}</span>
-        {isProvisional && usesFrozenExpected ? (
-          <span className="physical-count-reconcile__provisional-tag">
-            {t('inventory.physicalCounts.reconcile.provisionalTag')}
-          </span>
-        ) : null}
       </Td>
       <Td dir="ltr" className="table-cell--numeric">{line.countedQuantity}</Td>
       <Td dir="ltr" className={`table-cell--numeric ${getVarianceCellClass(variance)}`}>
-        <span>{formatVarianceQuantity(variance)}</span>
+        {isZeroVariance ? (
+          <span className="physical-count-reconcile__no-difference">
+            {t('inventory.physicalCounts.reconcile.noDifference')}
+          </span>
+        ) : (
+          <span>{formatVarianceQuantity(variance)}</span>
+        )}
         {isProvisional ? (
           <span className="physical-count-reconcile__provisional-tag">
             {t('inventory.physicalCounts.reconcile.provisionalTag')}
           </span>
         ) : null}
       </Td>
-      <Td dir="ltr" className={`table-cell--numeric ${getVarianceCellClass(variance)}`}>
+      <Td dir="ltr" className={`table-cell--numeric ${getVarianceCellClass(varianceValue)}`}>
         {varianceValue != null ? (
-          <span>{formatSignedMoney(varianceValue)}</span>
+          <VarianceValueDisplay
+            value={varianceValue}
+            estimated={hasEstimatedVarianceValue(line)}
+            t={t}
+          />
         ) : (
           <span className="text-muted">—</span>
-        )}
-      </Td>
-      <Td>
-        {isZeroVariance ? (
-          <span className="physical-count-reconcile__no-difference">
-            {t('inventory.physicalCounts.reconcile.noDifference')}
-          </span>
-        ) : canManage ? (
-          <div className="physical-count-reconcile__action-cell">
-            {isSurplus ? (
-              <>
-                <span className="physical-count-reconcile__action-fixed">
-                  {t('inventory.physicalCounts.reconcile.actionAdjustment')}
-                </span>
-                <span className="physical-count-reconcile__action-hint">
-                  {t('inventory.physicalCounts.reconcile.wasteShortageOnlyHint')}
-                </span>
-              </>
-            ) : (
-              <>
-                <div
-                  className="physical-count-reconcile__action-toggle"
-                  role="group"
-                  aria-label={t('inventory.physicalCounts.reconcile.col.action')}
-                >
-                  <button
-                    type="button"
-                    className={`physical-count-reconcile__action-option${
-                      action === 'ADJUSTMENT' ? ' physical-count-reconcile__action-option--active' : ''
-                    }`}
-                    onClick={() => onActionChange('ADJUSTMENT')}
-                    disabled={disabled}
-                  >
-                    {t('inventory.physicalCounts.reconcile.actionAdjustment')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`physical-count-reconcile__action-option${
-                      action === 'WASTE' ? ' physical-count-reconcile__action-option--active' : ''
-                    }`}
-                    onClick={() => onActionChange('WASTE')}
-                    disabled={disabled}
-                  >
-                    {t('inventory.physicalCounts.reconcile.actionWaste')}
-                  </button>
-                </div>
-                <span className="physical-count-reconcile__action-hint">
-                  {t('inventory.physicalCounts.reconcile.shortageActionHint')}
-                </span>
-              </>
-            )}
-          </div>
-        ) : (
-          <span>{t(`inventory.physicalCounts.reconcile.action.${action}`)}</span>
         )}
       </Td>
     </TableRow>
   )
 }
 
+function VarianceValueDisplay({
+  value,
+  estimated,
+  t,
+}: {
+  value: number | null | undefined
+  estimated: boolean
+  t: (key: string) => string
+}) {
+  return (
+    <span className="physical-count-reconcile__variance-value">
+      <span>{formatSignedMoney(value)}</span>
+      {estimated ? (
+        <span
+          className="physical-count-reconcile__estimate-marker"
+          title={t('inventory.physicalCounts.reconcile.estimateTooltip')}
+          aria-label={t('inventory.physicalCounts.reconcile.estimateTooltip')}
+        >
+          <Info size={13} aria-hidden />
+          <span>{t('inventory.physicalCounts.reconcile.estimateMarker')}</span>
+        </span>
+      ) : null}
+    </span>
+  )
+}
+
+function PostFreezeMovementsBanner({
+  movements,
+  open,
+  onToggle,
+  locale,
+  t,
+}: {
+  movements: PostFreezeMovementsResponse | null
+  open: boolean
+  onToggle: () => void
+  locale: Locale
+  t: (key: string, params?: Record<string, string | number>) => string
+}) {
+  if (!movements || movements.totalMovementCount === 0) return null
+
+  return (
+    <div className="physical-count-post-freeze">
+      <div className="physical-count-post-freeze__main">
+        <Info size={18} aria-hidden />
+        <div>
+          <p className="physical-count-post-freeze__title">
+            {t('inventory.physicalCounts.postFreeze.title', {
+              movementCount: movements.totalMovementCount,
+              materialCount: movements.affectedMaterialCount,
+            })}
+          </p>
+          <p className="physical-count-post-freeze__text">
+            {t('inventory.physicalCounts.postFreeze.scopeNote')}
+          </p>
+        </div>
+      </div>
+      {movements.materials.length > 0 ? (
+        <>
+          <Button
+            type="button"
+            variant="secondary"
+            className="physical-count-post-freeze__toggle"
+            onClick={onToggle}
+          >
+            {open
+              ? t('inventory.physicalCounts.postFreeze.hideBreakdown')
+              : t('inventory.physicalCounts.postFreeze.showBreakdown')}
+          </Button>
+          {open ? (
+            <div className="physical-count-post-freeze__list">
+              {movements.materials.map((material) => (
+                <PostFreezeMaterialMovement
+                  key={material.materialId}
+                  material={material}
+                  locale={locale}
+                  t={t}
+                />
+              ))}
+            </div>
+          ) : null}
+        </>
+      ) : null}
+    </div>
+  )
+}
+
+function PostFreezeMaterialMovement({
+  material,
+  locale,
+  t,
+}: {
+  material: PostFreezeMaterialMovementResponse
+  locale: Locale
+  t: (key: string, params?: Record<string, string | number>) => string
+}) {
+  const materialName = getMaterialDisplayName(material, locale)
+
+  return (
+    <div className="physical-count-post-freeze__material">
+      <span className="physical-count-post-freeze__material-name">{materialName}</span>
+      <span className="physical-count-post-freeze__material-meta" dir="ltr">
+        {t('inventory.physicalCounts.postFreeze.materialMeta', {
+          movementCount: material.movementCount,
+          quantityIn: material.quantityIn,
+          quantityOut: material.quantityOut,
+          netQuantity: material.netQuantity,
+        })}
+      </span>
+    </div>
+  )
+}
+
 interface PhysicalCountReconciledViewProps {
   count: PhysicalCountResponse
-  locale: string
+  locale: Locale
   t: (key: string, params?: Record<string, string | number>) => string
 }
 
 export function PhysicalCountReconciledView({ count, locale, t }: PhysicalCountReconciledViewProps) {
   const totalVarianceValue = useMemo(() => sumLineVarianceValues(count.lines), [count.lines])
+  const hasEstimatedValues = useMemo(
+    () => count.lines.some(hasEstimatedVarianceValue),
+    [count.lines],
+  )
 
   return (
     <div className="physical-count-detail">
-      <div className="physical-count-detail__header">
-        <div className="physical-count-detail__info">
-          <div className="physical-count-detail__code" dir="ltr">{count.code}</div>
-          <div className="physical-count-detail__warehouse">{count.warehouseName}</div>
-          <div className="physical-count-detail__meta-inline">
-            <span className="physical-count-detail__meta-label">{t('inventory.physicalCounts.col.scheduledDate')}</span>
-            <span className="physical-count-detail__meta-value" dir="ltr">{formatDate(count.scheduledDate)}</span>
-          </div>
-          {count.frozenAt ? (
-            <div className="physical-count-detail__meta-inline">
-              <span className="physical-count-detail__meta-label">{t('inventory.physicalCounts.col.frozenAt')}</span>
-              <span className="physical-count-detail__meta-value" dir="ltr">{formatDateTime(count.frozenAt)}</span>
-            </div>
-          ) : null}
-          {count.reconciledAt ? (
-            <div className="physical-count-detail__meta-inline">
-              <span className="physical-count-detail__meta-label">{t('inventory.physicalCounts.col.reconciledAt')}</span>
-              <span className="physical-count-detail__meta-value" dir="ltr">{formatDateTime(count.reconciledAt)}</span>
-            </div>
-          ) : null}
-          {count.notes ? (
-            <div className="physical-count-detail__notes">
-              <span className="physical-count-detail__meta-label">{t('inventory.physicalCounts.fields.notes')}</span>
-              <span className="physical-count-detail__meta-value">{count.notes}</span>
-            </div>
-          ) : null}
-        </div>
-        <Badge variant={getStatusVariant(count.status)}>
-          {t(`inventory.physicalCounts.status.${count.status}`)}
-        </Badge>
-      </div>
+      <PhysicalCountDocumentHeader count={count} locale={locale} t={t} />
 
       <div className="physical-count-detail__lines">
         <h3 className="physical-count-detail__lines-title">{t('inventory.physicalCounts.reconcile.reconciledTitle')}</h3>
@@ -510,11 +557,10 @@ export function PhysicalCountReconciledView({ count, locale, t }: PhysicalCountR
           <TableHead>
             <TableRow>
               <Th column="entity">{t('inventory.physicalCounts.lines.material')}</Th>
-              <Th className="table-cell--numeric">{t('inventory.physicalCounts.reconcile.col.adjustedExpected')}</Th>
+              <Th className="table-cell--numeric">{t('inventory.physicalCounts.reconcile.col.expected')}</Th>
               <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.counted')}</Th>
               <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.variance')}</Th>
               <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.varianceValue')}</Th>
-              <Th>{t('inventory.physicalCounts.reconcile.col.actionTaken')}</Th>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -527,19 +573,33 @@ export function PhysicalCountReconciledView({ count, locale, t }: PhysicalCountR
                 <TableRow key={line.id}>
                   <Td column="entity">
                     <span>{getMaterialDisplayName(line, locale)}</span>
-                    <span className="entity-cell__code">{line.materialCode}</span>
-                    <span className="entity-cell__code">{line.uomSymbol}</span>
+                    <span className="entity-cell__code">
+                      {getPhysicalCountUomDisplay(line.uomSymbol, locale, t).label}
+                    </span>
                   </Td>
-                  <Td dir="ltr" className="table-cell--numeric">{line.adjustedExpectedQuantity ?? line.expectedQuantity}</Td>
+                  <Td dir="ltr" className="table-cell--numeric">{line.expectedQuantity}</Td>
                   <Td dir="ltr" className="table-cell--numeric">{line.countedQuantity ?? '—'}</Td>
                   <Td dir="ltr" className={`table-cell--numeric ${getVarianceCellClass(variance)}`}>
-                    {variance != null ? formatVarianceQuantity(variance) : <span className="text-muted">—</span>}
+                    {variance === 0 ? (
+                      <span className="physical-count-reconcile__no-difference">
+                        {t('inventory.physicalCounts.reconcile.noDifference')}
+                      </span>
+                    ) : variance != null ? (
+                      formatVarianceQuantity(variance)
+                    ) : (
+                      <span className="text-muted">—</span>
+                    )}
                   </Td>
-                  <Td dir="ltr" className={`table-cell--numeric ${getVarianceCellClass(variance)}`}>
-                    {varianceValue != null ? formatSignedMoney(varianceValue) : <span className="text-muted">—</span>}
-                  </Td>
-                  <Td>
-                    <ReconciledActionCell line={line} t={t} />
+                  <Td dir="ltr" className={`table-cell--numeric ${getVarianceCellClass(varianceValue)}`}>
+                    {varianceValue != null ? (
+                      <VarianceValueDisplay
+                        value={varianceValue}
+                        estimated={hasEstimatedVarianceValue(line)}
+                        t={t}
+                      />
+                    ) : (
+                      <span className="text-muted">—</span>
+                    )}
                   </Td>
                 </TableRow>
               )
@@ -556,83 +616,34 @@ export function PhysicalCountReconciledView({ count, locale, t }: PhysicalCountR
               className={`physical-count-reconcile__total-value ${getVarianceCellClass(totalVarianceValue)}`}
               dir="ltr"
             >
-              {formatSignedMoney(totalVarianceValue)}
+              <VarianceValueDisplay
+                value={totalVarianceValue}
+                estimated={hasEstimatedValues}
+                t={t}
+              />
             </span>
+            {hasEstimatedValues ? (
+              <span className="physical-count-reconcile__total-note">
+                {t('inventory.physicalCounts.reconcile.estimateTotalNote')}
+              </span>
+            ) : null}
           </div>
         </div>
       </div>
-    </div>
-  )
-}
-
-function ReconciledActionCell({
-  line,
-  t,
-}: {
-  line: PhysicalCountLineResponse
-  t: (key: string, params?: Record<string, string | number>) => string
-}) {
-  const display = getLineVarianceDisplay(line)
-  if (display?.variance === 0 || (line.variance != null && line.variance === 0)) {
-    return (
-      <span className="physical-count-reconcile__no-difference">
-        {t('inventory.physicalCounts.reconcile.noDifference')}
-      </span>
-    )
-  }
-
-  const actionKey = line.actionTaken?.toUpperCase()
-  const actionLabel =
-    actionKey === 'WASTE'
-      ? t('inventory.physicalCounts.reconcile.actionWaste')
-      : actionKey === 'ADJUSTMENT'
-        ? t('inventory.physicalCounts.reconcile.actionAdjustment')
-        : (line.actionTaken || '—')
-
-  return (
-    <div className="physical-count-reconcile__reconciled-action">
-      <span>{actionLabel}</span>
-      {line.adjustmentTransactionId != null ? (
-        <span className="physical-count-reconcile__transaction-id" dir="ltr">
-          {t('inventory.physicalCounts.reconcile.adjustmentTxn', { id: line.adjustmentTransactionId })}
-        </span>
-      ) : null}
-      {line.wasteTransactionId != null ? (
-        <span className="physical-count-reconcile__transaction-id" dir="ltr">
-          {t('inventory.physicalCounts.reconcile.wasteTxn', { id: line.wasteTransactionId })}
-        </span>
-      ) : null}
     </div>
   )
 }
 
 interface PhysicalCountCancelledViewProps {
   count: PhysicalCountResponse
+  locale: Locale
   t: (key: string) => string
 }
 
-export function PhysicalCountCancelledView({ count, t }: PhysicalCountCancelledViewProps) {
+export function PhysicalCountCancelledView({ count, locale, t }: PhysicalCountCancelledViewProps) {
   return (
     <div className="physical-count-detail">
-      <div className="physical-count-detail__header">
-        <div className="physical-count-detail__info">
-          <div className="physical-count-detail__code" dir="ltr">{count.code}</div>
-          <div className="physical-count-detail__warehouse">{count.warehouseName}</div>
-          <div className="physical-count-detail__meta-inline">
-            <span className="physical-count-detail__meta-label">{t('inventory.physicalCounts.col.scheduledDate')}</span>
-            <span className="physical-count-detail__meta-value" dir="ltr">{formatDate(count.scheduledDate)}</span>
-          </div>
-          {count.notes ? (
-            <div className="physical-count-detail__notes">
-              <span className="physical-count-detail__meta-label">{t('inventory.physicalCounts.fields.notes')}</span>
-              <span className="physical-count-detail__meta-value">{count.notes}</span>
-            </div>
-          ) : null}
-        </div>
-        <Badge variant={getStatusVariant(count.status)}>
-          {t(`inventory.physicalCounts.status.${count.status}`)}
-        </Badge>
-      </div>
+      <PhysicalCountDocumentHeader count={count} locale={locale} t={t} />
 
       <div className="physical-count-detail__placeholder">
         <p className="physical-count-detail__placeholder-title">

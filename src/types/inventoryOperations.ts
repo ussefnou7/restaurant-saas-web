@@ -104,10 +104,10 @@ export type PhysicalCountLineResponse = {
   countedQuantity: number | null
   variance: number | null
   varianceValue: number | null
+  varianceValueIsEstimate: boolean
   unitCostAtFreeze: number
   actionTaken: string
   adjustmentTransactionId: number | null
-  wasteTransactionId: number | null
   countedAt: string | null
   notes: string | null
 }
@@ -159,11 +159,22 @@ export type UpdateCountedQuantitiesRequest = {
   }>
 }
 
-export type ReconcileLineAction = 'ADJUSTMENT' | 'WASTE'
+export type PostFreezeMaterialMovementResponse = {
+  materialId: number
+  materialCode: string
+  materialName: string
+  materialNameAr?: string | null
+  movementCount: number
+  quantityIn: number
+  quantityOut: number
+  netQuantity: number
+}
 
-export type ReconcileCountRequest = {
-  lines: Array<{
-    lineId: number
-    action: ReconcileLineAction
-  }>
+export type PostFreezeMovementsResponse = {
+  countId: number
+  warehouseId: number
+  frozenAt: string
+  totalMovementCount: number
+  affectedMaterialCount: number
+  materials: PostFreezeMaterialMovementResponse[]
 }

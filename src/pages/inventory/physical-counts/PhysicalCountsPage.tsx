@@ -23,11 +23,11 @@ import { useTranslation } from '../../../i18n/useTranslation'
 import * as physicalCountService from '../../../services/physicalCountService'
 import type { PhysicalCountStatus, PhysicalCountSummaryResponse } from '../../../types/inventoryOperations'
 import { translateApiError } from '../../../utils/errors'
-import { formatDate } from '../../../utils/format'
 import { canManageInventoryStock, canViewInventoryStock } from '../../../utils/inventoryAccess'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { StockAccessDenied } from '../StockAccessDenied'
 import { useStockFilterLookups } from '../useStockFilterLookups'
+import { formatPhysicalCountDate } from './physicalCountDisplay'
 
 function getStatusVariant(status: PhysicalCountStatus): 'muted' | 'warning' | 'success' {
   switch (status) {
@@ -158,7 +158,7 @@ export function PhysicalCountsPage() {
                       <span className="physical-count-code">{count.code}</span>
                     </Td>
                     <Td column="entity">{count.warehouseName}</Td>
-                    <Td dir="ltr" className="table-cell--numeric">{formatDate(count.scheduledDate)}</Td>
+                    <Td dir="ltr" className="table-cell--numeric">{formatPhysicalCountDate(count.scheduledDate)}</Td>
                     <Td column="status">
                       <Badge variant={getStatusVariant(count.status)}>
                         {t(`inventory.physicalCounts.status.${count.status}`)}
@@ -166,7 +166,7 @@ export function PhysicalCountsPage() {
                     </Td>
                     <Td dir="ltr" className="table-cell--numeric">{count.lineCount}</Td>
                     <Td dir="ltr" className="table-cell--numeric">{count.varianceCount}</Td>
-                    <Td dir="ltr" className="table-cell--numeric">{formatDate(count.createdAt)}</Td>
+                    <Td dir="ltr" className="table-cell--numeric">{formatPhysicalCountDate(count.createdAt)}</Td>
                   </ClickableTableRow>
                 ))}
               </TableBody>

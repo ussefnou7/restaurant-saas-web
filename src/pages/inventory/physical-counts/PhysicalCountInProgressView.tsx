@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import { CheckCircle2, Circle, Trash2, Undo2 } from 'lucide-react'
-import { Badge } from '../../../components/ui/Badge'
 import { Button } from '../../../components/ui/Button'
 import { IconActionButton } from '../../../components/ui/RowActions'
 import {
@@ -12,9 +11,10 @@ import {
   Th,
 } from '../../../components/ui/Table'
 import { FormInput, FormTextarea } from '../../../components/fields'
+import type { Locale } from '../../../i18n/types'
 import type { PhysicalCountLineResponse, PhysicalCountResponse } from '../../../types/inventoryOperations'
-import { formatDate, formatDateTime } from '../../../utils/format'
-import { getStatusVariant } from './physicalCountDisplay'
+import { PhysicalCountDocumentHeader } from './PhysicalCountDocumentHeader'
+import { formatPhysicalCountDateTime, getMaterialDisplayName, getPhysicalCountUomDisplay } from './physicalCountDisplay'
 
 type LineDraft = {
   countedQuantity: string
@@ -35,7 +35,7 @@ function buildLineDrafts(lines: PhysicalCountLineResponse[]): Record<number, Lin
 
 interface PhysicalCountInProgressViewProps {
   count: PhysicalCountResponse
-  locale: string
+  locale: Locale
   canManage: boolean
   canRevert: boolean
   canDelete: boolean
@@ -127,31 +127,7 @@ export function PhysicalCountInProgressView({
   return (
     <>
       <div className="physical-count-detail">
-        <div className="physical-count-detail__header">
-          <div className="physical-count-detail__info">
-            <div className="physical-count-detail__code" dir="ltr">{count.code}</div>
-            <div className="physical-count-detail__warehouse">{count.warehouseName}</div>
-            <div className="physical-count-detail__meta-inline">
-              <span className="physical-count-detail__meta-label">{t('inventory.physicalCounts.col.scheduledDate')}</span>
-              <span className="physical-count-detail__meta-value" dir="ltr">{formatDate(count.scheduledDate)}</span>
-            </div>
-            {count.frozenAt ? (
-              <div className="physical-count-detail__meta-inline">
-                <span className="physical-count-detail__meta-label">{t('inventory.physicalCounts.col.frozenAt')}</span>
-                <span className="physical-count-detail__meta-value" dir="ltr">{formatDateTime(count.frozenAt)}</span>
-              </div>
-            ) : null}
-            {count.notes ? (
-              <div className="physical-count-detail__notes">
-                <span className="physical-count-detail__meta-label">{t('inventory.physicalCounts.fields.notes')}</span>
-                <span className="physical-count-detail__meta-value">{count.notes}</span>
-              </div>
-            ) : null}
-          </div>
-          <Badge variant={getStatusVariant(count.status)}>
-            {t(`inventory.physicalCounts.status.${count.status}`)}
-          </Badge>
-        </div>
+        <PhysicalCountDocumentHeader count={count} locale={locale} t={t} />
 
         <div className="physical-count-detail__lines">
           <div className="physical-count-counting__header">
@@ -165,22 +141,22 @@ export function PhysicalCountInProgressView({
               </p>
             </div>
             {savedAt ? (
-              <span className="physical-count-counting__saved" dir="ltr">
-                {t('inventory.physicalCounts.counting.savedAt', { time: formatDateTime(savedAt) })}
+              <span className="physical-count-counting__saved">
+                {t('inventory.physicalCounts.counting.savedAt', { time: formatPhysicalCountDateTime(savedAt) })}
               </span>
             ) : null}
           </div>
 
           {displayError ? <div className="form-error-banner">{displayError}</div> : null}
 
-          <DataTable>
+          <DataTable className="physical-count-counting__table">
             <TableHead>
               <TableRow>
-                <Th>{t('inventory.physicalCounts.counting.col.status')}</Th>
+                <Th className="physical-count-counting__status-col">{t('inventory.physicalCounts.counting.col.status')}</Th>
                 <Th column="entity">{t('inventory.physicalCounts.lines.material')}</Th>
-                <Th>{t('inventory.physicalCounts.lines.uom')}</Th>
+                <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.uom')}</Th>
                 <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.expected')}</Th>
-                <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.counted')}</Th>
+                <Th className="table-cell--numeric physical-count-counting__counted-col">{t('inventory.physicalCounts.lines.counted')}</Th>
                 <Th>{t('inventory.physicalCounts.counting.col.lineNotes')}</Th>
               </TableRow>
             </TableHead>
@@ -191,13 +167,14 @@ export function PhysicalCountInProgressView({
                 const parsedDraft = draft?.countedQuantity.trim() === '' ? null : Number(draft?.countedQuantity)
                 const hasInvalidDraft =
                   parsedDraft != null && (Number.isNaN(parsedDraft) || parsedDraft < 0)
+                const uomDisplay = getPhysicalCountUomDisplay(line.uomSymbol, locale, t)
 
                 return (
                   <TableRow
                     key={line.id}
                     className={isCounted ? '' : 'physical-count-line--uncounted'}
                   >
-                    <Td>
+                    <Td className="physical-count-counting__status-cell">
                       {isCounted ? (
                         <span className="physical-count-counting__status physical-count-counting__status--counted">
                           <CheckCircle2 size={16} aria-hidden />
@@ -211,16 +188,11 @@ export function PhysicalCountInProgressView({
                       )}
                     </Td>
                     <Td column="entity">
-                      <span>
-                        {locale === 'ar' && line.materialNameAr
-                          ? line.materialNameAr
-                          : line.materialName}
-                      </span>
-                      <span className="entity-cell__code">{line.materialCode}</span>
+                      <span>{getMaterialDisplayName(line, locale)}</span>
                     </Td>
-                    <Td>{line.uomSymbol}</Td>
+                    <Td dir={uomDisplay.dir} className="table-cell--numeric">{uomDisplay.label}</Td>
                     <Td dir="ltr" className="table-cell--numeric">{line.expectedQuantity}</Td>
-                    <Td className="table-cell--numeric">
+                    <Td className="table-cell--numeric physical-count-counting__editable-cell">
                       {canManage ? (
                         <FormInput
                           type="number"

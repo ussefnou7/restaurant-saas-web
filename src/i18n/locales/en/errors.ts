@@ -18,8 +18,10 @@ export const errorsEn: TranslationDictionary = {
   'errors.FREEZE_CONFLICT.item': '{{materialName}} (count {{conflictingCountCode}})',
   'errors.RETURN_QUANTITY_EXCEEDED':
     'Return quantity for {{materialName}} exceeds the returnable quantity: returnable {{returnable}}, requested {{requested}}',
-  'errors.WASTE_NOT_ALLOWED_POSITIVE_VARIANCE':
-    'Waste cannot be recorded for {{materialName}} because the count variance is positive',
+  'errors.FREEZE_BLOCKED_BY_CONSUMPTION_CONFLICT':
+    'Cannot start the count until order consumption is resolved for: {{materialNames}}.',
+  'errors.FREEZE_CONSUMPTION_NOT_SETTLED':
+    'Order consumption is still being processed for this warehouse. Please try again shortly.',
   'errors.UOM_CONVERSION_FAILED': 'Failed to convert from unit {{fromUom}} to unit {{toUom}}',
   'errors.EMPTY_DOCUMENT_LINES': 'This operation cannot proceed: the document has no lines',
   'errors.ORDER_CONSUMPTION_PENDING_DOC_RACE_LOST':

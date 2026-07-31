@@ -7,14 +7,20 @@ export function formatCurrency(value: number, currency = 'EGP'): string {
   }).format(value)
 }
 
-export function formatDate(value?: string | null): string {
-  if (!value) return '-'
-  return new Date(value).toLocaleDateString()
+function resolveIntlLocale(locale?: string): string | undefined {
+  if (locale === 'ar') return 'ar-EG-u-nu-latn'
+  if (locale === 'en') return 'en-US-u-nu-latn'
+  return undefined
 }
 
-export function formatDateTime(value?: string | null): string {
+export function formatDate(value?: string | null, locale?: string): string {
   if (!value) return '-'
-  return new Date(value).toLocaleString()
+  return new Date(value).toLocaleDateString(resolveIntlLocale(locale))
+}
+
+export function formatDateTime(value?: string | null, locale?: string): string {
+  if (!value) return '-'
+  return new Date(value).toLocaleString(resolveIntlLocale(locale))
 }
 
 export function formatMoney(value?: number | null): string {

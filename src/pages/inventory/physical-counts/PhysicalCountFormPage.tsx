@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Plus, Trash2 } from 'lucide-react'
-import { Badge } from '../../../components/ui/Badge'
 import { Button } from '../../../components/ui/Button'
 import { ConfirmModal } from '../../../components/ui/ConfirmModal'
-import { IconActionButton } from '../../../components/ui/RowActions'
 import { ListPage } from '../../../components/ui/ListPage'
 import { Modal } from '../../../components/ui/Modal'
 import { PageHeader } from '../../../components/ui/PageHeader'
@@ -20,11 +18,11 @@ import {
 } from '../../../components/ui/Table'
 import { FieldGrid, FormField, FormInput, FormSelect, FormTextarea } from '../../../components/fields'
 import { useTranslation } from '../../../i18n/useTranslation'
+import type { Locale } from '../../../i18n/types'
 import * as inventoryService from '../../../services/inventoryService'
 import * as physicalCountService from '../../../services/physicalCountService'
 import type { MaterialResponse, WarehouseResponse } from '../../../types/inventory'
-import type { PhysicalCountResponse, PhysicalCountStatus, ReconcileLineAction } from '../../../types/inventoryOperations'
-import { formatDate } from '../../../utils/format'
+import type { PhysicalCountResponse } from '../../../types/inventoryOperations'
 import {
   canDeletePhysicalCount,
   canManageInventoryStock,
@@ -43,14 +41,11 @@ import {
   PhysicalCountReconcileView,
   PhysicalCountReconciledView,
 } from './PhysicalCountReconcileView'
-import { getStatusVariant } from './physicalCountDisplay'
+import { PhysicalCountDocumentHeader } from './PhysicalCountDocumentHeader'
+import { getMaterialDisplayName, getPhysicalCountUomDisplay } from './physicalCountDisplay'
 
 function todayDateInput(): string {
   return new Date().toISOString().slice(0, 10)
-}
-
-function getStatusVariantForDraft(status: PhysicalCountStatus): 'muted' | 'warning' | 'success' {
-  return getStatusVariant(status)
 }
 
 export function PhysicalCountCreatePage() {
@@ -148,7 +143,7 @@ export function PhysicalCountCreatePage() {
       />
       <form onSubmit={(e) => void handleSubmit(e)} className="physical-count-form">
         {formError ? <div className="form-error-banner">{formError}</div> : null}
-        <FieldGrid>
+        <FieldGrid className="physical-count-form__fields">
           <FormField label={`${t('inventory.physicalCounts.fields.warehouse')} *`}>
             <FormSelect
               value={warehouseId}
@@ -203,11 +198,11 @@ export function PhysicalCountCreatePage() {
               {t('inventory.physicalCounts.form.noMaterialsSelected')}
             </div>
           ) : (
-            <DataTable>
+            <DataTable className="physical-count-form__materials-table">
               <TableHead>
                 <TableRow>
                   <Th column="entity">{t('inventory.physicalCounts.lines.material')}</Th>
-                  <Th>{t('inventory.physicalCounts.lines.uom')}</Th>
+                  <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.uom')}</Th>
                   {canManage ? <Th>{t('inventory.col.actions')}</Th> : null}
                 </TableRow>
               </TableHead>
@@ -218,7 +213,7 @@ export function PhysicalCountCreatePage() {
                       <span>{getInventoryLocalizedName(material, locale)}</span>
                       <span className="entity-cell__code">{material.code}</span>
                     </Td>
-                    <Td>{material.stockUomSymbol ?? material.stockUomCode}</Td>
+                    <Td dir="ltr" className="table-cell--numeric">{material.stockUomSymbol ?? material.stockUomCode}</Td>
                     {canManage ? (
                       <StopPropagationCell>
                         <Button
@@ -445,12 +440,12 @@ export function PhysicalCountViewPage() {
     }
   }
 
-  async function handleReconcile(lines: Array<{ lineId: number; action: ReconcileLineAction }>) {
+  async function handleReconcile() {
     if (!count) return
     setReconcileLoading(true)
     setReconcileError('')
     try {
-      const updated = await physicalCountService.reconcilePhysicalCount(count.id, { lines })
+      const updated = await physicalCountService.reconcilePhysicalCount(count.id)
       setCount(updated)
       setSearchParams({})
       notifyStockBalancesRefresh()
@@ -516,7 +511,7 @@ export function PhysicalCountViewPage() {
             actionLoading={actionLoading}
             reconciling={reconcileLoading}
             reconcileError={reconcileError}
-            onReconcile={(lines) => void handleReconcile(lines)}
+            onReconcile={() => void handleReconcile()}
             onBackToCounting={handleBackToCounting}
             onRevertToDraft={() => setRevertModalOpen(true)}
             onDelete={() => setDeleteModalOpen(true)}
@@ -550,10 +545,10 @@ export function PhysicalCountViewPage() {
     }
 
     if (current.status === 'CANCELLED') {
-      return <PhysicalCountCancelledView count={current} t={t} />
+      return <PhysicalCountCancelledView count={current} locale={locale} t={t} />
     }
 
-    return <PhysicalCountPlaceholderView count={current} t={t} />
+    return <PhysicalCountPlaceholderView count={current} locale={locale} t={t} />
   }
 
   return (
@@ -667,7 +662,7 @@ export function PhysicalCountViewPage() {
 
 interface PhysicalCountDraftViewProps {
   count: PhysicalCountResponse
-  locale: string
+  locale: Locale
   canManage: boolean
   canDelete: boolean
   actionLoading: boolean
@@ -676,7 +671,7 @@ interface PhysicalCountDraftViewProps {
   onStart: () => void
   onCancel: () => void
   onDelete: () => void
-  t: (key: string) => string
+  t: ReturnType<typeof useTranslation>['t']
 }
 
 function PhysicalCountDraftView({
@@ -695,25 +690,36 @@ function PhysicalCountDraftView({
   return (
     <>
       <div className="physical-count-detail">
-        <div className="physical-count-detail__header">
-          <div className="physical-count-detail__info">
-            <div className="physical-count-detail__code" dir="ltr">{count.code}</div>
-            <div className="physical-count-detail__warehouse">{count.warehouseName}</div>
-            <div className="physical-count-detail__meta-inline">
-              <span className="physical-count-detail__meta-label">{t('inventory.physicalCounts.col.scheduledDate')}</span>
-              <span className="physical-count-detail__meta-value" dir="ltr">{formatDate(count.scheduledDate)}</span>
-            </div>
-            {count.notes ? (
-              <div className="physical-count-detail__notes">
-                <span className="physical-count-detail__meta-label">{t('inventory.physicalCounts.fields.notes')}</span>
-                <span className="physical-count-detail__meta-value">{count.notes}</span>
-              </div>
-            ) : null}
-          </div>
-          <Badge variant={getStatusVariantForDraft(count.status)}>
-            {t(`inventory.physicalCounts.status.${count.status}`)}
-          </Badge>
-        </div>
+        <PhysicalCountDocumentHeader
+          count={count}
+          locale={locale}
+          t={t}
+          actions={(
+            <>
+              {canDelete ? (
+                <Button
+                  variant="danger"
+                  className="physical-count-detail__header-action physical-count-detail__header-action--danger"
+                  onClick={onDelete}
+                  disabled={actionLoading}
+                >
+                  <Trash2 size={16} aria-hidden />
+                  {t('inventory.physicalCounts.actions.deleteDocument')}
+                </Button>
+              ) : null}
+              {canManage ? (
+                <Button
+                  variant="secondary"
+                  className="physical-count-detail__header-action"
+                  onClick={onCancel}
+                  disabled={actionLoading}
+                >
+                  {t('inventory.physicalCounts.actions.cancel')}
+                </Button>
+              ) : null}
+            </>
+          )}
+        />
 
         <div className="physical-count-detail__lines">
           <div className="form-section__header">
@@ -736,71 +742,52 @@ function PhysicalCountDraftView({
               {t('inventory.physicalCounts.lines.draftEmpty')}
             </div>
           ) : (
-            <DataTable>
+            <DataTable className="physical-count-detail__lines-table">
               <TableHead>
                 <TableRow>
                   <Th column="entity">{t('inventory.physicalCounts.lines.material')}</Th>
-                  <Th>{t('inventory.physicalCounts.lines.uom')}</Th>
+                  <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.uom')}</Th>
                   {canManage ? <Th>{t('inventory.col.actions')}</Th> : null}
                 </TableRow>
               </TableHead>
               <TableBody>
-                {count.lines.map((line) => (
-                  <TableRow key={line.id}>
-                    <Td column="entity">
-                      <span>
-                        {locale === 'ar' && line.materialNameAr
-                          ? line.materialNameAr
-                          : line.materialName}
-                      </span>
-                      <span className="entity-cell__code">{line.materialCode}</span>
-                    </Td>
-                    <Td>{line.uomSymbol}</Td>
-                    {canManage ? (
-                      <StopPropagationCell>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="action"
-                          className="action-btn action-btn--icon action-btn--cancel"
-                          aria-label={t('inventory.physicalCounts.actions.removeMaterial')}
-                          onClick={() => onRemoveMaterial(line.materialId)}
-                          disabled={actionLoading}
-                        >
-                          <Trash2 size={16} aria-hidden />
-                        </Button>
-                      </StopPropagationCell>
-                    ) : null}
-                  </TableRow>
-                ))}
+                {count.lines.map((line) => {
+                  const uomDisplay = getPhysicalCountUomDisplay(line.uomSymbol, locale, t)
+                  return (
+                    <TableRow key={line.id}>
+                      <Td column="entity">
+                        <span>{getMaterialDisplayName(line, locale)}</span>
+                      </Td>
+                      <Td dir={uomDisplay.dir} className="table-cell--numeric">{uomDisplay.label}</Td>
+                      {canManage ? (
+                        <StopPropagationCell>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="action"
+                            className="action-btn action-btn--icon action-btn--cancel"
+                            aria-label={t('inventory.physicalCounts.actions.removeMaterial')}
+                            onClick={() => onRemoveMaterial(line.materialId)}
+                            disabled={actionLoading}
+                          >
+                            <Trash2 size={16} aria-hidden />
+                          </Button>
+                        </StopPropagationCell>
+                      ) : null}
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </DataTable>
           )}
         </div>
       </div>
 
-      {canManage || canDelete ? (
+      {canManage ? (
         <div className="physical-count-detail__actions">
-          {canManage ? (
-            <>
-              <Button variant="primary" onClick={onStart} disabled={actionLoading || count.lines.length === 0}>
-                {t('inventory.physicalCounts.actions.start')}
-              </Button>
-              <Button variant="secondary" onClick={onCancel} disabled={actionLoading}>
-                {t('inventory.physicalCounts.actions.cancel')}
-              </Button>
-            </>
-          ) : null}
-          {canDelete ? (
-            <IconActionButton
-              className="action-btn action-btn--icon action-btn--cancel"
-              label={t('inventory.physicalCounts.actions.delete')}
-              onClick={onDelete}
-              disabled={actionLoading}
-            >
-              <Trash2 size={16} aria-hidden />
-            </IconActionButton>
-          ) : null}
+          <Button variant="primary" onClick={onStart} disabled={actionLoading || count.lines.length === 0}>
+            {t('inventory.physicalCounts.actions.start')}
+          </Button>
         </div>
       ) : null}
     </>
@@ -809,31 +796,14 @@ function PhysicalCountDraftView({
 
 interface PhysicalCountPlaceholderViewProps {
   count: PhysicalCountResponse
+  locale: Locale
   t: (key: string) => string
 }
 
-function PhysicalCountPlaceholderView({ count, t }: PhysicalCountPlaceholderViewProps) {
+function PhysicalCountPlaceholderView({ count, locale, t }: PhysicalCountPlaceholderViewProps) {
   return (
     <div className="physical-count-detail">
-      <div className="physical-count-detail__header">
-        <div className="physical-count-detail__info">
-          <div className="physical-count-detail__code" dir="ltr">{count.code}</div>
-          <div className="physical-count-detail__warehouse">{count.warehouseName}</div>
-          <div className="physical-count-detail__meta-inline">
-            <span className="physical-count-detail__meta-label">{t('inventory.physicalCounts.col.scheduledDate')}</span>
-            <span className="physical-count-detail__meta-value" dir="ltr">{formatDate(count.scheduledDate)}</span>
-          </div>
-          {count.notes ? (
-            <div className="physical-count-detail__notes">
-              <span className="physical-count-detail__meta-label">{t('inventory.physicalCounts.fields.notes')}</span>
-              <span className="physical-count-detail__meta-value">{count.notes}</span>
-            </div>
-          ) : null}
-        </div>
-        <Badge variant={getStatusVariant(count.status)}>
-          {t(`inventory.physicalCounts.status.${count.status}`)}
-        </Badge>
-      </div>
+      <PhysicalCountDocumentHeader count={count} locale={locale} t={t} />
 
       <div className="physical-count-detail__placeholder">
         <p className="physical-count-detail__placeholder-title">

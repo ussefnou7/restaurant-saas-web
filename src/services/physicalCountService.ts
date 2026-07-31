@@ -5,7 +5,7 @@ import type {
   PhysicalCountRequest,
   PhysicalCountResponse,
   PhysicalCountSummaryResponse,
-  ReconcileCountRequest,
+  PostFreezeMovementsResponse,
   UpdateCountedQuantitiesRequest,
 } from '../types/inventoryOperations'
 import { authService } from './authService'
@@ -113,12 +113,20 @@ export async function updateCountedQuantities(
 
 export async function reconcilePhysicalCount(
   id: number | string,
-  payload: ReconcileCountRequest,
 ): Promise<PhysicalCountResponse> {
   const response = await api.post<PhysicalCountResponse>(
     `/api/inventory/physical-counts/${id}/reconcile`,
-    payload,
+    undefined,
     { headers: getMutationHeaders() },
+  )
+  return response.data
+}
+
+export async function getPostFreezeMovements(
+  id: number | string,
+): Promise<PostFreezeMovementsResponse> {
+  const response = await api.get<PostFreezeMovementsResponse>(
+    `/api/inventory/physical-counts/${id}/post-freeze-movements`,
   )
   return response.data
 }

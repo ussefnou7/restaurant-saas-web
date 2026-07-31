@@ -1,12 +1,13 @@
+import type { Locale } from '../../../i18n/types'
 import type { PhysicalCountLineResponse, PhysicalCountStatus } from '../../../types/inventoryOperations'
 import { formatMoney } from '../../../utils/format'
+import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 
 export type LineVarianceDisplay = {
   expectedDisplay: number
   variance: number
   varianceValue: number | null
   isProvisional: boolean
-  usesFrozenExpected: boolean
 }
 
 export function getStatusVariant(status: PhysicalCountStatus): 'muted' | 'warning' | 'success' {
@@ -29,17 +30,16 @@ export function getLineVarianceDisplay(line: PhysicalCountLineResponse): LineVar
   if (line.variance != null) {
     const variance = line.variance
     return {
-      expectedDisplay: line.adjustedExpectedQuantity ?? line.expectedQuantity,
+      expectedDisplay: line.expectedQuantity,
       variance,
       varianceValue:
         line.varianceValue ??
         (line.unitCostAtFreeze != null ? variance * line.unitCostAtFreeze : null),
       isProvisional: false,
-      usesFrozenExpected: line.adjustedExpectedQuantity == null,
     }
   }
 
-  const expectedBase = line.adjustedExpectedQuantity ?? line.expectedQuantity
+  const expectedBase = line.expectedQuantity
   const provisionalVariance = line.countedQuantity - expectedBase
 
   return {
@@ -49,7 +49,6 @@ export function getLineVarianceDisplay(line: PhysicalCountLineResponse): LineVar
       line.varianceValue ??
       (line.unitCostAtFreeze != null ? provisionalVariance * line.unitCostAtFreeze : null),
     isProvisional: true,
-    usesFrozenExpected: line.adjustedExpectedQuantity == null,
   }
 }
 
@@ -59,15 +58,6 @@ export function formatSignedMoney(value: number | null | undefined): string {
   if (value > 0) return `+${absolute}`
   if (value < 0) return `-${absolute}`
   return absolute
-}
-
-export function getActionLabel(
-  action: string,
-  t: (key: string) => string,
-): string {
-  if (action === 'WASTE') return t('inventory.physicalCounts.reconcile.actionWaste')
-  if (action === 'ADJUSTMENT') return t('inventory.physicalCounts.reconcile.actionAdjustment')
-  return action
 }
 
 export function getVarianceCellClass(variance: number | null | undefined): string {
@@ -82,12 +72,90 @@ export function formatVarianceQuantity(variance: number): string {
   return String(variance)
 }
 
+function padDatePart(value: number): string {
+  return String(value).padStart(2, '0')
+}
+
+function formatYmd(year: number, month: number, day: number): string {
+  return `${year}/${padDatePart(month)}/${padDatePart(day)}`
+}
+
+export function formatPhysicalCountDate(value?: string | null): string {
+  if (!value) return '-'
+
+  const dateOnlyMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (dateOnlyMatch) {
+    const [, year, month, day] = dateOnlyMatch
+    return `${year}/${month}/${day}`
+  }
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '-'
+  return formatYmd(date.getFullYear(), date.getMonth() + 1, date.getDate())
+}
+
+export function formatPhysicalCountDateTime(value?: string | null): string {
+  if (!value) return '-'
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '-'
+
+  const hours = date.getHours()
+  const displayHours = hours % 12 || 12
+  const minutes = padDatePart(date.getMinutes())
+  const seconds = padDatePart(date.getSeconds())
+  const period = hours >= 12 ? 'PM' : 'AM'
+
+  return `${formatYmd(date.getFullYear(), date.getMonth() + 1, date.getDate())} ${displayHours}:${minutes}:${seconds} ${period}`
+}
+
+type TranslationFn = (key: string) => string
+
+const translatedUomCodes = new Set([
+  'kg',
+  'g',
+  'ml',
+  'l',
+  'pcs',
+  'pc',
+  'piece',
+  'each',
+  'unit',
+  'box',
+])
+
+function normalizeUomCode(value?: string | null): string {
+  return value?.trim().toLowerCase() ?? ''
+}
+
 export function getMaterialDisplayName(
-  line: Pick<PhysicalCountLineResponse, 'materialName' | 'materialNameAr'>,
-  locale: string,
+  line: { materialCode?: string | null; materialName?: string | null; materialNameAr?: string | null },
+  locale: Locale,
 ): string {
-  if (locale === 'ar' && line.materialNameAr) return line.materialNameAr
-  return line.materialName
+  return getInventoryLocalizedName(
+    {
+      name: line.materialName ?? line.materialCode ?? '',
+      nameAr: line.materialNameAr ?? undefined,
+      code: line.materialCode ?? undefined,
+    },
+    locale,
+  )
+}
+
+export function getPhysicalCountUomDisplay(
+  value: string,
+  locale: Locale,
+  t: TranslationFn,
+): { label: string; dir: 'ltr' | undefined } {
+  const code = normalizeUomCode(value)
+  if (!translatedUomCodes.has(code)) {
+    return { label: value || '-', dir: 'ltr' }
+  }
+
+  return {
+    label: t(`inventory.units.${code}`),
+    dir: locale === 'ar' ? undefined : 'ltr',
+  }
 }
 
 export function sumLineVarianceValues(
@@ -98,4 +166,9 @@ export function sumLineVarianceValues(
     if (!display || display.variance === 0 || display.varianceValue == null) return total
     return total + display.varianceValue
   }, 0)
+}
+
+export function hasEstimatedVarianceValue(line: PhysicalCountLineResponse): boolean {
+  const display = getLineVarianceDisplay(line)
+  return Boolean(display && display.variance !== 0 && display.varianceValue != null && line.varianceValueIsEstimate)
 }

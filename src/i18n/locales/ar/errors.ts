@@ -17,8 +17,10 @@ export const errorsAr: TranslationDictionary = {
   'errors.FREEZE_CONFLICT.item': '{{materialName}} (الجرد {{conflictingCountCode}})',
   'errors.RETURN_QUANTITY_EXCEEDED':
     'كمية الإرجاع للمادة {{materialName}} تتجاوز الكمية القابلة للإرجاع: المتاح {{returnable}} والمطلوب {{requested}}',
-  'errors.WASTE_NOT_ALLOWED_POSITIVE_VARIANCE':
-    'لا يمكن تسجيل هدر للمادة {{materialName}} لأن فرق الجرد موجب',
+  'errors.FREEZE_BLOCKED_BY_CONSUMPTION_CONFLICT':
+    'لا يمكن بدء الجرد قبل حل استهلاك الطلبات للمواد: {{materialNames}}.',
+  'errors.FREEZE_CONSUMPTION_NOT_SETTLED':
+    'استهلاك الطلبات لهذا المستودع ما زال قيد المعالجة. يرجى المحاولة بعد قليل.',
   'errors.UOM_CONVERSION_FAILED': 'تعذر التحويل من الوحدة {{fromUom}} إلى الوحدة {{toUom}}',
   'errors.EMPTY_DOCUMENT_LINES': 'لا يمكن تنفيذ العملية: المستند لا يحتوي على أي بنود',
   'errors.ORDER_CONSUMPTION_PENDING_DOC_RACE_LOST':
