@@ -22,7 +22,8 @@ export const errorsEn: TranslationDictionary = {
     'Cannot start the count until order consumption is resolved for: {{materialNames}}.',
   'errors.FREEZE_CONSUMPTION_NOT_SETTLED':
     'Order consumption is still being processed for this warehouse. Please try again shortly.',
-  'errors.UOM_CONVERSION_FAILED': 'Failed to convert from unit {{fromUom}} to unit {{toUom}}',
+  'errors.UOM_CONVERSION_FAILED':
+    'Unit conversion is missing for {{materialName}} ({{materialCode}}): cannot convert from {{fromUom}} to {{toUom}}.',
   'errors.EMPTY_DOCUMENT_LINES': 'This operation cannot proceed: the document has no lines',
   'errors.ORDER_CONSUMPTION_PENDING_DOC_RACE_LOST':
     'Another order created the pending consumption document first; please retry the operation.',

@@ -31,6 +31,7 @@ import {
 } from '../../../utils/inventoryAccess'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { notifyStockBalancesRefresh } from '../../../utils/inventoryStockRefresh'
+import { translateApiError } from '../../../utils/errors'
 import { StockAccessDenied } from '../StockAccessDenied'
 import { PhysicalCountMaterialPicker } from './PhysicalCountMaterialPicker'
 import {
@@ -290,8 +291,8 @@ export function PhysicalCountViewPage() {
       const data = await physicalCountService.getPhysicalCount(id)
       setCount(data)
       return data
-    } catch {
-      setError(t('inventory.physicalCounts.loadError'))
+    } catch (err) {
+      setError(translateApiError(err, t).message)
       setCount(null)
       return null
     }
