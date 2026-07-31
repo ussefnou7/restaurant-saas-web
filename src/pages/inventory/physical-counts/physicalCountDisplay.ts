@@ -30,7 +30,7 @@ export function getLineVarianceDisplay(line: PhysicalCountLineResponse): LineVar
   if (line.variance != null) {
     const variance = line.variance
     return {
-      expectedDisplay: line.expectedQuantity,
+      expectedDisplay: line.adjustedExpectedQuantity ?? line.expectedQuantity,
       variance,
       varianceValue:
         line.varianceValue ??

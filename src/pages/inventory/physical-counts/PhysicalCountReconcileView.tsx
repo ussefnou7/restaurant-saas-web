@@ -577,7 +577,9 @@ export function PhysicalCountReconciledView({ count, locale, t }: PhysicalCountR
                       {getPhysicalCountUomDisplay(line.uomSymbol, locale, t).label}
                     </span>
                   </Td>
-                  <Td dir="ltr" className="table-cell--numeric">{line.expectedQuantity}</Td>
+                  <Td dir="ltr" className="table-cell--numeric">
+                    {display?.expectedDisplay ?? line.expectedQuantity}
+                  </Td>
                   <Td dir="ltr" className="table-cell--numeric">{line.countedQuantity ?? '—'}</Td>
                   <Td dir="ltr" className={`table-cell--numeric ${getVarianceCellClass(variance)}`}>
                     {variance === 0 ? (
