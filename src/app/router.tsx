@@ -68,6 +68,7 @@ import { LowStockReport } from '../pages/inventory/reports/LowStockReport'
 import { ReportsHub } from '../pages/inventory/reports/ReportsHub'
 import { StockValuationReport } from '../pages/inventory/reports/StockValuationReport'
 import { NotFoundPage } from '../pages/NotFoundPage'
+import { CustomersListSection } from '../pages/orders/CustomersListSection'
 import { OrderDetailPage } from '../pages/orders/OrderDetailPage'
 import { OrderRequestDetailPage } from '../pages/orders/OrderRequestDetailPage'
 import { OrderRequestsListSection } from '../pages/orders/OrderRequestsListSection'
@@ -123,6 +124,7 @@ export const router = createBrowserRouter([
                   { index: true, element: <Navigate to="list" replace /> },
                   { path: 'list', element: <OrdersListSection /> },
                   { path: 'order-requests', element: <OrderRequestsListSection /> },
+                  { path: 'customers', element: <CustomersListSection /> },
                 ],
               },
               { path: 'requests/:requestId', element: <OrderRequestDetailPage /> },

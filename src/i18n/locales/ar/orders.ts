@@ -8,6 +8,8 @@ export const ordersAr: TranslationDictionary = {
   'orders.tabs.orderRequests': 'طلبات الاستلام',
 
   'orders.list.title': 'الطلبات',
+  'orders.list.customerTitle': 'طلبات {{name}}',
+  'orders.list.customerFallback': 'العميل #{{id}}',
   'orders.list.loading': 'جاري تحميل الطلبات…',
   'orders.list.empty.title': 'لا توجد طلبات',
   'orders.list.empty.subtitle':

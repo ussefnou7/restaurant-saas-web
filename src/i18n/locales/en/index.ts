@@ -4,6 +4,7 @@ import { assetsEn } from './assets'
 import { branchDetailsEn } from './branchDetails'
 import { branchesEn } from './branches'
 import { commonEn } from './common'
+import { customersEn } from './customers'
 import { devicesEn } from './devices'
 import { employeesEn } from './employees'
 import { errorsEn } from './errors'
@@ -26,6 +27,7 @@ import { usersEn } from './users'
 
 export const en = mergeMessages(
   commonEn,
+  customersEn,
   assetsEn,
   devicesEn,
   layoutEn,

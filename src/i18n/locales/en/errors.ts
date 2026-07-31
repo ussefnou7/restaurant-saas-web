@@ -106,6 +106,9 @@ export const errorsEn: TranslationDictionary = {
   // Orders module
   'errors.PRODUCT_HAS_NO_ACTIVE_RECIPE':
     "This product has no active recipe and can't be ordered yet. Please set up a recipe for it first.",
+  'errors.CUSTOMER_NOT_FOUND': 'The selected customer was not found.',
+  'errors.CANCELLATION_DETAILS_REQUIRED': 'Cancellation stage and reason are required.',
+  'errors.CANCELLATION_NOTE_REQUIRED_FOR_OTHER': 'Add a note when the cancellation reason is Other.',
   'errors.WAREHOUSE_NOT_FOUND': 'No active warehouse is configured for this branch.',
   'errors.AMBIGUOUS_WAREHOUSE_FOR_BRANCH':
     'More than one warehouse is configured for this branch ({{warehouseCount}} found).',

@@ -6,6 +6,7 @@ import { useTranslation } from '../../i18n/useTranslation'
 
 const TAB_ORDERS = 'orders'
 const TAB_REQUESTS = 'order-requests'
+const TAB_CUSTOMERS = 'customers'
 
 export function OrdersHubLayout() {
   const { t } = useTranslation()
@@ -14,15 +15,22 @@ export function OrdersHubLayout() {
 
   const activeTab = pathname.includes('/orders/order-requests')
     ? TAB_REQUESTS
+    : pathname.includes('/orders/customers')
+      ? TAB_CUSTOMERS
     : TAB_ORDERS
 
   const tabs = [
     { id: TAB_ORDERS, label: t('orders.tabs.orders') },
     { id: TAB_REQUESTS, label: t('orders.tabs.orderRequests') },
+    { id: TAB_CUSTOMERS, label: t('customers.tabs.customers') },
   ]
 
   function setTab(tabId: string) {
-    navigate(tabId === TAB_REQUESTS ? '/orders/order-requests' : '/orders/list')
+    if (tabId === TAB_REQUESTS) {
+      navigate('/orders/order-requests')
+      return
+    }
+    navigate(tabId === TAB_CUSTOMERS ? '/orders/customers' : '/orders/list')
   }
 
   return (

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   OrderSourceBadge,
   OrderStatusBadge,
@@ -40,6 +40,9 @@ const PAGE_SIZE = 20
 export function OrdersListSection() {
   const { t, locale } = useTranslation()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const customerId = searchParams.get('customerId') ?? ''
+  const customerName = searchParams.get('customerName') ?? ''
 
   const [branches, setBranches] = useState<BranchResponse[]>([])
   const [orders, setOrders] = useState<OrderView[]>([])
@@ -70,6 +73,7 @@ export function OrdersListSection() {
         branchId: branchId || undefined,
         dateFrom: dateFrom || undefined,
         dateTo: dateTo || undefined,
+        customerId: customerId || undefined,
         page,
         size: PAGE_SIZE,
       })
@@ -84,7 +88,7 @@ export function OrdersListSection() {
     } finally {
       setLoading(false)
     }
-  }, [branchId, dateFrom, dateTo, orderSource, orderType, page, statusFilter, t])
+  }, [branchId, customerId, dateFrom, dateTo, orderSource, orderType, page, statusFilter, t])
 
   useEffect(() => {
     const timer = window.setTimeout(() => void loadOrders(), 300)
@@ -93,7 +97,7 @@ export function OrdersListSection() {
 
   useEffect(() => {
     setPage(0)
-  }, [orderType, orderSource, statusFilter, branchId, dateFrom, dateTo])
+  }, [orderType, orderSource, statusFilter, branchId, dateFrom, dateTo, customerId])
 
   const showEmpty = !loading && !error && orders.length === 0
   const showTable = !loading && !error && orders.length > 0
@@ -104,7 +108,13 @@ export function OrdersListSection() {
 
       <ListCard>
         <ListCardHeader
-          title={t('orders.list.title')}
+          title={
+            customerId
+              ? t('orders.list.customerTitle', {
+                  name: customerName || t('orders.list.customerFallback', { id: customerId }),
+                })
+              : t('orders.list.title')
+          }
           toolbar={
             <div className="orders-toolbar">
               <SelectFilter

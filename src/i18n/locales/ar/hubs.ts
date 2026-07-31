@@ -16,7 +16,7 @@ export const hubsAr: TranslationDictionary = {
   'hubs.sales.subtitle': 'إدارة قائمة الطعام وعمليات البيع اليومية',
   'hubs.sales.menu.title': 'القائمة',
   'hubs.sales.menu.description': 'أصناف المطعم والأسعار والتصنيفات',
-  'hubs.sales.operations.title': 'العمليات',
+  'hubs.sales.operations.title': 'الطلبات',
   'hubs.sales.operations.description': 'الطلبات والفواتير ومتابعة المبيعات',
 
   'hubs.menu.title': 'القائمة',

@@ -45,6 +45,7 @@ export interface OrderListParams {
   branchId?: number | string
   dateFrom?: string
   dateTo?: string
+  customerId?: number | string
   page?: number
   size?: number
 }

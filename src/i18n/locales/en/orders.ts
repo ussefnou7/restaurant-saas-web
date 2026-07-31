@@ -8,6 +8,8 @@ export const ordersEn: TranslationDictionary = {
   'orders.tabs.orderRequests': 'Order Requests',
 
   'orders.list.title': 'Orders',
+  'orders.list.customerTitle': 'Orders for {{name}}',
+  'orders.list.customerFallback': 'customer #{{id}}',
   'orders.list.loading': 'Loading orders…',
   'orders.list.empty.title': 'No orders found',
   'orders.list.empty.subtitle': 'Orders will appear here once recorded by the POS or linked from online sources.',

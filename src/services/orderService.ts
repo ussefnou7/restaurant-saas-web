@@ -19,6 +19,7 @@ export async function getOrders(
       branchId: params.branchId,
       dateFrom: params.dateFrom,
       dateTo: params.dateTo,
+      customerId: params.customerId,
       page,
       size,
     })}`,

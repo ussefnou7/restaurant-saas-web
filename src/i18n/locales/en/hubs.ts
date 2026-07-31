@@ -16,7 +16,7 @@ export const hubsEn: TranslationDictionary = {
   'hubs.sales.subtitle': 'Manage menu items and daily sales operations',
   'hubs.sales.menu.title': 'Menu',
   'hubs.sales.menu.description': 'Restaurant items, prices, and categories',
-  'hubs.sales.operations.title': 'Operations',
+  'hubs.sales.operations.title': 'Orders',
   'hubs.sales.operations.description': 'Orders, invoices, and sales tracking',
 
   'hubs.menu.title': 'Menu',

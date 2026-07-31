@@ -101,6 +101,9 @@ export const errorsAr: TranslationDictionary = {
   // Orders module
   'errors.PRODUCT_HAS_NO_ACTIVE_RECIPE':
     'المنتج ده مفيهوش ريسيبي مفعّلة، مينفعش يتباع لحد ما تضاف له ريسيبي الأول.',
+  'errors.CUSTOMER_NOT_FOUND': 'العميل المحدد غير موجود.',
+  'errors.CANCELLATION_DETAILS_REQUIRED': 'مرحلة الإلغاء وسببه مطلوبان.',
+  'errors.CANCELLATION_NOTE_REQUIRED_FOR_OTHER': 'أضف ملاحظة عندما يكون سبب الإلغاء "أخرى".',
   'errors.WAREHOUSE_NOT_FOUND': 'لا يوجد مخزن نشط مضبوط لهذا الفرع.',
   'errors.AMBIGUOUS_WAREHOUSE_FOR_BRANCH':
     'يوجد أكثر من مخزن مضبوط لهذا الفرع (العدد {{warehouseCount}}).',
