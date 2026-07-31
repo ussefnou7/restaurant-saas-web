@@ -2763,7 +2763,7 @@
 .physical-count-post-freeze__material-meta {
   color: var(--color-text-muted);
   font-size: 0.75rem;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .physical-count-line--provisional {

@@ -536,16 +536,18 @@ function PostFreezeMaterialMovement({
   t: (key: string, params?: Record<string, string | number>) => string
 }) {
   const materialName = getMaterialDisplayName(material, locale)
+  const uomDisplay = getPhysicalCountUomDisplay(material.uomSymbol, locale, t)
+  const formatQuantity = (value: number) => `${value} ${uomDisplay.label}`
 
   return (
     <div className="physical-count-post-freeze__material">
       <span className="physical-count-post-freeze__material-name">{materialName}</span>
-      <span className="physical-count-post-freeze__material-meta" dir="ltr">
+      <span className="physical-count-post-freeze__material-meta">
         {t('inventory.physicalCounts.postFreeze.materialMeta', {
           movementCount: material.movementCount,
-          quantityIn: material.quantityIn,
-          quantityOut: material.quantityOut,
-          netQuantity: material.netQuantity,
+          quantityIn: formatQuantity(material.quantityIn),
+          quantityOut: formatQuantity(material.quantityOut),
+          netQuantity: formatQuantity(material.netQuantity),
         })}
       </span>
     </div>

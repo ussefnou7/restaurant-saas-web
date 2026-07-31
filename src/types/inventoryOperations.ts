@@ -164,6 +164,8 @@ export type PostFreezeMaterialMovementResponse = {
   materialCode: string
   materialName: string
   materialNameAr?: string | null
+  uomId: number
+  uomSymbol: string
   movementCount: number
   quantityIn: number
   quantityOut: number
