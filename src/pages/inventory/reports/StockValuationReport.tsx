@@ -6,6 +6,7 @@ const stockValuationReportConfig: ReportConfig<StockValuationRow> = {
   id: 'stock_valuation',
   titleKey: 'reports.stockValuation',
   endpoint: REPORT_ENDPOINTS.stockValuation,
+  type: 'flat',
   filters: ['branch', 'warehouse', 'category'],
   columns: [
     { key: 'warehouseId', labelKey: 'reports.columns.warehouseId', type: 'number' },

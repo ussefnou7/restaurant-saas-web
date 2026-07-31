@@ -6,6 +6,7 @@ const lowStockReportConfig: ReportConfig<LowStockRow> = {
   id: 'low_stock',
   titleKey: 'reports.lowStock',
   endpoint: REPORT_ENDPOINTS.lowStock,
+  type: 'flat',
   filters: ['branch', 'warehouse', 'category'],
   columns: [
     { key: 'warehouseId', labelKey: 'reports.columns.warehouseId', type: 'number' },

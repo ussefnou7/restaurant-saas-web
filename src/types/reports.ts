@@ -14,6 +14,7 @@ export type ReportConfig<T> = {
   id: string
   titleKey: string
   endpoint: string
+  type: 'flat'
   filters: FilterConfig[]
   columns: ColumnMeta<T>[]
 }

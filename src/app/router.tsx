@@ -260,6 +260,14 @@ export const router = createBrowserRouter([
                 element: <InventoryTransactionsPage />,
               },
               {
+                path: 'reports',
+                children: [
+                  { index: true, element: <ReportsHub /> },
+                  { path: 'stock-valuation', element: <StockValuationReport /> },
+                  { path: 'low-stock', element: <LowStockReport /> },
+                ],
+              },
+              {
                 path: 'admin',
                 children: [
                   {
@@ -270,14 +278,6 @@ export const router = createBrowserRouter([
                   {
                     path: 'material-categories',
                     element: <AdminMaterialCategoriesPage />,
-              {
-                path: 'reports',
-                children: [
-                  { index: true, element: <ReportsHub /> },
-                  { path: 'stock-valuation', element: <StockValuationReport /> },
-                  { path: 'low-stock', element: <LowStockReport /> },
-                ],
-              },
                   },
                   { path: 'material-catalog', element: <AdminMaterialCatalogPage /> },
                   { path: 'seed', element: <InventorySeedPage /> },

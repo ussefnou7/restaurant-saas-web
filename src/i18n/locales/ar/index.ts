@@ -47,6 +47,6 @@ export const ar = mergeMessages(
   menuAr,
   ordersAr,
   orderConsumptionAr,
+  reportsAr,
   errorsAr,
 )
-  reportsAr,

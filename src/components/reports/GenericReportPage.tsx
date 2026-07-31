@@ -100,6 +100,12 @@ export function GenericReportPage<T extends ReportRow>({ config }: GenericReport
   }, [loadRows])
 
   const exportColumns = useMemo(() => localizeColumns(config, t), [config, t])
+  const reportRenderer = (() => {
+    switch (config.type) {
+      case 'flat':
+        return <ReportTable columns={config.columns} rows={rows} />
+    }
+  })()
 
   return (
     <ListPage className="reports-page">
@@ -166,7 +172,7 @@ export function GenericReportPage<T extends ReportRow>({ config }: GenericReport
           </ListCardBody>
         ) : (
           <div className="list-card-content table-wrap">
-            <ReportTable columns={config.columns} rows={rows} />
+            {reportRenderer}
           </div>
         )}
       </ListCard>
