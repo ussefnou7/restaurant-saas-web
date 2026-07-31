@@ -1,0 +1,219 @@
+.tables-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.tables-page__layout-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.table-layout {
+  display: grid;
+  grid-template-columns: minmax(11rem, 0.75fr) minmax(24rem, 3fr) minmax(12rem, 0.85fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.table-layout__sidebar,
+.table-layout__inspector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+}
+
+.table-layout__sidebar h3,
+.table-layout__inspector h3 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.95rem;
+}
+
+.table-layout__sidebar p,
+.table-layout__inspector p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.table-layout__unplaced {
+  min-height: 2.75rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface-soft);
+  color: var(--color-text);
+  cursor: grab;
+  text-align: start;
+}
+
+.table-layout__unplaced:active {
+  cursor: grabbing;
+}
+
+.table-layout__canvas-wrap {
+  min-width: 0;
+  overflow: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+}
+
+.table-layout__canvas {
+  position: relative;
+  width: min(100%, 1000px);
+  min-width: 44rem;
+  background-image:
+    linear-gradient(var(--color-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
+  background-size: 2rem 2rem;
+  background-color: var(--color-surface-soft);
+}
+
+.table-layout__table {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 5.25rem;
+  height: 5.25rem;
+  padding: 0.5rem;
+  border: 2px solid var(--color-primary);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: grab;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  touch-action: none;
+  user-select: none;
+  word-break: break-word;
+}
+
+.table-layout__table:active {
+  cursor: grabbing;
+}
+
+.table-layout__table--round {
+  border-radius: 50%;
+}
+
+.table-layout__table--rectangle {
+  width: 7rem;
+}
+
+.table-layout__table--selected {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.table-layout__inspector label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+
+.table-layout__inspector select {
+  min-height: 2.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+@media (max-width: 1100px) {
+  .table-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .table-layout__canvas {
+    min-width: 38rem;
+  }
+}
+
+.manage-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.manage-sections__form {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.manage-sections__form-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.manage-sections__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.manage-sections__list p {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.manage-sections__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface-soft);
+}
+
+.manage-sections__row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.manage-sections__row-text span {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.manage-sections__row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+@media (max-width: 720px) {
+  .manage-sections__form {
+    grid-template-columns: 1fr;
+  }
+
+  .manage-sections__row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .manage-sections__row-actions {
+    justify-content: flex-start;
+  }
+}

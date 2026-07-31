@@ -15,6 +15,7 @@ import './styles/menu.css'
 import './styles/hub.css'
 import './styles/orders.css'
 import './styles/devices.css'
+import './styles/tables.css'
 import './styles/reports.css'
 
 createRoot(document.getElementById('root')!).render(

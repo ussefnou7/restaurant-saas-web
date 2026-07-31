@@ -79,6 +79,8 @@ export const hubsEn: TranslationDictionary = {
   'hubs.admin.users.description': 'Login accounts, roles, and permissions',
   'hubs.admin.devices.title': 'Devices',
   'hubs.admin.devices.description': 'Register and manage point-of-sale devices',
+  'hubs.admin.tables.title': 'Tables',
+  'hubs.admin.tables.description': 'Manage dining tables and branch layouts',
   'hubs.admin.settings.title': 'Settings',
   'hubs.admin.settings.description': 'General system and restaurant settings',
 }

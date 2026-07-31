@@ -77,6 +77,8 @@ import { OrdersListSection } from '../pages/orders/OrdersListSection'
 import { PosPage } from '../pages/pos/PosPage'
 import { ReportsPage } from '../pages/reports/ReportsPage'
 import { SettingsPage } from '../pages/settings/SettingsPage'
+import { TableLayoutPage } from '../pages/tables/TableLayoutPage'
+import { TablesListPage } from '../pages/tables/TablesListPage'
 import { UserDetailsPage } from '../pages/users/UserDetailsPage'
 import { UsersPage } from '../pages/users/UsersPage'
 import { EmployeeDetailsPage } from '../pages/hr/employees/EmployeeDetailsPage'
@@ -160,6 +162,13 @@ export const router = createBrowserRouter([
           {
             path: 'devices',
             element: <DevicesPage />,
+          },
+          {
+            path: 'tables',
+            children: [
+              { index: true, element: <TablesListPage /> },
+              { path: 'layout', element: <TableLayoutPage /> },
+            ],
           },
           {
             path: 'inventory',

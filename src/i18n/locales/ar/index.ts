@@ -21,8 +21,9 @@ import { leaveRequestsAr } from './leaveRequests'
 import { leaveTypesAr } from './leaveTypes'
 import { payrollAr } from './payroll'
 import { permissionsAr } from './permissions'
-import { userDetailsAr } from './userDetails'
 import { reportsAr } from './reports'
+import { tablesAr } from './tables'
+import { userDetailsAr } from './userDetails'
 import { usersAr } from './users'
 
 export const ar = mergeMessages(
@@ -49,6 +50,7 @@ export const ar = mergeMessages(
   menuAr,
   ordersAr,
   orderConsumptionAr,
+  tablesAr,
   reportsAr,
   errorsAr,
 )

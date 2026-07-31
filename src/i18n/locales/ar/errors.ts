@@ -121,6 +121,12 @@ export const errorsAr: TranslationDictionary = {
   'errors.DEVICE_NOT_FOUND': 'الجهاز المطلوب غير موجود ({{entityType}} رقم {{entityId}})',
   'errors.BRANCH_NOT_FOUND': 'الفرع المحدد غير موجود ({{entityType}} رقم {{entityId}})',
 
+  // Tables module
+  'errors.SECTION_NOT_FOUND': 'قسم الطاولات المطلوب غير موجود.',
+  'errors.SECTION_BRANCH_MISMATCH': 'القسم المحدد يتبع فرعاً مختلفاً.',
+  'errors.SECTION_HAS_TABLES':
+    'لا يمكن حذف القسم "{{sectionName}}" لأنه لا يزال مرتبطاً بطاولات.',
+
   // Auth
   'errors.INVALID_CREDENTIALS':
     'بيانات الدخول غير صحيحة، تحقق من رمز المطعم واسم المستخدم وكلمة المرور',

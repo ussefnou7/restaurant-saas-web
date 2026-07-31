@@ -126,6 +126,12 @@ export const errorsEn: TranslationDictionary = {
   'errors.DEVICE_NOT_FOUND': 'The requested device was not found ({{entityType}} #{{entityId}})',
   'errors.BRANCH_NOT_FOUND': 'The selected branch was not found ({{entityType}} #{{entityId}})',
 
+  // Tables module
+  'errors.SECTION_NOT_FOUND': 'The requested table section was not found.',
+  'errors.SECTION_BRANCH_MISMATCH': 'The selected section belongs to a different branch.',
+  'errors.SECTION_HAS_TABLES':
+    'Section "{{sectionName}}" cannot be deleted because it still has tables assigned.',
+
   // Auth
   'errors.INVALID_CREDENTIALS':
     'Invalid credentials, check the restaurant code, username, and password',
