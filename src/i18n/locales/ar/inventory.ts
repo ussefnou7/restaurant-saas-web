@@ -916,6 +916,8 @@ export const inventoryAr: TranslationDictionary = {
   'inventory.physicalCounts.reconcile.subtitle': 'راجع كل فارق قبل ترحيل حركات المخزون النهائية.',
   'inventory.physicalCounts.reconcile.provisionalTag': 'معاينة',
   'inventory.physicalCounts.reconcile.col.adjustedExpected': 'المتوقع (معدّل)',
+  'inventory.physicalCounts.reconcile.col.adjustedExpectedTooltip':
+    'الكمية المتوقعة تحتسب حركات المخزون المسجلة بين التجميد والعد.',
   'inventory.physicalCounts.reconcile.noDifference': 'لا فارق',
   'inventory.physicalCounts.reconcile.totalVarianceValue': 'إجمالي قيمة الفارق',
   'inventory.physicalCounts.reconcile.estimateMarker': 'تقديري',

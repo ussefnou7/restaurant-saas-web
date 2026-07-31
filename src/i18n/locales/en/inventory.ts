@@ -921,6 +921,8 @@ export const inventoryEn: TranslationDictionary = {
   'inventory.physicalCounts.reconcile.subtitle': 'Review each variance before posting the final stock movements.',
   'inventory.physicalCounts.reconcile.provisionalTag': 'Preview',
   'inventory.physicalCounts.reconcile.col.adjustedExpected': 'Expected (adjusted)',
+  'inventory.physicalCounts.reconcile.col.adjustedExpectedTooltip':
+    'Expected quantity accounts for stock movements recorded between the freeze and the count.',
   'inventory.physicalCounts.reconcile.noDifference': 'No difference',
   'inventory.physicalCounts.reconcile.totalVarianceValue': 'Total variance value',
   'inventory.physicalCounts.reconcile.estimateMarker': 'Est.',

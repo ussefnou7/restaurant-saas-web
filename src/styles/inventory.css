@@ -2770,6 +2770,22 @@
   background: var(--color-primary-soft);
 }
 
+.physical-count-reconcile__adjusted-header {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  max-width: 100%;
+  white-space: normal;
+}
+
+.physical-count-reconcile__adjusted-help {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--color-text-muted);
+  vertical-align: middle;
+}
+
 .physical-count-reconcile__no-difference {
   font-size: 0.875rem;
   color: var(--color-text-muted);
