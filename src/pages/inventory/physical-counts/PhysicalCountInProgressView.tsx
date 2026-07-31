@@ -14,7 +14,12 @@ import { FormInput, FormTextarea } from '../../../components/fields'
 import type { Locale } from '../../../i18n/types'
 import type { PhysicalCountLineResponse, PhysicalCountResponse } from '../../../types/inventoryOperations'
 import { PhysicalCountDocumentHeader } from './PhysicalCountDocumentHeader'
-import { formatPhysicalCountDateTime, getMaterialDisplayName, getPhysicalCountUomDisplay } from './physicalCountDisplay'
+import {
+  formatPhysicalCountDateTime,
+  formatPhysicalCountQuantity,
+  getMaterialDisplayName,
+  getPhysicalCountUomDisplay,
+} from './physicalCountDisplay'
 
 type LineDraft = {
   countedQuantity: string
@@ -191,7 +196,7 @@ export function PhysicalCountInProgressView({
                       <span>{getMaterialDisplayName(line, locale)}</span>
                     </Td>
                     <Td dir={uomDisplay.dir} className="table-cell--numeric">{uomDisplay.label}</Td>
-                    <Td dir="ltr" className="table-cell--numeric">{line.expectedQuantity}</Td>
+                    <Td dir="ltr" className="table-cell--numeric">{formatPhysicalCountQuantity(line.expectedQuantity)}</Td>
                     <Td className="table-cell--numeric physical-count-counting__editable-cell">
                       {canManage ? (
                         <FormInput
@@ -210,7 +215,7 @@ export function PhysicalCountInProgressView({
                       ) : (
                         <span dir="ltr">
                           {line.countedQuantity != null
-                            ? line.countedQuantity
+                            ? formatPhysicalCountQuantity(line.countedQuantity)
                             : <span className="text-muted">—</span>}
                         </span>
                       )}

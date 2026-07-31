@@ -167,9 +167,9 @@ export type PostFreezeMaterialMovementResponse = {
   uomId: number
   uomSymbol: string
   movementCount: number
-  quantityIn: number
-  quantityOut: number
-  netQuantity: number
+  quantityIn: string
+  quantityOut: string
+  netQuantity: string
 }
 
 export type PostFreezeMovementsResponse = {

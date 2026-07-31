@@ -1,6 +1,7 @@
 import type { Locale } from '../../../i18n/types'
 import type { PhysicalCountLineResponse, PhysicalCountStatus } from '../../../types/inventoryOperations'
 import { formatMoney } from '../../../utils/format'
+import { formatStockQuantity } from '../../../utils/inventoryStockDisplay'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 
 export type LineVarianceDisplay = {
@@ -70,6 +71,13 @@ export function getVarianceCellClass(variance: number | null | undefined): strin
 export function formatVarianceQuantity(variance: number): string {
   if (variance > 0) return `+${variance}`
   return String(variance)
+}
+
+export function formatPhysicalCountQuantity(value: number | string | null | undefined): string {
+  if (value == null) return '—'
+  const numericValue = typeof value === 'number' ? value : Number(value)
+  if (!Number.isFinite(numericValue)) return String(value)
+  return formatStockQuantity(numericValue)
 }
 
 function padDatePart(value: number): string {
