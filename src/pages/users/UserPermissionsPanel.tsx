@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { X } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { ChevronDown, X } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { useNotify } from '../../components/ui/NotificationContext'
 import { SearchInput } from '../../components/ui/SearchInput'
@@ -13,38 +13,54 @@ import {
   comparePermissionsByLocalizedName,
   getPermissionDescriptionFields,
   getPermissionNameFields,
+  getPermissionTypeLabel,
   permissionMatchesSearch,
 } from '../../utils/permissionDisplay'
+import { getPermissionModuleIcon } from '../../utils/permissionModuleIcon'
 import { getPermissionModuleLabel } from '../../utils/permissionModuleLabel'
+
+/** Modules shown in the header summary before the "show more" toggle. */
+const SUMMARY_PREVIEW_MODULES = 2
 
 interface UserPermissionsPanelProps {
   user: UserResponse
 }
 
-function PermissionItem({
+function PermissionRow({
   checked,
   displayName,
   displayDescription,
+  typeLabel,
+  typeCode,
   onToggle,
 }: {
   checked: boolean
   displayName: string
   displayDescription: string
+  typeLabel: string
+  typeCode: string
   onToggle: () => void
 }) {
   return (
-    <label className={`perm-item${checked ? ' perm-item--selected' : ''}`}>
+    <label className={`perm-row${checked ? ' perm-row--on' : ''}`}>
       <input
         type="checkbox"
-        className="perm-item__checkbox"
+        className="perm-row__switch"
         checked={checked}
         onChange={onToggle}
         aria-label={displayName}
       />
-      <span className="perm-item__body">
-        <span className="perm-item__name">{displayName}</span>
+      <span className="perm-row__body">
+        <span className="perm-row__head">
+          <span className="perm-row__name">{displayName}</span>
+          {typeLabel ? (
+            <span className={`perm-row__level perm-row__level--${typeCode.toLowerCase()}`}>
+              {typeLabel}
+            </span>
+          ) : null}
+        </span>
         {displayDescription ? (
-          <span className="perm-item__description">{displayDescription}</span>
+          <span className="perm-row__description">{displayDescription}</span>
         ) : null}
       </span>
     </label>
@@ -62,7 +78,8 @@ export function UserPermissionsPanel({ user }: UserPermissionsPanelProps) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
-  const moduleSelectAllRefs = useRef<Map<string, HTMLInputElement>>(new Map())
+  const [activeModule, setActiveModule] = useState('')
+  const [summaryExpanded, setSummaryExpanded] = useState(false)
 
   const loadPermissions = useCallback(async () => {
     setLoading(true)
@@ -96,23 +113,9 @@ export function UserPermissionsPanel({ user }: UserPermissionsPanelProps) {
 
   useEffect(() => {
     setSearch('')
+    setSummaryExpanded(false)
     void loadPermissions()
   }, [loadPermissions, user.id])
-
-  const permissionsByCode = useMemo(() => {
-    const map = new Map<string, PermissionResponse>()
-    for (const permission of allPermissions) {
-      map.set(permission.code, permission)
-    }
-    return map
-  }, [allPermissions])
-
-  const selectedPermissions = useMemo(() => {
-    return [...selectedCodes]
-      .map((code) => permissionsByCode.get(code))
-      .filter((permission): permission is PermissionResponse => Boolean(permission))
-      .sort((a, b) => comparePermissionsByLocalizedName(a, b, locale))
-  }, [selectedCodes, permissionsByCode, locale])
 
   const permissionsByModule = useMemo(() => {
     const groups = new Map<string, PermissionResponse[]>()
@@ -133,16 +136,67 @@ export function UserPermissionsPanel({ user }: UserPermissionsPanelProps) {
     )
   }, [permissionsByModule, t])
 
-  const filteredModules = useMemo(() => {
+  /** Falls back to the first module until one is picked, or after the list reloads. */
+  const currentModule = moduleOptions.includes(activeModule)
+    ? activeModule
+    : (moduleOptions[0] ?? '')
+
+  const getModuleSelectionState = useCallback(
+    (module: string) => {
+      const modulePermissions = permissionsByModule.get(module) ?? []
+      const selectedCount = modulePermissions.filter((permission) =>
+        selectedCodes.has(permission.code),
+      ).length
+
+      return {
+        total: modulePermissions.length,
+        selectedCount,
+        allSelected: selectedCount > 0 && selectedCount === modulePermissions.length,
+      }
+    },
+    [permissionsByModule, selectedCodes],
+  )
+
+  /** Selected permissions grouped by module, ordered by how much of the module is on. */
+  const summaryGroups = useMemo(() => {
     return moduleOptions
       .map((module) => {
         const permissions = (permissionsByModule.get(module) ?? []).filter((permission) =>
-          permissionMatchesSearch(permission, search),
+          selectedCodes.has(permission.code),
         )
-        return { module, permissions }
+        return { module, permissions, total: (permissionsByModule.get(module) ?? []).length }
       })
-      .filter((entry) => entry.permissions.length > 0)
-  }, [moduleOptions, permissionsByModule, search])
+      .filter((group) => group.permissions.length > 0)
+      .sort((a, b) => b.permissions.length - a.permissions.length)
+  }, [moduleOptions, permissionsByModule, selectedCodes])
+
+  const visibleSummaryGroups = summaryExpanded
+    ? summaryGroups
+    : summaryGroups.slice(0, SUMMARY_PREVIEW_MODULES)
+  const hiddenSummaryGroups = summaryGroups.slice(visibleSummaryGroups.length)
+  const hiddenSummaryCount = hiddenSummaryGroups.reduce(
+    (sum, group) => sum + group.permissions.length,
+    0,
+  )
+
+  const trimmedSearch = search.trim()
+
+  /** Detail pane: search results across every module, or just the active module. */
+  const detailGroups = useMemo(() => {
+    if (trimmedSearch) {
+      return moduleOptions
+        .map((module) => ({
+          module,
+          permissions: (permissionsByModule.get(module) ?? []).filter((permission) =>
+            permissionMatchesSearch(permission, trimmedSearch),
+          ),
+        }))
+        .filter((group) => group.permissions.length > 0)
+    }
+
+    if (!currentModule) return []
+    return [{ module: currentModule, permissions: permissionsByModule.get(currentModule) ?? [] }]
+  }, [trimmedSearch, moduleOptions, permissionsByModule, currentModule])
 
   function togglePermission(code: string) {
     setSelectedCodes((current) => {
@@ -157,49 +211,21 @@ export function UserPermissionsPanel({ user }: UserPermissionsPanelProps) {
   }
 
   function toggleModuleSelection(module: string) {
-    const modulePermissions = permissionsByModule.get(module) ?? []
-    const moduleCodes = modulePermissions.map((permission) => permission.code)
+    const moduleCodes = (permissionsByModule.get(module) ?? []).map((permission) => permission.code)
     const allSelected = moduleCodes.every((code) => selectedCodes.has(code))
 
     setSelectedCodes((current) => {
       const next = new Set(current)
-      if (allSelected) {
-        for (const code of moduleCodes) {
+      for (const code of moduleCodes) {
+        if (allSelected) {
           next.delete(code)
-        }
-      } else {
-        for (const code of moduleCodes) {
+        } else {
           next.add(code)
         }
       }
       return next
     })
   }
-
-  function getModuleSelectionState(module: string) {
-    const modulePermissions = permissionsByModule.get(module) ?? []
-    const selectedCount = modulePermissions.filter((permission) =>
-      selectedCodes.has(permission.code),
-    ).length
-
-    return {
-      total: modulePermissions.length,
-      selectedCount,
-      allSelected: selectedCount > 0 && selectedCount === modulePermissions.length,
-    }
-  }
-
-  useEffect(() => {
-    for (const module of moduleOptions) {
-      const input = moduleSelectAllRefs.current.get(module)
-      if (!input) continue
-
-      const { allSelected, selectedCount, total } = getModuleSelectionState(module)
-      const someSelected = selectedCount > 0 && selectedCount < total
-
-      input.indeterminate = someSelected && !allSelected
-    }
-  }, [selectedCodes, moduleOptions, permissionsByModule])
 
   function handleReset() {
     setSelectedCodes(new Set(savedSnapshot))
@@ -227,6 +253,30 @@ export function UserPermissionsPanel({ user }: UserPermissionsPanelProps) {
     }
   }
 
+  const totalCount = allPermissions.length
+  const selectedCount = selectedCodes.size
+  const progress = totalCount > 0 ? Math.round((selectedCount / totalCount) * 100) : 0
+
+  function renderChip(permission: PermissionResponse) {
+    const displayName = localized(getPermissionNameFields(permission))
+
+    return (
+      <li key={permission.code}>
+        <span className="perm-chip">
+          <span className="perm-chip__name">{displayName}</span>
+          <button
+            type="button"
+            className="perm-chip__remove"
+            onClick={() => togglePermission(permission.code)}
+            aria-label={`${t('common.actions.remove')} ${displayName}`}
+          >
+            <X size={13} aria-hidden />
+          </button>
+        </span>
+      </li>
+    )
+  }
+
   return (
     <div className="user-permissions">
       {loading ? (
@@ -244,51 +294,129 @@ export function UserPermissionsPanel({ user }: UserPermissionsPanelProps) {
 
       {!loading && !error ? (
         <>
-          <section className="user-permissions__selected">
-            <header className="user-permissions__section-head">
-              <div>
-                <h3 className="user-permissions__section-title">
-                  {t('userDetails.permissions.selectedTitle')}
-                </h3>
-                <p className="user-permissions__section-subtitle">
-                  {t('userDetails.permissions.selectedSubtitle', { count: selectedCodes.size })}
-                </p>
-              </div>
-            </header>
-
-            {selectedPermissions.length === 0 ? (
-              <p className="user-permissions__empty">{t('userDetails.permissions.noneSelected')}</p>
-            ) : (
-              <ul className="user-permissions__selected-list">
-                {selectedPermissions.map((permission) => {
-                  const displayName = localized(getPermissionNameFields(permission))
-
-                  return (
-                    <li key={permission.code}>
-                      <div className="perm-selected-chip">
-                        <span className="perm-selected-chip__name">{displayName}</span>
-                        <button
-                          type="button"
-                          className="perm-selected-chip__remove"
-                          onClick={() => togglePermission(permission.code)}
-                          aria-label={`${t('common.actions.remove')} ${displayName}`}
-                        >
-                          <X size={14} aria-hidden />
-                        </button>
-                      </div>
-                    </li>
-                  )
+          <section className="perm-summary" aria-label={t('userDetails.permissions.selectedTitle')}>
+            <div className="perm-summary__meter">
+              <span className="perm-summary__count">
+                {t('userDetails.permissions.enabledCount', { count: selectedCount })}
+              </span>
+              <span className="perm-summary__scope">
+                {t('userDetails.permissions.enabledScope', {
+                  total: totalCount,
+                  modules: summaryGroups.length,
                 })}
+              </span>
+              <span
+                className="perm-summary__bar"
+                role="progressbar"
+                aria-valuenow={selectedCount}
+                aria-valuemin={0}
+                aria-valuemax={totalCount}
+              >
+                <span className="perm-summary__bar-fill" style={{ inlineSize: `${progress}%` }} />
+              </span>
+              <button
+                type="button"
+                className="perm-summary__clear"
+                onClick={() => setSelectedCodes(new Set())}
+                disabled={selectedCount === 0}
+              >
+                {t('userDetails.permissions.clearAll')}
+              </button>
+            </div>
+
+            {summaryGroups.length === 0 ? (
+              <p className="perm-summary__empty">{t('userDetails.permissions.noneSelected')}</p>
+            ) : (
+              <ul className="perm-summary__groups">
+                {visibleSummaryGroups.map(({ module, permissions, total }) => (
+                  <li key={module} className="perm-summary__group">
+                    <button
+                      type="button"
+                      className="perm-summary__group-label"
+                      onClick={() => {
+                        setSearch('')
+                        setActiveModule(module)
+                      }}
+                    >
+                      <span>{getPermissionModuleLabel(module, t)}</span>
+                      <span className="perm-summary__group-count">
+                        {t('permissions.modules.count', {
+                          selected: permissions.length,
+                          total,
+                        })}
+                      </span>
+                    </button>
+                    <ul className="perm-summary__chips">{permissions.map(renderChip)}</ul>
+                  </li>
+                ))}
               </ul>
             )}
+
+            {hiddenSummaryCount > 0 || summaryExpanded ? (
+              <button
+                type="button"
+                className="perm-summary__more"
+                onClick={() => setSummaryExpanded((current) => !current)}
+              >
+                {summaryExpanded
+                  ? t('userDetails.permissions.showLess')
+                  : t('userDetails.permissions.showMore', {
+                      count: hiddenSummaryCount,
+                      modules: hiddenSummaryGroups.length,
+                    })}
+                <ChevronDown
+                  size={14}
+                  aria-hidden
+                  className={`perm-summary__more-icon${
+                    summaryExpanded ? ' perm-summary__more-icon--open' : ''
+                  }`}
+                />
+              </button>
+            ) : null}
           </section>
 
-          <section className="user-permissions__all">
-            <header className="user-permissions__section-head user-permissions__section-head--row">
-              <h3 className="user-permissions__section-title">
-                {t('userDetails.permissions.allTitle')}
-              </h3>
-              <div className="user-permissions__search">
+          <div className="perm-workspace">
+            <nav className="perm-modules" aria-label={t('userDetails.permissions.allTitle')}>
+              {moduleOptions.map((module) => {
+                const { total, selectedCount: moduleSelected } = getModuleSelectionState(module)
+                const ModuleIcon = getPermissionModuleIcon(module)
+                const isActive = !trimmedSearch && module === currentModule
+
+                return (
+                  <button
+                    key={module}
+                    type="button"
+                    className={`perm-module-nav${isActive ? ' perm-module-nav--active' : ''}`}
+                    aria-current={isActive ? 'true' : undefined}
+                    onClick={() => {
+                      setSearch('')
+                      setActiveModule(module)
+                    }}
+                  >
+                    <span
+                      className={`perm-module-nav__icon${
+                        moduleSelected > 0 ? ' perm-module-nav__icon--on' : ''
+                      }`}
+                    >
+                      <ModuleIcon size={15} aria-hidden />
+                    </span>
+                    <span className="perm-module-nav__label">
+                      {getPermissionModuleLabel(module, t)}
+                    </span>
+                    <span
+                      className={`perm-module-nav__count${
+                        moduleSelected > 0 ? ' perm-module-nav__count--on' : ''
+                      }`}
+                    >
+                      {t('permissions.modules.count', { selected: moduleSelected, total })}
+                    </span>
+                  </button>
+                )
+              })}
+            </nav>
+
+            <div className="perm-detail">
+              <div className="perm-detail__search">
                 <SearchInput
                   placeholder={t('userDetails.permissions.searchPlaceholder')}
                   value={search}
@@ -296,63 +424,57 @@ export function UserPermissionsPanel({ user }: UserPermissionsPanelProps) {
                   aria-label={t('common.search')}
                 />
               </div>
-            </header>
 
-            {filteredModules.length === 0 ? (
-              <p className="user-permissions__empty">{t('permissions.manage.noResultsTitle')}</p>
-            ) : (
-              <div className="perm-modules-grid">
-                {filteredModules.map(({ module, permissions }) => {
-                  const { total, selectedCount, allSelected } = getModuleSelectionState(module)
+              {detailGroups.length === 0 ? (
+                <p className="user-permissions__empty">{t('permissions.manage.noResultsTitle')}</p>
+              ) : (
+                detailGroups.map(({ module, permissions }) => {
+                  const { total, selectedCount: moduleSelected, allSelected } =
+                    getModuleSelectionState(module)
 
                   return (
-                    <article key={module} className="perm-module-card">
-                      <header className="perm-module-card__head">
-                        <div className="perm-module-card__title-wrap">
-                          <h4 className="perm-module-card__title">
-                            {getPermissionModuleLabel(module, t)}
-                          </h4>
-                          <span className="perm-module-card__count">
-                            {t('permissions.modules.count', { selected: selectedCount, total })}
-                          </span>
-                        </div>
-                        <label className="perm-module-card__select-all">
-                          <input
-                            ref={(element) => {
-                              if (element) {
-                                moduleSelectAllRefs.current.set(module, element)
-                              } else {
-                                moduleSelectAllRefs.current.delete(module)
-                              }
-                            }}
-                            type="checkbox"
-                            className="perm-item__checkbox"
-                            checked={allSelected}
-                            onChange={() => toggleModuleSelection(module)}
-                          />
-                          <span>{t('common.actions.selectAll')}</span>
-                        </label>
+                    <section key={module} className="perm-group">
+                      <header className="perm-group__head">
+                        <h4 className="perm-group__title">
+                          {getPermissionModuleLabel(module, t)}
+                        </h4>
+                        <span className="perm-group__hint">
+                          {t('permissions.modules.count', { selected: moduleSelected, total })}
+                        </span>
+                        {trimmedSearch ? null : (
+                          <button
+                            type="button"
+                            className="perm-group__select-all"
+                            onClick={() => toggleModuleSelection(module)}
+                          >
+                            {allSelected
+                              ? t('userDetails.permissions.deselectAll')
+                              : t('common.actions.selectAll')}
+                          </button>
+                        )}
                       </header>
-                      <ul className="perm-module-card__list">
+                      <ul className="perm-group__list">
                         {permissions.map((permission) => (
                           <li key={permission.id}>
-                            <PermissionItem
+                            <PermissionRow
                               checked={selectedCodes.has(permission.code)}
                               displayName={localized(getPermissionNameFields(permission))}
                               displayDescription={localized(
                                 getPermissionDescriptionFields(permission),
                               )}
+                              typeLabel={getPermissionTypeLabel(permission.type, t)}
+                              typeCode={permission.type ?? ''}
                               onToggle={() => togglePermission(permission.code)}
                             />
                           </li>
                         ))}
                       </ul>
-                    </article>
+                    </section>
                   )
-                })}
-              </div>
-            )}
-          </section>
+                })
+              )}
+            </div>
+          </div>
         </>
       ) : null}
 

@@ -34,4 +34,10 @@ export const userDetailsEn: TranslationDictionary = {
   'userDetails.permissions.noneSelected': 'No permissions selected',
   'userDetails.permissions.allTitle': 'All Permissions',
   'userDetails.permissions.searchPlaceholder': 'Search by permission name or description…',
+  'userDetails.permissions.enabledCount': '{{count}} permissions enabled',
+  'userDetails.permissions.enabledScope': 'of {{total}} · {{modules}} modules',
+  'userDetails.permissions.clearAll': 'Clear all',
+  'userDetails.permissions.showMore': 'Show {{count}} more in {{modules}} modules',
+  'userDetails.permissions.showLess': 'Show less',
+  'userDetails.permissions.deselectAll': 'Deselect all',
 }

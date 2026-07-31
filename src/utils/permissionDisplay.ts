@@ -1,6 +1,19 @@
 import { pickLocalizedValue, type LocalizedValueInput } from '../i18n/localized'
-import type { Locale } from '../i18n/types'
+import type { Locale, TranslationKey } from '../i18n/types'
 import type { PermissionResponse } from '../types/permission'
+
+/** Short access-level label (view / manage / access). Empty when the type is unknown. */
+export function getPermissionTypeLabel(
+  type: string | undefined,
+  t: (key: TranslationKey) => string,
+): string {
+  const normalized = (type ?? '').trim().toUpperCase()
+  if (!normalized) return ''
+
+  const key = `permissions.types.${normalized}` as TranslationKey
+  const translated = t(key)
+  return translated === key ? '' : translated
+}
 
 export function getPermissionNameFields(permission: PermissionResponse): LocalizedValueInput {
   return {

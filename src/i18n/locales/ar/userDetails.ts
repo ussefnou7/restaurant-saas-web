@@ -34,4 +34,10 @@ export const userDetailsAr: TranslationDictionary = {
   'userDetails.permissions.noneSelected': 'لا توجد صلاحيات محددة',
   'userDetails.permissions.allTitle': 'كل الصلاحيات',
   'userDetails.permissions.searchPlaceholder': 'ابحث باسم الصلاحية أو الوصف…',
+  'userDetails.permissions.enabledCount': '{{count}} صلاحية مُفعّلة',
+  'userDetails.permissions.enabledScope': 'من {{total}} · {{modules}} وحدات',
+  'userDetails.permissions.clearAll': 'مسح الكل',
+  'userDetails.permissions.showMore': 'عرض {{count}} صلاحية أخرى في {{modules}} وحدات',
+  'userDetails.permissions.showLess': 'عرض أقل',
+  'userDetails.permissions.deselectAll': 'إلغاء الكل',
 }
