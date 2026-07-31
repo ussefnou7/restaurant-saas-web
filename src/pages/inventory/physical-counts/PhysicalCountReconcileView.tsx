@@ -31,6 +31,7 @@ import {
   sumLineVarianceValues,
 } from './physicalCountDisplay'
 import { PhysicalCountDocumentHeader } from './PhysicalCountDocumentHeader'
+import { PhysicalCountExpectedQuantity } from './PhysicalCountExpectedQuantity'
 
 interface PhysicalCountReconcileViewProps {
   count: PhysicalCountResponse
@@ -367,15 +368,22 @@ function ReconcileLineRow({
       <TableRow>
         <Td column="entity">
           <span>{getMaterialDisplayName(line, locale)}</span>
+          <span className="entity-cell__code">
+            {getPhysicalCountUomDisplay(line.uomSymbol, locale, t).label}
+          </span>
         </Td>
-        <Td colSpan={4}>
+        <Td dir="ltr" className="table-cell--numeric">
+          <PhysicalCountExpectedQuantity line={line} t={t} />
+        </Td>
+        <Td dir="ltr" className="table-cell--numeric">{formatPhysicalCountQuantity(line.countedQuantity)}</Td>
+        <Td colSpan={2}>
           <span className="text-muted">{t('inventory.physicalCounts.reconcile.lineNotCounted')}</span>
         </Td>
       </TableRow>
     )
   }
 
-  const { expectedDisplay, variance, varianceValue, isProvisional } = display
+  const { variance, varianceValue, isProvisional } = display
   const isZeroVariance = variance === 0
   const uomDisplay = getPhysicalCountUomDisplay(line.uomSymbol, locale, t)
 
@@ -386,7 +394,7 @@ function ReconcileLineRow({
         <span className="entity-cell__code">{uomDisplay.label}</span>
       </Td>
       <Td dir="ltr" className="table-cell--numeric">
-        <span>{formatPhysicalCountQuantity(expectedDisplay)}</span>
+        <PhysicalCountExpectedQuantity line={line} t={t} />
       </Td>
       <Td dir="ltr" className="table-cell--numeric">{formatPhysicalCountQuantity(line.countedQuantity)}</Td>
       <Td dir="ltr" className={`table-cell--numeric ${getVarianceCellClass(variance)}`}>
@@ -597,7 +605,7 @@ export function PhysicalCountReconciledView({ count, locale, t }: PhysicalCountR
                     </span>
                   </Td>
                   <Td dir="ltr" className="table-cell--numeric">
-                    {formatPhysicalCountQuantity(display?.expectedDisplay ?? line.expectedQuantity)}
+                    <PhysicalCountExpectedQuantity line={line} t={t} />
                   </Td>
                   <Td dir="ltr" className="table-cell--numeric">{formatPhysicalCountQuantity(line.countedQuantity)}</Td>
                   <Td dir="ltr" className={`table-cell--numeric ${getVarianceCellClass(variance)}`}>

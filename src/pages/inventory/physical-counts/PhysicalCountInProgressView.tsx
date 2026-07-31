@@ -14,6 +14,7 @@ import { FormInput, FormTextarea } from '../../../components/fields'
 import type { Locale } from '../../../i18n/types'
 import type { PhysicalCountLineResponse, PhysicalCountResponse } from '../../../types/inventoryOperations'
 import { PhysicalCountDocumentHeader } from './PhysicalCountDocumentHeader'
+import { PhysicalCountExpectedQuantity } from './PhysicalCountExpectedQuantity'
 import {
   formatPhysicalCountDateTime,
   formatPhysicalCountQuantity,
@@ -196,7 +197,9 @@ export function PhysicalCountInProgressView({
                       <span>{getMaterialDisplayName(line, locale)}</span>
                     </Td>
                     <Td dir={uomDisplay.dir} className="table-cell--numeric">{uomDisplay.label}</Td>
-                    <Td dir="ltr" className="table-cell--numeric">{formatPhysicalCountQuantity(line.expectedQuantity)}</Td>
+                    <Td dir="ltr" className="table-cell--numeric">
+                      <PhysicalCountExpectedQuantity line={line} t={t} />
+                    </Td>
                     <Td className="table-cell--numeric physical-count-counting__editable-cell">
                       {canManage ? (
                         <FormInput

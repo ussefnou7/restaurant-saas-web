@@ -2855,6 +2855,10 @@
   white-space: nowrap;
 }
 
+.physical-count-reconcile__estimate-marker--provisional {
+  color: var(--color-text-muted);
+}
+
 .physical-count-reconcile-confirm__table-wrap {
   overflow-x: auto;
   max-height: min(48vh, 430px);

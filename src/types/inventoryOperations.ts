@@ -101,6 +101,7 @@ export type PhysicalCountLineResponse = {
   uomSymbol: string
   expectedQuantity: number
   adjustedExpectedQuantity: number | null
+  adjustedExpectedQuantityProvisional: boolean
   countedQuantity: number | null
   variance: number | null
   varianceValue: number | null
