@@ -1,4 +1,3 @@
-import axios from 'axios'
 import { useEffect, useMemo, useState } from 'react'
 import { Info, Trash2, Undo2 } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
@@ -87,10 +86,6 @@ export function PhysicalCountReconcileView({
           setMovementsOpen(false)
         }
       } catch (error) {
-        if (axios.isAxiosError(error) && error.response?.status === 409) {
-          if (!cancelled) setMovements(null)
-          return
-        }
         console.error('[physical-counts] Failed to load post-freeze movements', error)
         if (!cancelled) setMovements(null)
       }
