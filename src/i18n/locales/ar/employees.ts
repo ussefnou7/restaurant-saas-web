@@ -101,7 +101,6 @@ export const employeesAr: TranslationDictionary = {
 
   'employees.placeholders.fullName': 'مثال: Ahmed Hassan',
   'employees.placeholders.fullNameAr': 'اسم الموظف بالعربي - اختياري',
-  'employees.placeholders.employeeCodeSuffix': '0001',
   'employees.placeholders.nationalId': 'الرقم القومي - اختياري',
   'employees.placeholders.selectJob': 'اختر الوظيفة',
   'employees.placeholders.selectBranch': 'اختر الفرع',
@@ -111,12 +110,8 @@ export const employeesAr: TranslationDictionary = {
   'employees.placeholders.address': 'الشارع، المدينة، الدولة',
   'employees.placeholders.notes': 'ملاحظات الموارد البشرية - اختياري',
 
-  'employees.helpers.employeeCode':
-    'أدخل اللاحقة فقط بعد البادئة. يتم إنشاء الكود الكامل تلقائياً.',
   'employees.helpers.linkedAppUser': 'مستخدم التطبيق المرتبط بهذا الموظف (اختياري).',
   'employees.helpers.active': 'الموظفون غير النشطين لن يكونوا متاحين في عمليات الموارد البشرية.',
-  'employees.helpers.tenantCodeUnavailable':
-    'رمز المستأجر غير متاح. سجّل الدخول مرة أخرى لتعيين البادئة.',
 
   'employees.actions.create': 'إضافة موظف',
   'employees.actions.save': 'حفظ التغييرات',
@@ -127,7 +122,6 @@ export const employeesAr: TranslationDictionary = {
 
   'employees.validation.branchRequired': 'الفرع مطلوب',
   'employees.validation.jobRequired': 'الوظيفة مطلوبة',
-  'employees.validation.employeeCodeRequired': 'كود الموظف مطلوب',
   'employees.validation.fullNameRequired': 'الاسم مطلوب',
   'employees.validation.hireDateRequired': 'تاريخ التعيين مطلوب',
   'employees.validation.salaryRequired': 'الراتب مطلوب',

@@ -159,7 +159,6 @@ export function WarehouseOverviewPanel({
     setSaving(true)
     try {
       const updated = await inventoryService.updateWarehouse(warehouse.id, {
-        code: warehouse.code,
         name: form.name.trim(),
         nameAr: form.nameAr.trim() || null,
         type: form.type,
@@ -211,7 +210,7 @@ export function WarehouseOverviewPanel({
     return (
       <FieldGrid columns={3}>
         <FormField label={t('inventory.col.code')}>
-          <FormInput type="text" ltr value={warehouse.code} readOnly disabled />
+          <span className="field-box__value field-box__value--ltr" dir="ltr">{warehouse.code}</span>
         </FormField>
         <FormField label={t('inventory.col.name')} htmlFor="warehouse-overview-name">
           <FormInput

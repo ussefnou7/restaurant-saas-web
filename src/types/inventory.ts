@@ -40,7 +40,6 @@ export type MaterialCategoryResponse = {
 }
 
 export type CreateMaterialCategoryRequest = {
-  code: string
   name: string
   nameAr?: string | null
   active: boolean
@@ -103,7 +102,6 @@ export type MaterialResponse = {
 }
 
 export type CreateMaterialRequest = {
-  code: string
   name: string
   nameAr?: string | null
   categoryId: number
@@ -157,7 +155,6 @@ export type WarehouseResponse = {
 }
 
 export type CreateWarehouseRequest = {
-  code: string
   name: string
   nameAr?: string | null
   type: WarehouseType
@@ -184,7 +181,6 @@ export type SupplierResponse = {
 }
 
 export type CreateSupplierRequest = {
-  code: string
   name: string
   nameAr?: string | null
   phone?: string | null

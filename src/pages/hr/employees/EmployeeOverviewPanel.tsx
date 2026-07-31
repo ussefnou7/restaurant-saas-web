@@ -247,7 +247,6 @@ export function EmployeeOverviewPanel({
         branchId: Number(form.branchId),
         jobId: Number(form.jobId),
         appUserId: form.appUserId ? Number(form.appUserId) : null,
-        employeeCode: employee.employeeCode,
         fullName: form.fullName.trim(),
         fullNameAr: trimmedAr ? trimmedAr : null,
         phone: form.phone.trim() || undefined,

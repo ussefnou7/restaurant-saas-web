@@ -8,11 +8,9 @@ import {
 } from '../../components/fields'
 import { Button } from '../../components/ui/Button'
 import { Modal } from '../../components/ui/Modal'
-import { TenantCodeInput } from '../../components/ui/TenantCodeInput'
 import { useTranslation } from '../../i18n/useTranslation'
 import * as inventoryService from '../../services/inventoryService'
 import type { SupplierResponse } from '../../types/inventory'
-import { TENANT_ENTITY_PREFIXES } from '../../utils/tenantCode'
 
 type FormMode = 'create' | 'edit'
 
@@ -72,7 +70,6 @@ export function SupplierFormModal({
   }, [open, isCreate, supplier])
 
   function validate(): string | null {
-    if (!form.code.trim()) return t('inventory.suppliers.validation.codeRequired')
     if (!form.name.trim()) return t('inventory.suppliers.validation.nameRequired')
     return null
   }
@@ -89,7 +86,6 @@ export function SupplierFormModal({
     setSaving(true)
     try {
       const payload = {
-        code: form.code.trim(),
         name: form.name.trim(),
         nameAr: form.nameAr.trim() || null,
         phone: form.phone.trim() || null,
@@ -138,21 +134,11 @@ export function SupplierFormModal({
       <form id="supplier-form" className="form form-card" onSubmit={handleSubmit}>
         {error ? <div className="alert-error">{error}</div> : null}
         <FieldGrid columns={2}>
-          {isCreate ? (
-            <TenantCodeInput
-              id="supplier-code"
-              label={t('inventory.col.code')}
-              entityPrefix={TENANT_ENTITY_PREFIXES.SUP}
-              value={form.code}
-              onChange={(code) => setForm((prev) => ({ ...prev, code }))}
-              disabled={saving}
-              required
-            />
-          ) : (
+          {!isCreate ? (
             <FormField label={t('inventory.col.code')}>
-              <FormInput type="text" ltr value={form.code} readOnly disabled />
+              <span className="field-box__value field-box__value--ltr" dir="ltr">{form.code}</span>
             </FormField>
-          )}
+          ) : null}
           <FormField label={t('inventory.col.name')} htmlFor="supplier-name">
             <FormInput
               id="supplier-name"

@@ -2,7 +2,6 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { FieldGrid, FormField, FormInput, FormTextarea } from '../../../components/fields'
 import { Button } from '../../../components/ui/Button'
 import { Modal } from '../../../components/ui/Modal'
-import { TenantCodeInput } from '../../../components/ui/TenantCodeInput'
 import * as jobService from '../../../services/jobService'
 import type { JobResponse } from '../../../types/job'
 
@@ -51,7 +50,6 @@ export function JobFormModal({ open, mode, job, onClose, onSuccess }: JobFormMod
 
   function validate(): string | null {
     if (!form.name.trim()) return 'Job name is required'
-    if (!form.code.trim()) return 'Job code is required'
     return null
   }
 
@@ -69,7 +67,6 @@ export function JobFormModal({ open, mode, job, onClose, onSuccess }: JobFormMod
     try {
       const payload = {
         name: form.name.trim(),
-        code: form.code.trim(),
         description: form.description.trim() || undefined,
         active: form.active,
       }
@@ -131,17 +128,11 @@ export function JobFormModal({ open, mode, job, onClose, onSuccess }: JobFormMod
             />
           </FormField>
 
-          <TenantCodeInput
-            id="jobCode"
-            label="Job Code"
-            entityPrefix="JOB"
-            value={form.code}
-            onChange={(code) => setForm((prev) => ({ ...prev, code }))}
-            disabled={saving}
-            required
-            placeholder="CASHIER"
-            helperText="Only type the suffix after KFC-JOB-. The full code is generated automatically."
-          />
+          {!isCreate ? (
+            <FormField label="Job Code">
+              <span className="field-box__value field-box__value--ltr" dir="ltr">{form.code}</span>
+            </FormField>
+          ) : null}
 
           <FormField fullWidth label="Active job" htmlFor="jobActive">
             <div className="checkbox-card">

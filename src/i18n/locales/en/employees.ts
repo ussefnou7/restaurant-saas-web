@@ -102,7 +102,6 @@ export const employeesEn: TranslationDictionary = {
 
   'employees.placeholders.fullName': 'e.g. Ahmed Hassan',
   'employees.placeholders.fullNameAr': 'Optional Arabic employee name',
-  'employees.placeholders.employeeCodeSuffix': '0001',
   'employees.placeholders.nationalId': 'Optional national ID',
   'employees.placeholders.selectJob': 'Select job',
   'employees.placeholders.selectBranch': 'Select branch',
@@ -112,12 +111,8 @@ export const employeesEn: TranslationDictionary = {
   'employees.placeholders.address': 'Street, city, country',
   'employees.placeholders.notes': 'Optional HR notes',
 
-  'employees.helpers.employeeCode':
-    'Type only the suffix after the prefix. The full code is generated automatically.',
   'employees.helpers.linkedAppUser': 'Optional app user linked to this employee profile.',
   'employees.helpers.active': 'Inactive employees will not be available in HR operations.',
-  'employees.helpers.tenantCodeUnavailable':
-    'Tenant code is unavailable. Sign in again to set the prefix.',
 
   'employees.actions.create': 'Create Employee',
   'employees.actions.save': 'Save Changes',
@@ -128,7 +123,6 @@ export const employeesEn: TranslationDictionary = {
 
   'employees.validation.branchRequired': 'Branch is required',
   'employees.validation.jobRequired': 'Job is required',
-  'employees.validation.employeeCodeRequired': 'Employee code is required',
   'employees.validation.fullNameRequired': 'Full name is required',
   'employees.validation.hireDateRequired': 'Hire date is required',
   'employees.validation.salaryRequired': 'Salary is required',

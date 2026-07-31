@@ -77,7 +77,6 @@ export function ChangeSalaryModal({
           branchId: employee.branchId,
           jobId: employee.jobId,
           appUserId: employee.appUserId ?? null,
-          employeeCode: employee.employeeCode,
           fullName: names.fullName,
           fullNameAr: employee.fullNameAr ?? null,
           phone: employee.phone ?? undefined,

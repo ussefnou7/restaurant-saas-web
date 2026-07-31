@@ -10,7 +10,6 @@ import {
   StatusSwitch,
 } from '../../../components/fields'
 import { Modal } from '../../../components/ui/Modal'
-import { TenantCodeInput } from '../../../components/ui/TenantCodeInput'
 import { useTranslation } from '../../../i18n/useTranslation'
 import * as branchService from '../../../services/branchService'
 import * as employeeService from '../../../services/employeeService'
@@ -182,7 +181,6 @@ export function EmployeeFormModal({
   function validate(): string | null {
     if (!form.branchId) return t('employees.validation.branchRequired')
     if (!form.jobId) return t('employees.validation.jobRequired')
-    if (!form.employeeCode.trim()) return t('employees.validation.employeeCodeRequired')
     if (!form.fullName.trim()) return t('employees.validation.fullNameRequired')
     if (!form.hireDate) return t('employees.validation.hireDateRequired')
     if (!form.salary.trim()) return t('employees.validation.salaryRequired')
@@ -212,7 +210,6 @@ export function EmployeeFormModal({
         branchId: Number(form.branchId),
         jobId: Number(form.jobId),
         appUserId: form.appUserId ? Number(form.appUserId) : null,
-        employeeCode: form.employeeCode.trim(),
         fullName: form.fullName.trim(),
         fullNameAr: trimmedAr ? trimmedAr : null,
         phone: form.phone.trim() || undefined,
@@ -304,18 +301,13 @@ export function EmployeeFormModal({
               />
             </FormField>
 
-            <TenantCodeInput
-              id="employeeCode"
-              label={t('employees.fields.employeeCode')}
-              entityPrefix="EMP"
-              value={form.employeeCode}
-              onChange={(employeeCode) => setForm((prev) => ({ ...prev, employeeCode }))}
-              disabled={disabled}
-              required
-              placeholder={t('employees.placeholders.employeeCodeSuffix')}
-              helperText={t('employees.helpers.employeeCode')}
-              tenantUnavailableText={t('employees.helpers.tenantCodeUnavailable')}
-            />
+            {!isCreate ? (
+              <FormField label={t('employees.fields.employeeCode')}>
+                <span className="field-box__value field-box__value--ltr" dir="ltr">
+                  {form.employeeCode}
+                </span>
+              </FormField>
+            ) : null}
 
             <FormField label={t('employees.fields.nationalId')} htmlFor="nationalId">
               <FormInput

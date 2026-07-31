@@ -10,14 +10,12 @@ export type JobResponse = {
 
 export type CreateJobRequest = {
   name: string
-  code: string
   description?: string
   active: boolean
 }
 
 export type UpdateJobRequest = {
   name: string
-  code: string
   description?: string
   active: boolean
 }

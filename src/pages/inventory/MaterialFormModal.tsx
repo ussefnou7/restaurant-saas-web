@@ -9,14 +9,12 @@ import {
 } from '../../components/fields'
 import { Button } from '../../components/ui/Button'
 import { Modal } from '../../components/ui/Modal'
-import { TenantCodeInput } from '../../components/ui/TenantCodeInput'
 import { useTranslation } from '../../i18n/useTranslation'
 import * as inventoryService from '../../services/inventoryService'
 import type { MaterialCategoryResponse, MaterialResponse, UomResponse } from '../../types/inventory'
 import { translateApiError } from '../../utils/errors'
 import { getInventoryLocalizedName } from '../../utils/inventoryDisplay'
 import { resolveDisplayUomId, resolveStockUomId } from '../../utils/inventoryUom'
-import { TENANT_ENTITY_PREFIXES } from '../../utils/tenantCode'
 
 type FormMode = 'create' | 'edit'
 
@@ -152,7 +150,6 @@ export function MaterialFormModal({
   }, [locale, loadingUoms, material, t, uoms])
 
   function validate(): string | null {
-    if (!form.code.trim()) return t('inventory.materials.validation.codeRequired')
     if (!form.name.trim()) return t('inventory.materials.validation.nameRequired')
     if (!form.categoryId) return t('inventory.materials.validation.categoryRequired')
     if (!form.stockUomId) return t('inventory.materials.validation.stockUomRequired')
@@ -176,7 +173,6 @@ export function MaterialFormModal({
     setSaving(true)
     try {
       const payload = {
-        code: form.code.trim(),
         name: form.name.trim(),
         nameAr: form.nameAr.trim() || null,
         categoryId: Number(form.categoryId),
@@ -228,21 +224,11 @@ export function MaterialFormModal({
       <form id="material-form" className="form form-card" onSubmit={handleSubmit}>
         {error ? <div className="alert-error">{error}</div> : null}
         <FieldGrid columns={2}>
-          {isCreate ? (
-            <TenantCodeInput
-              id="material-code"
-              label={t('inventory.col.code')}
-              entityPrefix={TENANT_ENTITY_PREFIXES.MAT}
-              value={form.code}
-              onChange={(code) => setForm((prev) => ({ ...prev, code }))}
-              disabled={saving}
-              required
-            />
-          ) : (
+          {!isCreate ? (
             <FormField label={t('inventory.col.code')}>
-              <FormInput type="text" ltr value={form.code} readOnly disabled />
+              <span className="field-box__value field-box__value--ltr" dir="ltr">{form.code}</span>
             </FormField>
-          )}
+          ) : null}
           <FormField label={t('inventory.col.name')} htmlFor="material-name">
             <FormInput
               id="material-name"

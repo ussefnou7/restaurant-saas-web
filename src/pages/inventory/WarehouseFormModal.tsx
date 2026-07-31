@@ -9,7 +9,6 @@ import {
 } from '../../components/fields'
 import { Button } from '../../components/ui/Button'
 import { Modal } from '../../components/ui/Modal'
-import { TenantCodeInput } from '../../components/ui/TenantCodeInput'
 import type { TranslationKey } from '../../i18n/types'
 import { useTranslation } from '../../i18n/useTranslation'
 import * as branchService from '../../services/branchService'
@@ -18,7 +17,6 @@ import type { BranchResponse } from '../../types/branch'
 import type { WarehouseResponse, WarehouseType } from '../../types/inventory'
 import { buildBranchOptions, getLocalizedBranchName } from '../../utils/branchDisplay'
 import { translateApiError } from '../../utils/errors'
-import { TENANT_ENTITY_PREFIXES } from '../../utils/tenantCode'
 
 const WAREHOUSE_TYPES: WarehouseType[] = [
   'CENTRAL',
@@ -140,7 +138,6 @@ export function WarehouseFormModal({
   }, [branches, loadingBranches, locale, t, warehouse?.branchId])
 
   function validate(): string | null {
-    if (!form.code.trim()) return t('inventory.warehouses.validation.codeRequired')
     if (!form.name.trim()) return t('inventory.warehouses.validation.nameRequired')
     if (!form.type) return t('inventory.warehouses.validation.typeRequired')
     return null
@@ -158,7 +155,6 @@ export function WarehouseFormModal({
     setSaving(true)
     try {
       const payload = {
-        code: form.code.trim(),
         name: form.name.trim(),
         nameAr: form.nameAr.trim() || null,
         type: form.type,
@@ -205,21 +201,11 @@ export function WarehouseFormModal({
       <form id="warehouse-form" className="form form-card" onSubmit={handleSubmit}>
         {error ? <div className="alert-error">{error}</div> : null}
         <FieldGrid columns={2}>
-          {isCreate ? (
-            <TenantCodeInput
-              id="warehouse-code"
-              label={t('inventory.col.code')}
-              entityPrefix={TENANT_ENTITY_PREFIXES.WH}
-              value={form.code}
-              onChange={(code) => setForm((prev) => ({ ...prev, code }))}
-              disabled={saving}
-              required
-            />
-          ) : (
+          {!isCreate ? (
             <FormField label={t('inventory.col.code')}>
-              <FormInput type="text" ltr value={form.code} readOnly disabled />
+              <span className="field-box__value field-box__value--ltr" dir="ltr">{form.code}</span>
             </FormField>
-          )}
+          ) : null}
           <FormField label={t('inventory.col.name')} htmlFor="warehouse-name">
             <FormInput
               id="warehouse-name"

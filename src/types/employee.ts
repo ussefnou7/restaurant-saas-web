@@ -31,7 +31,6 @@ export type CreateEmployeeRequest = {
   branchId: number
   jobId: number
   appUserId?: number | null
-  employeeCode: string
   fullName: string
   fullNameAr?: string | null
   phone?: string
@@ -48,7 +47,6 @@ export type UpdateEmployeeRequest = {
   branchId: number
   jobId: number
   appUserId?: number | null
-  employeeCode: string
   fullName: string
   fullNameAr?: string | null
   phone?: string

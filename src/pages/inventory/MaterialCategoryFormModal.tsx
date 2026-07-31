@@ -2,11 +2,9 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { FieldGrid, FormField, FormInput, StatusSwitch } from '../../components/fields'
 import { Button } from '../../components/ui/Button'
 import { Modal } from '../../components/ui/Modal'
-import { TenantCodeInput } from '../../components/ui/TenantCodeInput'
 import { useTranslation } from '../../i18n/useTranslation'
 import * as inventoryService from '../../services/inventoryService'
 import type { MaterialCategoryResponse } from '../../types/inventory'
-import { TENANT_ENTITY_PREFIXES } from '../../utils/tenantCode'
 
 type FormMode = 'create' | 'edit'
 
@@ -58,7 +56,6 @@ export function MaterialCategoryFormModal({
   }, [open, isCreate, category])
 
   function validate(): string | null {
-    if (!form.code.trim()) return t('inventory.categories.validation.codeRequired')
     if (!form.name.trim()) return t('inventory.categories.validation.nameRequired')
     return null
   }
@@ -77,7 +74,6 @@ export function MaterialCategoryFormModal({
     setSaving(true)
     try {
       const payload = {
-        code: form.code.trim(),
         name: form.name.trim(),
         nameAr: form.nameAr.trim() || null,
         active: form.active,
@@ -122,21 +118,11 @@ export function MaterialCategoryFormModal({
       <form id="material-category-form" className="form form-card" onSubmit={handleSubmit}>
         {error ? <div className="alert-error">{error}</div> : null}
         <FieldGrid columns={2}>
-          {isCreate ? (
-            <TenantCodeInput
-              id="material-category-code"
-              label={t('inventory.col.code')}
-              entityPrefix={TENANT_ENTITY_PREFIXES.MCAT}
-              value={form.code}
-              onChange={(code) => setForm((prev) => ({ ...prev, code }))}
-              disabled={saving}
-              required
-            />
-          ) : (
+          {!isCreate ? (
             <FormField label={t('inventory.col.code')}>
-              <FormInput type="text" ltr value={form.code} readOnly disabled />
+              <span className="field-box__value field-box__value--ltr" dir="ltr">{form.code}</span>
             </FormField>
-          )}
+          ) : null}
           <FormField label={t('inventory.col.name')} htmlFor="category-name">
             <FormInput
               id="category-name"
