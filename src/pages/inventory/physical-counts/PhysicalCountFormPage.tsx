@@ -283,15 +283,17 @@ export function PhysicalCountViewPage() {
   const [revertModalOpen, setRevertModalOpen] = useState(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
 
-  const loadCount = useCallback(async () => {
-    if (!id) return
+  const loadCount = useCallback(async (): Promise<PhysicalCountResponse | null> => {
+    if (!id) return null
     setError('')
     try {
       const data = await physicalCountService.getPhysicalCount(id)
       setCount(data)
+      return data
     } catch {
       setError(t('inventory.physicalCounts.loadError'))
       setCount(null)
+      return null
     }
   }, [id, t])
 
@@ -389,9 +391,10 @@ export function PhysicalCountViewPage() {
     setCountSaveLoading(true)
     setCountSaveError('')
     try {
-      const updated = await physicalCountService.updateCountedQuantities(count.id, { lines })
-      setCount(updated)
-      setCountSavedAt(updated.updatedAt ?? new Date().toISOString())
+      await physicalCountService.updateCountedQuantities(count.id, { lines })
+      const refreshed = await loadCount()
+      if (!refreshed) return
+      setCountSavedAt(refreshed?.updatedAt ?? new Date().toISOString())
       notify.success(t('inventory.physicalCounts.toast.saveCountedSuccess'))
     } catch {
       // API errors are translated and toasted by the global axios interceptor.
