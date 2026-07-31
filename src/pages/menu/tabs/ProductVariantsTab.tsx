@@ -13,6 +13,7 @@ import { ProductRecipeTab } from './ProductRecipeTab'
 
 interface ProductVariantsTabProps {
   parent: Product
+  readOnly?: boolean
   onChanged?: () => void
 }
 
@@ -35,7 +36,7 @@ const emptyEditDraft: VariantEditDraft = {
   sellingPrice: '',
 }
 
-export function ProductVariantsTab({ parent, onChanged }: ProductVariantsTabProps) {
+export function ProductVariantsTab({ parent, readOnly = false, onChanged }: ProductVariantsTabProps) {
   const { t, locale } = useTranslation()
   const notify = useNotify()
   const [variants, setVariants] = useState<Product[]>([])
@@ -251,7 +252,7 @@ export function ProductVariantsTab({ parent, onChanged }: ProductVariantsTabProp
           <h3>{t('menu.editor.tabs.variants')}</h3>
           <p>{t('menu.variants.summaryWithPrice', { count: variants.length, price: priceSummary })}</p>
         </div>
-        <Button variant="primary" size="sm" onClick={openPicker} disabled={saving}>
+        <Button variant="primary" size="sm" onClick={openPicker} disabled={readOnly || saving}>
           <Plus size={16} aria-hidden="true" />
           {t('menu.variants.addButton')}
         </Button>
@@ -265,7 +266,7 @@ export function ProductVariantsTab({ parent, onChanged }: ProductVariantsTabProp
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder={t('menu.variants.picker.placeholder')}
-              disabled={saving}
+              disabled={readOnly || saving}
             />
             <button type="button" onClick={closePicker} aria-label={t('common.close')} disabled={saving}>
               <X size={16} aria-hidden="true" />
@@ -286,7 +287,7 @@ export function ProductVariantsTab({ parent, onChanged }: ProductVariantsTabProp
                     type="button"
                     className={selectedCandidate?.id === candidate.id ? 'is-selected' : ''}
                     onClick={() => setSelectedCandidate(candidate)}
-                    disabled={saving}
+                    disabled={readOnly || saving}
                   >
                     <span className="product-variants-tab__candidate-copy">
                       <strong>{candidate.name}</strong>
@@ -307,6 +308,7 @@ export function ProductVariantsTab({ parent, onChanged }: ProductVariantsTabProp
                 }
                 placeholder={t('menu.variants.labelAr')}
                 disabled={saving}
+                readOnly={readOnly}
                 required
               />
               <FormInput
@@ -316,9 +318,10 @@ export function ProductVariantsTab({ parent, onChanged }: ProductVariantsTabProp
                 }
                 placeholder={t('menu.variants.labelEn')}
                 disabled={saving}
+                readOnly={readOnly}
               />
               <div className="variant-row__actions">
-                <Button variant="primary" size="sm" onClick={() => void linkVariant()} disabled={saving}>
+                <Button variant="primary" size="sm" onClick={() => void linkVariant()} disabled={readOnly || saving}>
                   {saving ? t('branches.actions.saving') : t('menu.variants.picker.confirm')}
                 </Button>
                 <Button variant="secondary" size="sm" onClick={() => setSelectedCandidate(null)} disabled={saving}>
@@ -351,6 +354,7 @@ export function ProductVariantsTab({ parent, onChanged }: ProductVariantsTabProp
                           setEditDraft((current) => ({ ...current, variantLabelAr: event.target.value }))
                         }
                         disabled={saving}
+                        readOnly={readOnly}
                       />
                       <FormInput
                         value={editDraft.variantLabel}
@@ -358,6 +362,7 @@ export function ProductVariantsTab({ parent, onChanged }: ProductVariantsTabProp
                           setEditDraft((current) => ({ ...current, variantLabel: event.target.value }))
                         }
                         disabled={saving}
+                        readOnly={readOnly}
                       />
                       <FormInput
                         type="number"
@@ -369,6 +374,7 @@ export function ProductVariantsTab({ parent, onChanged }: ProductVariantsTabProp
                           setEditDraft((current) => ({ ...current, sellingPrice: event.target.value }))
                         }
                         disabled={saving}
+                        readOnly={readOnly}
                       />
                     </>
                   ) : (
@@ -383,7 +389,7 @@ export function ProductVariantsTab({ parent, onChanged }: ProductVariantsTabProp
                   <div className="variant-row__actions">
                     {editing ? (
                       <>
-                        <Button variant="primary" size="sm" onClick={() => void saveEdit(variant)} disabled={saving}>
+                        <Button variant="primary" size="sm" onClick={() => void saveEdit(variant)} disabled={readOnly || saving}>
                           {t('common.save')}
                         </Button>
                         <Button variant="secondary" size="sm" onClick={() => setEditingId(null)} disabled={saving}>
@@ -392,14 +398,14 @@ export function ProductVariantsTab({ parent, onChanged }: ProductVariantsTabProp
                       </>
                     ) : (
                       <>
-                        <Button variant="ghost" size="sm" onClick={() => startEdit(variant)} disabled={saving}>
+                        <Button variant="ghost" size="sm" onClick={() => startEdit(variant)} disabled={readOnly || saving}>
                           <Pencil size={16} aria-hidden="true" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => void unlinkVariant(variant)}
-                          disabled={unlinkingId === variant.id}
+                          disabled={readOnly || unlinkingId === variant.id}
                         >
                           <X size={16} aria-hidden="true" />
                         </Button>
@@ -409,7 +415,7 @@ export function ProductVariantsTab({ parent, onChanged }: ProductVariantsTabProp
                 </div>
                 {expanded ? (
                   <div className="variant-row__recipe">
-                    <ProductRecipeTab product={variant} nested />
+                    <ProductRecipeTab product={variant} nested readOnly={readOnly} />
                   </div>
                 ) : null}
               </li>

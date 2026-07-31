@@ -2,6 +2,15 @@
   padding-block-start: var(--space-xs);
 }
 
+.menu-hub-page__tabs.detail-tabs--master .detail-tabs__tab {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+}
+
+.menu-hub-page__tabs.detail-tabs--master .detail-tabs__tab--active {
+  font-weight: 700;
+}
+
 .recipe-manage-modal__section {
   margin-block-end: var(--space-lg);
 }
@@ -1002,47 +1011,16 @@
   gap: 8px;
 }
 
-.menu-products__overflow {
-  position: relative;
-}
-
-.menu-products__overflow-panel {
-  position: absolute;
-  inset-block-start: calc(100% + 6px);
-  inset-inline-end: 0;
-  z-index: 4;
-  min-width: 132px;
-  padding: 6px;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  background: var(--color-surface);
-  box-shadow: var(--shadow-md);
-}
-
-.menu-products__overflow-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  min-height: 34px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--color-text);
-  font: inherit;
-  font-size: 0.8125rem;
-  cursor: pointer;
-  text-align: start;
-}
-
-.menu-products__overflow-item:hover {
-  background: var(--color-surface-muted);
-}
-
-.menu-products__overflow-item--danger,
 .menu-products__action--danger {
   color: var(--color-danger);
+}
+
+.menu-products__row--clickable {
+  cursor: pointer;
+}
+
+.menu-products__row--clickable:hover {
+  background: var(--color-surface-soft);
 }
 
 .menu-products__delete-confirm {
@@ -1077,10 +1055,19 @@
   padding: 0;
 }
 
+.menu-products__icon-action--danger {
+  color: var(--color-danger);
+}
+
 .menu-products__action:hover,
 .menu-products__icon-action:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
+}
+
+.menu-products__icon-action--danger:hover {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
 }
 
 .menu-products__variant-chip {
@@ -1114,8 +1101,14 @@
   gap: 16px;
 }
 
+.product-editor__back-row {
+  display: flex;
+  justify-content: flex-start;
+}
+
 .product-editor__topbar-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
@@ -1146,9 +1139,6 @@
 }
 
 .product-editor__heading {
-  display: flex;
-  align-items: center;
-  gap: 14px;
   min-width: 0;
 }
 
@@ -1157,12 +1147,6 @@
   color: var(--color-text);
   font-size: 1.55rem;
   line-height: 1.25;
-}
-
-.product-editor__heading p {
-  margin: 4px 0 0;
-  color: var(--color-text-muted);
-  font-size: 0.875rem;
 }
 
 .product-editor__card {
@@ -1178,7 +1162,7 @@
 .product-editor__card-head {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 14px;
 }
 

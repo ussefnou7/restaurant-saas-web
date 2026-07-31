@@ -1,5 +1,6 @@
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
-import { ChevronLeft, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
+import type { KeyboardEvent, MouseEvent } from 'react'
+import { ChevronLeft, Pencil, Trash2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Badge } from '../../components/ui/Badge'
 import {
@@ -22,10 +23,17 @@ import * as menuService from '../../services/menuService'
 import type { Product } from '../../types/menu'
 import { translateApiError } from '../../utils/errors'
 import { useMenuCategories } from './MenuCategoriesContext'
-import { formatMenuPrice } from './menuNumberUtils'
 
 const variantCache = new Map<number, Product[]>()
 const variantRequests = new Map<number, Promise<Product[]>>()
+
+function formatProductsTablePrice(value: number): string {
+  // Page-specific override: product list prices use Latin digits even when the app locale is Arabic.
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value)
+}
 
 async function getCachedVariants(parentId: number): Promise<Product[]> {
   const cached = variantCache.get(parentId)
@@ -57,7 +65,6 @@ export function MenuProductsSection() {
   const [variantsByParent, setVariantsByParent] = useState<Record<number, Product[]>>({})
   const [variantLoadErrors, setVariantLoadErrors] = useState<Set<number>>(new Set())
   const [expandedParents, setExpandedParents] = useState<Set<number>>(new Set())
-  const [openActionsProductId, setOpenActionsProductId] = useState<number | null>(null)
   const [confirmingDeleteProductId, setConfirmingDeleteProductId] = useState<number | null>(null)
   const [deletingProductId, setDeletingProductId] = useState<number | null>(null)
 
@@ -166,7 +173,6 @@ export function MenuProductsSection() {
       await menuService.deleteProduct(product.id)
       removeProductFromState(product.id)
       setConfirmingDeleteProductId(null)
-      setOpenActionsProductId(null)
     } catch (err) {
       setError(translateApiError(err, t).message)
     } finally {
@@ -207,8 +213,15 @@ export function MenuProductsSection() {
       .filter((price) => Number.isFinite(price))
     const uniquePrices = [...new Set(prices)].sort((a, b) => a - b)
     if (uniquePrices.length === 0) return t('common.empty.dash')
-    if (uniquePrices.length === 1) return formatMenuPrice(uniquePrices[0], locale)
-    return `${formatMenuPrice(uniquePrices[0], locale)} – ${formatMenuPrice(uniquePrices.at(-1)!, locale)}`
+    if (uniquePrices.length === 1) return formatProductsTablePrice(uniquePrices[0])
+    return `${formatProductsTablePrice(uniquePrices[0])} – ${formatProductsTablePrice(uniquePrices.at(-1)!)}`
+  }
+
+  function handleRowKeyDown(event: KeyboardEvent<HTMLTableRowElement>, product: Product) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      openEdit(product)
+    }
   }
 
   function renderProductRow(product: Product, nested = false) {
@@ -220,14 +233,24 @@ export function MenuProductsSection() {
         : product.variantLabel || product.variantLabelAr
 
     return (
-      <TableRow className={nested ? 'menu-products__variant-row' : undefined}>
+      <TableRow
+        className={`menu-products__row menu-products__row--clickable${nested ? ' menu-products__variant-row' : ''}`}
+        onClick={() => openEdit(product)}
+        onKeyDown={(event) => handleRowKeyDown(event, product)}
+        tabIndex={0}
+        role="button"
+      >
         <Td column="entity">
           <div className={`menu-products__name${nested ? ' menu-products__name--variant' : ''}`}>
             {product.parent && !nested ? (
               <button
                 type="button"
                 className={`menu-products__expand${isExpanded ? ' menu-products__expand--open' : ''}`}
-                onClick={() => toggleParent(product.id)}
+                onKeyDown={(event) => event.stopPropagation()}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  toggleParent(product.id)
+                }}
                 aria-expanded={isExpanded}
                 aria-label={t('menu.products.actions.toggleVariants', { name: product.name })}
               >
@@ -257,7 +280,7 @@ export function MenuProductsSection() {
         <Td dir="ltr" className={`table-cell--numeric${product.parent && !nested ? ' menu-products__price-range' : ''}`}>
           {product.parent && !nested
             ? getParentPrice(product)
-            : formatMenuPrice(product.sellingPrice, locale)}
+            : formatProductsTablePrice(product.sellingPrice)}
         </Td>
         <Td column="status">
           <Badge variant={nested || product.parentProductId != null || !product.isMenu ? 'muted' : product.active ? 'success' : 'inactive'}>
@@ -270,12 +293,19 @@ export function MenuProductsSection() {
         </Td>
         <Td>
           {confirmingDeleteProductId === product.id ? (
-            <div className="menu-products__delete-confirm">
+            <div
+              className="menu-products__delete-confirm"
+              onClick={(event) => event.stopPropagation()}
+              onKeyDown={(event) => event.stopPropagation()}
+            >
               <span>{t('product.delete.confirm.message')}</span>
               <button
                 type="button"
                 className="menu-products__action menu-products__action--danger"
-                onClick={() => void confirmDelete(product)}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  void confirmDelete(product)
+                }}
                 disabled={deletingProductId === product.id}
               >
                 <Trash2 size={15} aria-hidden="true" />
@@ -284,46 +314,46 @@ export function MenuProductsSection() {
               <button
                 type="button"
                 className="menu-products__action"
-                onClick={() => setConfirmingDeleteProductId(null)}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  setConfirmingDeleteProductId(null)
+                }}
                 disabled={deletingProductId === product.id}
               >
                 {t('product.delete.confirm.cancel')}
               </button>
             </div>
           ) : (
-            <div className="menu-products__row-actions">
-              <button type="button" className="menu-products__action" onClick={() => openEdit(product)}>
+            <div
+              className="menu-products__row-actions"
+              onClick={(event) => event.stopPropagation()}
+              onKeyDown={(event) => event.stopPropagation()}
+            >
+              <button
+                type="button"
+                className="menu-products__icon-action"
+                onClick={(event: MouseEvent<HTMLButtonElement>) => {
+                  event.stopPropagation()
+                  openEdit(product)
+                }}
+                aria-label={t('common.edit')}
+                title={t('common.edit')}
+              >
                 <Pencil size={15} aria-hidden="true" />
-                {t('common.edit')}
               </button>
               {!nested ? (
-                <div className="menu-products__overflow">
-                  <button
-                    type="button"
-                    className="menu-products__icon-action"
-                    aria-label={t('menu.products.actions.more')}
-                    title={t('menu.products.actions.more')}
-                    aria-expanded={openActionsProductId === product.id}
-                    onClick={() => setOpenActionsProductId((current) => (current === product.id ? null : product.id))}
-                  >
-                    <MoreHorizontal size={18} aria-hidden="true" />
-                  </button>
-                  {openActionsProductId === product.id ? (
-                    <div className="menu-products__overflow-panel">
-                      <button
-                        type="button"
-                        className="menu-products__overflow-item menu-products__overflow-item--danger"
-                        onClick={() => {
-                          setConfirmingDeleteProductId(product.id)
-                          setOpenActionsProductId(null)
-                        }}
-                      >
-                        <Trash2 size={15} aria-hidden="true" />
-                        {t('menu.products.actions.delete')}
-                      </button>
-                    </div>
-                  ) : null}
-                </div>
+                <button
+                  type="button"
+                  className="menu-products__icon-action menu-products__icon-action--danger"
+                  aria-label={t('menu.products.actions.delete')}
+                  title={t('menu.products.actions.delete')}
+                  onClick={(event: MouseEvent<HTMLButtonElement>) => {
+                    event.stopPropagation()
+                    setConfirmingDeleteProductId(product.id)
+                  }}
+                >
+                  <Trash2 size={15} aria-hidden="true" />
+                </button>
               ) : null}
             </div>
           )}

@@ -28,7 +28,13 @@ export function MenuHubLayout() {
     <MenuCategoriesProvider>
       <ListPage className="menu-hub-page">
         <PageHeader title={t('hubs.menu.title')} description={t('hubs.menu.subtitle')} />
-        <DetailTabs tabs={tabs} activeTab={activeTab} onTabChange={setTab} variant="master">
+        <DetailTabs
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={setTab}
+          variant="master"
+          className="menu-hub-page__tabs"
+        >
           <div className="detail-tabs__panel menu-hub-page__panel">
             <Outlet />
           </div>

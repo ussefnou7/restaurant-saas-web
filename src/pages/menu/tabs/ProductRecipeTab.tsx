@@ -26,6 +26,7 @@ import {
 interface ProductRecipeTabProps {
   product: Product
   nested?: boolean
+  readOnly?: boolean
 }
 
 function recipeTotal(recipe: Recipe | null): string {
@@ -38,7 +39,7 @@ function hasRecipeItems(recipe: Recipe): boolean {
   return Array.isArray(recipe.items) && recipe.items.length > 0
 }
 
-export function ProductRecipeTab({ product, nested = false }: ProductRecipeTabProps) {
+export function ProductRecipeTab({ product, nested = false, readOnly = false }: ProductRecipeTabProps) {
   const { t, locale } = useTranslation()
   const notify = useNotify()
 
@@ -77,7 +78,7 @@ export function ProductRecipeTab({ product, nested = false }: ProductRecipeTabPr
       const nextRows = active ? rowsFromRecipeItems(active.items) : [createRow()]
       setRows(nextRows)
       setSavedSnapshot(serializeRows(nextRows))
-      setEditing(active === null)
+      setEditing(!readOnly && active === null)
       setConfirming(false)
     } catch (err) {
       setActiveRecipe(null)
@@ -86,7 +87,7 @@ export function ProductRecipeTab({ product, nested = false }: ProductRecipeTabPr
     } finally {
       setLoading(false)
     }
-  }, [product.id, t])
+  }, [product.id, readOnly, t])
 
   const loadLookups = useCallback(async () => {
     setLookupsLoading(true)
@@ -225,7 +226,7 @@ export function ProductRecipeTab({ product, nested = false }: ProductRecipeTabPr
             setEditing(true)
             setConfirming(false)
           }}
-          disabled={loading || lookupsLoading || saving}
+          disabled={readOnly || loading || lookupsLoading || saving}
         >
           <Plus size={16} aria-hidden="true" />
           {activeRecipe ? t('menu.recipe.active.createNewVersion') : t('menu.recipe.active.createRecipe')}
@@ -234,7 +235,7 @@ export function ProductRecipeTab({ product, nested = false }: ProductRecipeTabPr
 
       {loading ? (
         <LoadingRows columns={3} rows={3} />
-      ) : editing ? (
+      ) : editing && !readOnly ? (
         <div className="product-recipe-tab__builder">
           {formError ? <div className="alert-error">{formError}</div> : null}
           {activeRecipe ? <p className="product-recipe-tab__note">{t('menu.recipe.versioningNote')}</p> : null}

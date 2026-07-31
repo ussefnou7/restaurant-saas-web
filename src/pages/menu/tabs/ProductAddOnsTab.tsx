@@ -11,9 +11,10 @@ import { formatMenuPrice } from '../menuNumberUtils'
 
 interface ProductAddOnsTabProps {
   product: Product
+  readOnly?: boolean
 }
 
-export function ProductAddOnsTab({ product }: ProductAddOnsTabProps) {
+export function ProductAddOnsTab({ product, readOnly = false }: ProductAddOnsTabProps) {
   const { t, locale } = useTranslation()
   const notify = useNotify()
   const [addOns, setAddOns] = useState<ProductAddOn[]>([])
@@ -101,7 +102,12 @@ export function ProductAddOnsTab({ product }: ProductAddOnsTabProps) {
           <h3>{t('menu.editor.tabs.addons')}</h3>
           <p>{t('menu.addOns.hint')}</p>
         </div>
-        <Button variant="primary" size="sm" onClick={() => setPickerOpen((current) => !current)}>
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={() => setPickerOpen((current) => !current)}
+          disabled={readOnly}
+        >
           <Plus size={16} aria-hidden="true" />
           {t('menu.addons.addButton')}
         </Button>
@@ -115,6 +121,7 @@ export function ProductAddOnsTab({ product }: ProductAddOnsTabProps) {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder={t('menu.addons.picker.placeholder')}
+              disabled={readOnly}
             />
             <button type="button" onClick={() => setPickerOpen(false)} aria-label={t('common.close')}>
               <X size={16} aria-hidden="true" />
@@ -124,7 +131,7 @@ export function ProductAddOnsTab({ product }: ProductAddOnsTabProps) {
             {filteredCandidates.length === 0 ? <li className="product-addons-tab__candidate-empty">{t('menu.addOns.noCandidates')}</li> : null}
             {filteredCandidates.map((candidate) => (
               <li key={candidate.id}>
-                <button type="button" onClick={() => void add(candidate)} disabled={savingId === candidate.id}>
+                <button type="button" onClick={() => void add(candidate)} disabled={readOnly || savingId === candidate.id}>
                   <span>{candidate.name}</span>
                   <span dir="ltr">{formatMenuPrice(candidate.sellingPrice, locale)}</span>
                 </button>
@@ -144,7 +151,7 @@ export function ProductAddOnsTab({ product }: ProductAddOnsTabProps) {
               <span dir="ltr">
                 {link.addOnSellingPrice != null ? formatMenuPrice(link.addOnSellingPrice, locale) : t('common.empty.dash')}
               </span>
-              <Button variant="ghost" size="sm" onClick={() => void remove(link)} disabled={removingId === link.addOnProductId}>
+              <Button variant="ghost" size="sm" onClick={() => void remove(link)} disabled={readOnly || removingId === link.addOnProductId}>
                 <Trash2 size={16} aria-hidden="true" />
               </Button>
             </li>

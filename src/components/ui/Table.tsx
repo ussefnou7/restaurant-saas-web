@@ -4,6 +4,7 @@ import type {
   ReactNode,
   ThHTMLAttributes,
   TdHTMLAttributes,
+  HTMLAttributes,
   TableHTMLAttributes,
 } from 'react'
 
@@ -26,12 +27,13 @@ export function TableBody({ children }: { children: ReactNode }) {
 export function TableRow({
   children,
   className,
-}: {
+  ...props
+}: HTMLAttributes<HTMLTableRowElement> & {
   children: ReactNode
   className?: string
 }) {
   return (
-    <tr className={`data-table__row${className ? ` ${className}` : ''}`}>{children}</tr>
+    <tr className={`data-table__row${className ? ` ${className}` : ''}`} {...props}>{children}</tr>
   )
 }
 

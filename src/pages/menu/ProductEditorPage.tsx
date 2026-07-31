@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
-import { ArrowLeft, Image as ImageIcon, Save, Trash2 } from 'lucide-react'
+import { ArrowLeft, Image as ImageIcon, Pencil, Save, Trash2 } from 'lucide-react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { FieldGrid, FormField, FormInput, FormTextarea, StatusSwitch } from '../../components/fields'
-import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { Dropdown } from '../../components/ui/Dropdown'
 import { LoadingRows } from '../../components/ui/LoadingRows'
@@ -27,6 +26,7 @@ const emptyForm = {
   descriptionAr: '',
   sellingPrice: '',
   menuCategoryId: '',
+  parentProductId: '',
   isMenu: true,
 }
 
@@ -47,20 +47,25 @@ export function ProductEditorPage() {
   const isCreate = productId == null
 
   const [product, setProduct] = useState<Product | null>(null)
+  const [productOptions, setProductOptions] = useState<Product[]>([])
   const [variants, setVariants] = useState<Product[]>([])
   const [form, setForm] = useState(emptyForm)
   const [savedSnapshot, setSavedSnapshot] = useState('')
   const [loading, setLoading] = useState(!isCreate)
+  const [productsLoading, setProductsLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [error, setError] = useState('')
   const [activeTab, setActiveTab] = useState('recipe')
+  const [mode, setMode] = useState<'view' | 'edit'>(isCreate ? 'edit' : 'view')
 
   const role = getProductRole(product)
   const isParent = role === 'parent'
   const isVariant = role === 'variant'
   const dirty = JSON.stringify(form) !== savedSnapshot
+  const readOnly = !isCreate && mode === 'view'
+  const draftHasParent = form.parentProductId !== ''
 
   const loadProduct = useCallback(async () => {
     if (isCreate || productId == null) return
@@ -69,6 +74,7 @@ export function ProductEditorPage() {
     try {
       const nextProduct = await menuService.getProduct(productId)
       setProduct(nextProduct)
+      setMode('view')
       const nextForm = {
         name: nextProduct.name,
         nameEn: '',
@@ -76,6 +82,7 @@ export function ProductEditorPage() {
         descriptionAr: nextProduct.descriptionAr ?? '',
         sellingPrice: String(nextProduct.sellingPrice),
         menuCategoryId: String(nextProduct.menuCategoryId),
+        parentProductId: nextProduct.parentProductId == null ? '' : String(nextProduct.parentProductId),
         isMenu: nextProduct.isMenu,
       }
       setForm(nextForm)
@@ -98,9 +105,26 @@ export function ProductEditorPage() {
     }
   }, [isCreate, productId, t])
 
+  const loadProductOptions = useCallback(async () => {
+    setProductsLoading(true)
+    try {
+      setProductOptions(await menuService.getProducts())
+    } catch (err) {
+      setError(translateApiError(err, t).message)
+      setProductOptions([])
+    } finally {
+      setProductsLoading(false)
+    }
+  }, [t])
+
   useEffect(() => {
     void refreshCategories()
   }, [refreshCategories])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => void loadProductOptions(), 0)
+    return () => window.clearTimeout(timer)
+  }, [loadProductOptions])
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -116,6 +140,7 @@ export function ProductEditorPage() {
       setForm(nextForm)
       setSavedSnapshot(JSON.stringify(nextForm))
       setProduct(null)
+      setMode('edit')
       setLoading(false)
     }, 0)
     return () => window.clearTimeout(timer)
@@ -140,6 +165,19 @@ export function ProductEditorPage() {
           label: category.name,
         })),
     [categories, form.menuCategoryId],
+  )
+
+  const parentProductOptions = useMemo(
+    () => [
+      { value: '', label: t('menu.fields.parentProductPlaceholder') },
+      ...productOptions
+        .filter((candidate) => candidate.id !== productId)
+        .map((candidate) => ({
+          value: String(candidate.id),
+          label: candidate.name,
+        })),
+    ],
+    [productId, productOptions, t],
   )
 
   const tabs = useMemo(() => {
@@ -184,6 +222,7 @@ export function ProductEditorPage() {
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
+    if (readOnly) return
     const validationError = validate()
     if (validationError) {
       setError(validationError)
@@ -197,10 +236,10 @@ export function ProductEditorPage() {
       descriptionAr: form.descriptionAr.trim() || null,
       sellingPrice: isParent && product ? product.sellingPrice : parseNonNegativeNumber(form.sellingPrice) ?? 0,
       menuCategoryId: Number(form.menuCategoryId),
-      parentProductId: product?.parentProductId ?? null,
+      parentProductId: form.parentProductId ? Number(form.parentProductId) : null,
       variantLabel: product?.variantLabel ?? null,
       variantLabelAr: product?.variantLabelAr ?? null,
-      isMenu: isVariant ? false : form.isMenu,
+      isMenu: isVariant || draftHasParent ? false : form.isMenu,
     }
 
     try {
@@ -219,10 +258,12 @@ export function ProductEditorPage() {
           descriptionAr: updated.descriptionAr ?? '',
           sellingPrice: String(updated.sellingPrice),
           menuCategoryId: String(updated.menuCategoryId),
+          parentProductId: updated.parentProductId == null ? '' : String(updated.parentProductId),
           isMenu: updated.isMenu,
         }
         setForm(nextForm)
         setSavedSnapshot(JSON.stringify(nextForm))
+        setMode('view')
       }
     } catch {
       // API errors are translated and toasted by the global axios interceptor.
@@ -246,44 +287,54 @@ export function ProductEditorPage() {
     }
   }
 
-  const title = isCreate
-    ? t('menu.editor.title.new')
-    : t('menu.editor.title.edit', { name: product?.name ?? t('common.empty.dash') })
+  const title = isCreate ? t('menu.editor.title.new') : product?.name ?? t('common.empty.dash')
 
   return (
     <main className="product-editor">
+      <div className="product-editor__back-row">
+        <Button variant="secondary" size="sm" onClick={() => navigate('/menu/products')}>
+          <ArrowLeft size={16} aria-hidden="true" />
+          {t('menu.editor.back')}
+        </Button>
+      </div>
       <div className="product-editor__topbar">
         <div className="product-editor__heading">
-          <Button variant="secondary" size="sm" onClick={() => navigate('/menu/products')}>
-            <ArrowLeft size={16} aria-hidden="true" />
-            {t('menu.editor.back')}
-          </Button>
-          <div>
-            <h1>{title}</h1>
-            <p>{t('menu.editor.subtitle')}</p>
-          </div>
+          <h1>{title}</h1>
         </div>
         <div className="product-editor__topbar-actions">
-          {!isCreate ? (
+          {!isCreate && mode === 'view' ? (
             <Button
               variant="secondary"
-              className="product-editor__delete-button"
-              disabled={saving || loading || deleting}
-              onClick={() => setConfirmingDelete(true)}
+              disabled={loading || saving || deleting}
+              onClick={() => {
+                setMode('edit')
+                setConfirmingDelete(false)
+              }}
             >
-              <Trash2 size={16} aria-hidden="true" />
-              {t('product.delete.confirm.title')}
+              <Pencil size={16} aria-hidden="true" />
+              {t('common.edit')}
             </Button>
           ) : null}
           <Button
             type="submit"
             form="product-editor-form"
             variant="primary"
-            disabled={saving || loading || categoriesLoading || !dirty}
+            disabled={readOnly || saving || loading || categoriesLoading || !dirty}
           >
             <Save size={16} aria-hidden="true" />
             {saving ? t('branches.actions.saving') : t('common.save')}
           </Button>
+          {!isCreate ? (
+            <Button
+              variant="secondary"
+              className="product-editor__delete-button"
+              disabled={readOnly || saving || loading || deleting}
+              onClick={() => setConfirmingDelete(true)}
+            >
+              <Trash2 size={16} aria-hidden="true" />
+              {t('product.delete.confirm.title')}
+            </Button>
+          ) : null}
         </div>
       </div>
 
@@ -318,7 +369,6 @@ export function ProductEditorPage() {
         <>
           <form id="product-editor-form" className="product-editor__card" onSubmit={handleSubmit}>
             <div className="product-editor__card-head">
-              <Badge variant="primary">{t(`menu.editor.role.${role}`)}</Badge>
               <div className="product-editor__image-slot" aria-label={t('menu.editor.fields.image')}>
                 <ImageIcon size={20} aria-hidden="true" />
                 <span>{t('menu.editor.fields.image')}</span>
@@ -331,7 +381,7 @@ export function ProductEditorPage() {
                   id="product-editor-name"
                   value={form.name}
                   onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
-                  disabled={saving}
+                  disabled={readOnly || saving}
                   required
                 />
               </FormField>
@@ -340,7 +390,7 @@ export function ProductEditorPage() {
                   id="product-editor-name-en"
                   value={form.nameEn}
                   onChange={(event) => setForm((current) => ({ ...current, nameEn: event.target.value }))}
-                  disabled={saving}
+                  disabled={readOnly || saving}
                 />
               </FormField>
               <FormField label={t('menu.fields.category')} htmlFor="product-editor-category" required>
@@ -349,7 +399,24 @@ export function ProductEditorPage() {
                   onChange={(menuCategoryId) => setForm((current) => ({ ...current, menuCategoryId }))}
                   options={categoryOptions}
                   ariaLabel={t('menu.fields.category')}
-                  disabled={saving || categoriesLoading}
+                  disabled={readOnly || saving || categoriesLoading}
+                />
+              </FormField>
+              <FormField label={t('menu.fields.parentProduct')} htmlFor="product-editor-parent-product">
+                <Dropdown
+                  value={form.parentProductId}
+                  onChange={(parentProductId) =>
+                    setForm((current) => ({
+                      ...current,
+                      parentProductId,
+                      isMenu: parentProductId ? false : current.isMenu,
+                    }))
+                  }
+                  options={parentProductOptions}
+                  ariaLabel={t('menu.fields.parentProduct')}
+                  searchable
+                  searchPlaceholder={t('menu.addons.picker.placeholder')}
+                  disabled={readOnly || saving || productsLoading}
                 />
               </FormField>
               <FormField label={isParent ? t('menu.editor.fields.priceRange') : t('menu.editor.fields.price')} htmlFor="product-editor-price">
@@ -364,7 +431,7 @@ export function ProductEditorPage() {
                     step="0.01"
                     value={form.sellingPrice}
                     onChange={(event) => setForm((current) => ({ ...current, sellingPrice: event.target.value }))}
-                    disabled={saving}
+                    disabled={readOnly || saving}
                   />
                 )}
               </FormField>
@@ -373,7 +440,7 @@ export function ProductEditorPage() {
                   id="product-editor-description-ar"
                   value={form.descriptionAr}
                   onChange={(event) => setForm((current) => ({ ...current, descriptionAr: event.target.value }))}
-                  disabled={saving}
+                  disabled={readOnly || saving}
                   rows={4}
                 />
               </FormField>
@@ -382,7 +449,7 @@ export function ProductEditorPage() {
                   id="product-editor-description"
                   value={form.description}
                   onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
-                  disabled={saving}
+                  disabled={readOnly || saving}
                   rows={4}
                 />
               </FormField>
@@ -398,7 +465,7 @@ export function ProductEditorPage() {
                   </div>
                   <StatusSwitch
                     active={form.isMenu}
-                    disabled={saving}
+                    disabled={readOnly || saving || draftHasParent}
                     onChange={(isMenu) => setForm((current) => ({ ...current, isMenu }))}
                   />
                 </div>
@@ -415,13 +482,13 @@ export function ProductEditorPage() {
               className="product-editor__tabs"
             >
               <DetailTabPanel id="recipe" active={effectiveActiveTab === 'recipe'}>
-                {product ? <ProductRecipeTab product={product} /> : <p className="product-editor__tab-placeholder">{t('menu.editor.tabsHint')}</p>}
+                {product ? <ProductRecipeTab product={product} readOnly={readOnly} /> : <p className="product-editor__tab-placeholder">{t('menu.editor.tabsHint')}</p>}
               </DetailTabPanel>
               <DetailTabPanel id="variants" active={effectiveActiveTab === 'variants' && Boolean(product)}>
-                {product ? <ProductVariantsTab parent={product} onChanged={() => void loadProduct()} /> : null}
+                {product ? <ProductVariantsTab parent={product} readOnly={readOnly} onChanged={() => void loadProduct()} /> : null}
               </DetailTabPanel>
               <DetailTabPanel id="addons" active={effectiveActiveTab === 'addons'}>
-                {product ? <ProductAddOnsTab product={product} /> : <p className="product-editor__tab-placeholder">{t('menu.editor.tabsHint')}</p>}
+                {product ? <ProductAddOnsTab product={product} readOnly={readOnly} /> : <p className="product-editor__tab-placeholder">{t('menu.editor.tabsHint')}</p>}
               </DetailTabPanel>
             </DetailTabs>
           ) : null}

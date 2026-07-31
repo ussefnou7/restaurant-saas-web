@@ -1,5 +1,5 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react'
+import { ChevronDown, Search } from 'lucide-react'
 
 export interface DropdownOption {
   value: string
@@ -14,6 +14,8 @@ interface DropdownProps {
   size?: 'toolbar' | 'md'
   className?: string
   disabled?: boolean
+  searchable?: boolean
+  searchPlaceholder?: string
 }
 
 export function Dropdown({
@@ -24,23 +26,36 @@ export function Dropdown({
   size = 'md',
   className = '',
   disabled,
+  searchable = false,
+  searchPlaceholder,
 }: DropdownProps) {
   const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState('')
   const rootRef = useRef<HTMLDivElement>(null)
   const listId = useId()
   const selected = options.find((option) => option.value === value)
+  const filteredOptions = searchable
+    ? options.filter((option) =>
+        String(option.label).toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()),
+      )
+    : options
+
+  const closeDropdown = useCallback(() => {
+    setOpen(false)
+    setSearch('')
+  }, [])
 
   useEffect(() => {
     if (!open) return
 
     function handlePointerDown(event: MouseEvent) {
       if (!rootRef.current?.contains(event.target as Node)) {
-        setOpen(false)
+        closeDropdown()
       }
     }
 
     function handleEscape(event: KeyboardEvent) {
-      if (event.key === 'Escape') setOpen(false)
+      if (event.key === 'Escape') closeDropdown()
     }
 
     document.addEventListener('mousedown', handlePointerDown)
@@ -49,7 +64,7 @@ export function Dropdown({
       document.removeEventListener('mousedown', handlePointerDown)
       document.removeEventListener('keydown', handleEscape)
     }
-  }, [open])
+  }, [closeDropdown, open])
 
   return (
     <div
@@ -64,7 +79,7 @@ export function Dropdown({
         aria-expanded={open}
         aria-haspopup="listbox"
         aria-controls={open ? listId : undefined}
-        onClick={() => setOpen((current) => !current)}
+        onClick={() => (open ? closeDropdown() : setOpen(true))}
       >
         <span className="dropdown__value">{selected?.label ?? '—'}</span>
         <ChevronDown
@@ -75,7 +90,26 @@ export function Dropdown({
       </button>
       {open ? (
         <ul id={listId} className="dropdown__panel" role="listbox" aria-label={ariaLabel}>
-          {options.map((option) => {
+          {searchable ? (
+            <li role="presentation">
+              <label className="dropdown__search">
+                <Search size={15} aria-hidden="true" />
+                <input
+                  type="search"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder={searchPlaceholder}
+                  aria-label={searchPlaceholder}
+                />
+              </label>
+            </li>
+          ) : null}
+          {filteredOptions.length === 0 ? (
+            <li className="dropdown__empty" role="presentation">
+              —
+            </li>
+          ) : null}
+          {filteredOptions.map((option) => {
             const isSelected = option.value === value
             return (
               <li key={option.value} role="presentation">
@@ -84,10 +118,10 @@ export function Dropdown({
                   role="option"
                   aria-selected={isSelected}
                   className={`dropdown__option${isSelected ? ' dropdown__option--selected' : ''}`}
-                  onClick={() => {
-                    onChange(option.value)
-                    setOpen(false)
-                  }}
+                          onClick={() => {
+                            onChange(option.value)
+                            closeDropdown()
+                          }}
                 >
                   {option.label}
                 </button>
