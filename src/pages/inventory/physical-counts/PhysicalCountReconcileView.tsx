@@ -144,7 +144,7 @@ export function PhysicalCountReconcileView({
             <TableHead>
               <TableRow>
                 <Th column="entity">{t('inventory.physicalCounts.lines.material')}</Th>
-                <Th className="table-cell--numeric">{t('inventory.physicalCounts.reconcile.col.expected')}</Th>
+                <Th className="table-cell--numeric">{t('inventory.physicalCounts.reconcile.col.adjustedExpected')}</Th>
                 <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.counted')}</Th>
                 <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.variance')}</Th>
                 <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.varianceValue')}</Th>
@@ -557,7 +557,7 @@ export function PhysicalCountReconciledView({ count, locale, t }: PhysicalCountR
           <TableHead>
             <TableRow>
               <Th column="entity">{t('inventory.physicalCounts.lines.material')}</Th>
-              <Th className="table-cell--numeric">{t('inventory.physicalCounts.reconcile.col.expected')}</Th>
+              <Th className="table-cell--numeric">{t('inventory.physicalCounts.reconcile.col.adjustedExpected')}</Th>
               <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.counted')}</Th>
               <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.variance')}</Th>
               <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.varianceValue')}</Th>
