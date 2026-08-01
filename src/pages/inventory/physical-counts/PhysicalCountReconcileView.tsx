@@ -69,7 +69,6 @@ export function PhysicalCountReconcileView({
 }: PhysicalCountReconcileViewProps) {
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [movements, setMovements] = useState<PostFreezeMovementsResponse | null>(null)
-  const [movementsOpen, setMovementsOpen] = useState(false)
 
   const lineDisplays = useMemo(
     () =>
@@ -88,7 +87,6 @@ export function PhysicalCountReconcileView({
         const data = await physicalCountService.getPostFreezeMovements(count.id)
         if (!cancelled) {
           setMovements(data.totalMovementCount > 0 ? data : null)
-          setMovementsOpen(false)
         }
       } catch (error) {
         console.error('[physical-counts] Failed to load post-freeze movements', error)
@@ -137,8 +135,6 @@ export function PhysicalCountReconcileView({
 
           <PostFreezeMovementsBanner
             movements={movements}
-            open={movementsOpen}
-            onToggle={() => setMovementsOpen((current) => !current)}
             locale={locale}
             t={t}
           />
@@ -522,14 +518,10 @@ function AfterCountMovementsWarning({
 
 function PostFreezeMovementsBanner({
   movements,
-  open,
-  onToggle,
   locale,
   t,
 }: {
   movements: PostFreezeMovementsResponse | null
-  open: boolean
-  onToggle: () => void
   locale: Locale
   t: (key: string, params?: Record<string, string | number>) => string
 }) {
@@ -585,6 +577,18 @@ function PostFreezeMovementsBanner({
           </p>
         </div>
       </div>
+      {movements.materials.length > 0 ? (
+        <div className="physical-count-post-freeze__list">
+          {movements.materials.map((material) => (
+            <PostFreezeMaterialMovement
+              key={material.materialId}
+              material={material}
+              locale={locale}
+              t={t}
+            />
+          ))}
+        </div>
+      ) : null}
       {hasMovementRows ? (
         <Button
           type="button"
@@ -594,32 +598,6 @@ function PostFreezeMovementsBanner({
         >
           {t('inventory.physicalCounts.postFreeze.viewMovementRows')}
         </Button>
-      ) : null}
-      {movements.materials.length > 0 ? (
-        <>
-          <Button
-            type="button"
-            variant="secondary"
-            className="physical-count-post-freeze__toggle"
-            onClick={onToggle}
-          >
-            {open
-              ? t('inventory.physicalCounts.postFreeze.hideBreakdown')
-              : t('inventory.physicalCounts.postFreeze.showBreakdown')}
-          </Button>
-          {open ? (
-            <div className="physical-count-post-freeze__list">
-              {movements.materials.map((material) => (
-                <PostFreezeMaterialMovement
-                  key={material.materialId}
-                  material={material}
-                  locale={locale}
-                  t={t}
-                />
-              ))}
-            </div>
-          ) : null}
-        </>
       ) : null}
       <Modal
         open={detailsOpen && hasMovementRows}
