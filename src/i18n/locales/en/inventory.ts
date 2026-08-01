@@ -824,6 +824,9 @@ export const inventoryEn: TranslationDictionary = {
   'inventory.physicalCounts.confirm.reconcileColExpectedCounted': 'Expected → counted',
   'inventory.physicalCounts.confirm.movementLines': 'Movement lines',
   'inventory.physicalCounts.confirm.reconcileFinality': 'This action is final and cannot be undone. Corrections require a new count.',
+  'inventory.physicalCounts.confirm.afterCountWarning':
+    'Movements were recorded after this count was taken. They are deliberately excluded — the count measures the shelf at the moment it was counted. To reflect the current balance, recount the affected materials.',
+  'inventory.physicalCounts.confirm.afterCountItem': '{{material}} — {{direction}} {{quantity}}',
   'inventory.physicalCounts.confirm.cancelTitle': 'Cancel Count',
   'inventory.physicalCounts.confirm.cancelMessage': 'This count will be cancelled and no stock adjustments will be made.',
   'inventory.physicalCounts.confirm.cancelConfirm': 'Cancel Count',

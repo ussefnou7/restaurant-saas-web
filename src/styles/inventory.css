@@ -2964,6 +2964,43 @@
   font-weight: 700;
 }
 
+.physical-count-reconcile-confirm__after-count-warning {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--color-warning);
+  border-radius: 8px;
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.physical-count-reconcile-confirm__after-count-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.physical-count-reconcile-confirm__after-count-header svg {
+  flex: 0 0 auto;
+  margin-block-start: 1px;
+}
+
+.physical-count-reconcile-confirm__after-count-header p {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.875rem;
+}
+
+.physical-count-reconcile-confirm__after-count-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-inline-start: 22px;
+  color: var(--color-text);
+  font-size: 0.8125rem;
+}
+
 .physical-count-reconcile-confirm__total {
   display: flex;
   align-items: center;

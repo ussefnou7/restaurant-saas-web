@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Info, Trash2, Undo2 } from 'lucide-react'
+import { AlertTriangle, Info, Trash2, Undo2 } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
 import { IconActionButton } from '../../../components/ui/RowActions'
 import { Modal } from '../../../components/ui/Modal'
@@ -112,6 +112,11 @@ export function PhysicalCountReconcileView({
   const hasEstimatedValues = useMemo(
     () => count.lines.some(hasEstimatedVarianceValue),
     [count.lines],
+  )
+
+  const afterCountMovements = useMemo(
+    () => [...(movements?.afterCount ?? [])].sort((first, second) => first.createdAt.localeCompare(second.createdAt)),
+    [movements],
   )
 
   return (
@@ -284,6 +289,11 @@ export function PhysicalCountReconcileView({
           <p className="physical-count-reconcile-confirm__finality">
             {t('inventory.physicalCounts.confirm.reconcileFinality')}
           </p>
+          <AfterCountMovementsWarning
+            movements={afterCountMovements}
+            locale={locale}
+            t={t}
+          />
           <div className="physical-count-reconcile-confirm__table-wrap">
             <table className="physical-count-reconcile-confirm__table">
               <thead>
@@ -469,6 +479,44 @@ function VarianceValueDisplay({
         </span>
       ) : null}
     </span>
+  )
+}
+
+function AfterCountMovementsWarning({
+  movements,
+  locale,
+  t,
+}: {
+  movements: PostFreezeMovementRowResponse[]
+  locale: Locale
+  t: (key: string, params?: Record<string, string | number>) => string
+}) {
+  if (movements.length === 0) return null
+
+  return (
+    <div className="physical-count-reconcile-confirm__after-count-warning" role="alert">
+      <div className="physical-count-reconcile-confirm__after-count-header">
+        <AlertTriangle size={18} aria-hidden />
+        <p>{t('inventory.physicalCounts.confirm.afterCountWarning')}</p>
+      </div>
+      <ul className="physical-count-reconcile-confirm__after-count-list">
+        {movements.map((movement) => {
+          const uomDisplay = getPhysicalCountUomDisplay(movement.uomSymbol, locale, t)
+          return (
+            <li
+              key={`${movement.referenceType ?? 'movement'}-${movement.referenceId ?? movement.createdAt}-${movement.materialId}-${movement.direction}`}
+              className="physical-count-reconcile-confirm__after-count-item"
+            >
+              {t('inventory.physicalCounts.confirm.afterCountItem', {
+                material: getMaterialDisplayName(movement, locale),
+                direction: t(`inventory.physicalCounts.postFreeze.direction.${movement.direction}`),
+                quantity: `${formatPhysicalCountQuantity(movement.quantity)} ${uomDisplay.label}`,
+              })}
+            </li>
+          )
+        })}
+      </ul>
+    </div>
   )
 }
 

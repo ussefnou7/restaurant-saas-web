@@ -819,6 +819,9 @@ export const inventoryAr: TranslationDictionary = {
   'inventory.physicalCounts.confirm.reconcileColExpectedCounted': 'متوقع → معد',
   'inventory.physicalCounts.confirm.movementLines': 'بنود الحركة',
   'inventory.physicalCounts.confirm.reconcileFinality': 'هذا الإجراء نهائي ولا يمكن التراجع عنه. أي تصحيح يحتاج إلى جرد جديد.',
+  'inventory.physicalCounts.confirm.afterCountWarning':
+    'تم تسجيل حركات بعد أخذ هذا الجرد. تم استبعادها عمداً — الجرد يقيس الرف في لحظة العد. لعكس الرصيد الحالي، أعد جرد المواد المتأثرة.',
+  'inventory.physicalCounts.confirm.afterCountItem': '{{material}} — {{direction}} {{quantity}}',
   'inventory.physicalCounts.confirm.cancelTitle': 'إلغاء الجرد',
   'inventory.physicalCounts.confirm.cancelMessage': 'سيتم إلغاء هذا الجرد ولن يتم تعديل المخزون.',
   'inventory.physicalCounts.confirm.cancelConfirm': 'إلغاء الجرد',
