@@ -21,6 +21,10 @@
   white-space: nowrap;
 }
 
+.order-consumption-page__no-action {
+  color: var(--color-text-muted);
+}
+
 .order-consumption-status,
 .order-consumption-consumed {
   display: inline-flex;
@@ -162,6 +166,40 @@
 .order-consumption-conflicts__meta {
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
+}
+
+.order-consumption-blocked {
+  padding: var(--space-lg);
+  border: 1px solid var(--color-warning);
+  border-radius: var(--radius-lg);
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.order-consumption-blocked__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.order-consumption-blocked__title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+}
+
+.order-consumption-blocked__description {
+  margin-block: var(--space-sm);
+  color: var(--color-text);
+}
+
+.order-consumption-blocked__table-wrap {
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.order-consumption-blocked__empty {
+  margin: 0;
+  color: var(--color-text);
 }
 
 @media (max-width: 900px) {

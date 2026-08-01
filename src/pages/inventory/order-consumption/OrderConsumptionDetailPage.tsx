@@ -33,11 +33,23 @@ import '../../../styles/order-consumption.css'
 const TAB_DETAILS = 'details'
 const TAB_MATERIALS = 'materials'
 
+function canRecalculateStatus(status: OrderConsumptionDocDetailResponse['status']): boolean {
+  return status === 'PARTIAL' || status === 'CONFLICT'
+}
+
 function formatDecimalString(value: string | number | null | undefined): string {
   if (value === null || value === undefined) return '-'
   const text = String(value)
   if (!text.includes('.')) return text
   return text.replace(/(\.\d*?[1-9])0+$/, '$1').replace(/\.0+$/, '')
+}
+
+function formatQuantityWithUnit(
+  quantity: string | number | null | undefined,
+  uom: string | null | undefined,
+): string {
+  const formattedQuantity = formatDecimalString(quantity)
+  return uom ? `${formattedQuantity} ${uom}` : formattedQuantity
 }
 
 export function OrderConsumptionDetailPage() {
@@ -148,20 +160,24 @@ export function OrderConsumptionDetailPage() {
     return userNameById.get(userId) ?? t('orderConsumption.lines.unknownUser', { id: userId })
   }
 
+  const blockedMaterials = doc?.status === 'PARTIAL'
+    ? doc.errorDetails?.filter((item) => item.requiredQuantity != null || item.availableQuantity != null) ?? []
+    : []
+  const canRecalculate = doc ? canRecalculateStatus(doc.status) : false
+
   const overview = doc ? (
     <div className="order-consumption-detail">
       <DetailsCard
         title={getReference(doc)}
         actions={
-          <>
-            {/* TODO: restrict to CONFLICT-only once out of testing phase */}
+          canRecalculate ? (
             <Button onClick={() => void handleRecalculate()} disabled={recalculating}>
               <RotateCcw size={16} aria-hidden />
               {recalculating
                 ? t('orderConsumption.action.recalculating')
                 : t('orderConsumption.action.recalculate')}
             </Button>
-          </>
+          ) : null
         }
       >
         <div className="order-consumption-detail__header-grid">
@@ -232,6 +248,52 @@ export function OrderConsumptionDetailPage() {
               ) : (
                 <p className="order-consumption-conflicts__empty">
                   {t('orderConsumption.conflicts.noDetails')}
+                </p>
+              )}
+            </section>
+          ) : null}
+
+          {doc.status === 'PARTIAL' ? (
+            <section className="order-consumption-blocked" aria-labelledby="order-consumption-blocked-title">
+              <div className="order-consumption-blocked__header">
+                <CircleAlert size={20} aria-hidden />
+                <h2 id="order-consumption-blocked-title" className="order-consumption-blocked__title">
+                  {t('orderConsumption.blocked.title')}
+                </h2>
+              </div>
+              <p className="order-consumption-blocked__description">
+                {t('orderConsumption.blocked.description')}
+              </p>
+              {blockedMaterials.length ? (
+                <div className="list-card-content table-wrap order-consumption-blocked__table-wrap">
+                  <DataTable>
+                    <TableHead>
+                      <TableRow>
+                        <Th column="entity">{t('orderConsumption.materials.material')}</Th>
+                        <Th>{t('orderConsumption.blocked.required')}</Th>
+                        <Th>{t('orderConsumption.blocked.available')}</Th>
+                        <Th>{t('orderConsumption.blocked.warehouse')}</Th>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {blockedMaterials.map((item, index) => (
+                        <TableRow key={`${item.materialId}-${item.warehouseId ?? 'warehouse'}-${index}`}>
+                          <Td column="entity">{item.materialName}</Td>
+                          <Td dir="ltr">
+                            {formatQuantityWithUnit(item.requiredQuantity, item.uomSymbol)}
+                          </Td>
+                          <Td dir="ltr">
+                            {formatQuantityWithUnit(item.availableQuantity, item.uomSymbol)}
+                          </Td>
+                          <Td>{item.warehouseName ?? '-'}</Td>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </DataTable>
+                </div>
+              ) : (
+                <p className="order-consumption-blocked__empty">
+                  {t('orderConsumption.blocked.noDetails')}
                 </p>
               )}
             </section>

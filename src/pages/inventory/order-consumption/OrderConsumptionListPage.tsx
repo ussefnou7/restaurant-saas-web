@@ -43,9 +43,14 @@ const STATUS_FILTERS: Array<OrderConsumptionStatus | ''> = [
   '',
   'PENDING',
   'IN_PROGRESS',
+  'PARTIAL',
   'POSTED',
   'CONFLICT',
 ]
+
+function canRecalculateStatus(status: OrderConsumptionStatus): boolean {
+  return status === 'PARTIAL' || status === 'CONFLICT'
+}
 
 export function OrderConsumptionListPage() {
   const { t, locale } = useTranslation()
@@ -229,17 +234,20 @@ export function OrderConsumptionListPage() {
                     <Td column="date" dir="ltr">{formatDateTime(doc.processedAt)}</Td>
                     <Td dir="ltr">{doc.lineCount}</Td>
                     <StopPropagationCell className="order-consumption-page__actions" cellAlign="end">
-                      {/* TODO: restrict to CONFLICT-only once out of testing phase */}
-                      <button
-                        type="button"
-                        className="order-consumption-recalculate-action"
-                        disabled={recalculatingId === doc.id}
-                        onClick={() => void handleRecalculate(doc.id)}
-                        aria-label={t('orderConsumption.action.recalculate')}
-                        title={t('orderConsumption.action.recalculate')}
-                      >
-                        <RotateCcw size={16} aria-hidden />
-                      </button>
+                      {canRecalculateStatus(doc.status) ? (
+                        <button
+                          type="button"
+                          className="order-consumption-recalculate-action"
+                          disabled={recalculatingId === doc.id}
+                          onClick={() => void handleRecalculate(doc.id)}
+                          aria-label={t('orderConsumption.action.recalculate')}
+                          title={t('orderConsumption.action.recalculate')}
+                        >
+                          <RotateCcw size={16} aria-hidden />
+                        </button>
+                      ) : (
+                        <span className="order-consumption-page__no-action">-</span>
+                      )}
                     </StopPropagationCell>
                   </ClickableTableRow>
                 ))}

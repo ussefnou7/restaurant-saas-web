@@ -1,4 +1,4 @@
-export type OrderConsumptionStatus = 'PENDING' | 'IN_PROGRESS' | 'POSTED' | 'CONFLICT'
+export type OrderConsumptionStatus = 'PENDING' | 'IN_PROGRESS' | 'PARTIAL' | 'POSTED' | 'CONFLICT'
 
 export interface OrderConsumptionDocListResponse {
   id: number
@@ -13,6 +13,12 @@ export interface OrderConsumptionDocListResponse {
 export interface OrderConsumptionErrorDetail {
   materialId: number
   materialName: string
+  requiredQuantity: string | null
+  availableQuantity: string | null
+  uomId: number | null
+  uomSymbol: string | null
+  warehouseId: number | null
+  warehouseName: string | null
   exceptionClass: string
   message: string
 }

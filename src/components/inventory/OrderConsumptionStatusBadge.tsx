@@ -7,6 +7,7 @@ const STATUS_VARIANTS: Record<
 > = {
   PENDING: 'muted',
   IN_PROGRESS: 'warning',
+  PARTIAL: 'warning',
   POSTED: 'success',
   CONFLICT: 'danger',
 }
