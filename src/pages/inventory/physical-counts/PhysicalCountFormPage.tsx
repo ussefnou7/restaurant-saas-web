@@ -526,6 +526,7 @@ export function PhysicalCountViewPage() {
 
       return (
         <PhysicalCountInProgressView
+          key={current.id}
           count={current}
           locale={locale}
           canManage={canManage}

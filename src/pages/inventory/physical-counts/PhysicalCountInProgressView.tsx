@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { CheckCircle2, Circle, Trash2, Undo2 } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
 import { IconActionButton } from '../../../components/ui/RowActions'
@@ -72,12 +72,11 @@ export function PhysicalCountInProgressView({
   onDelete,
   t,
 }: PhysicalCountInProgressViewProps) {
+  // Drafts are seeded once per count identity (the parent keys this view by
+  // count.id), so background refreshes — e.g. the refetch after a partial
+  // save — no longer wipe quantities and notes typed since.
   const [lineDrafts, setLineDrafts] = useState<Record<number, LineDraft>>(() => buildLineDrafts(count.lines))
   const [validationError, setValidationError] = useState('')
-
-  useEffect(() => {
-    setLineDrafts(buildLineDrafts(count.lines))
-  }, [count])
 
   const countedLines = useMemo(
     () => count.lines.filter((line) => line.countedQuantity != null).length,
@@ -97,7 +96,8 @@ export function PhysicalCountInProgressView({
     if (validationError) setValidationError('')
     setLineDrafts((current) => ({
       ...current,
-      [lineId]: { ...current[lineId], ...patch },
+      // Fall back for lines the server added after the drafts were seeded.
+      [lineId]: { ...(current[lineId] ?? { countedQuantity: '', notes: '' }), ...patch },
     }))
   }
 

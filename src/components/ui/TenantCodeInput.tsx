@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { authService } from '../../services/authService'
 import {
   buildPrefix,
@@ -42,15 +42,12 @@ export function TenantCodeInput({
     () => normalizeTenantCode(tenantCodeProp ?? authService.getTenantCode() ?? ''),
     [tenantCodeProp],
   )
-  const [suffix, setSuffix] = useState('')
-
-  useEffect(() => {
-    setSuffix(extractCodeSuffix(value, tenantCode, entityPrefix))
-  }, [value, tenantCode, entityPrefix])
+  // The suffix is fully derived from the controlled `value`: every consumer
+  // echoes onChange back into `value`, so no local copy is needed.
+  const suffix = extractCodeSuffix(value, tenantCode, entityPrefix)
 
   function handleSuffixChange(raw: string) {
     const normalizedSuffix = normalizeCodeSuffix(raw)
-    setSuffix(normalizedSuffix)
     onChange(buildTenantPrefixedCode(tenantCode, entityPrefix, normalizedSuffix))
   }
 

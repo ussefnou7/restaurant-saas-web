@@ -119,12 +119,20 @@ export function EmployeeOverviewPanel({
     return user ? `${user.fullName} (@${user.username})` : `#${employee.appUserId}`
   }, [employee.appUserId, t, users])
 
-  useEffect(() => {
-    if (!editing) {
+  // Render-time reset (React's "adjusting state when a prop changes" pattern):
+  // reseed the draft while not editing, and mid-edit only when the employee
+  // identity changes, so a background refresh never clobbers unsaved input
+  // but a stale draft can't be saved onto a different employee.
+  const [prevEmployee, setPrevEmployee] = useState(employee)
+  const [prevEditing, setPrevEditing] = useState(editing)
+  if (prevEmployee !== employee || prevEditing !== editing) {
+    setPrevEmployee(employee)
+    setPrevEditing(editing)
+    if (!editing || prevEmployee.id !== employee.id) {
       setForm(formFromEmployee(employee))
       setSaveError('')
     }
-  }, [employee, editing])
+  }
 
   useEffect(() => {
     let cancelled = false

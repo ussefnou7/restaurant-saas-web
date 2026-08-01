@@ -84,6 +84,14 @@ export function ManualTransactionModal({
         setWarehouses(warehouseData)
         setMaterials(materialData)
         setUoms(uomData)
+        // Default the UoM for a prefilled material once lookups arrive,
+        // unless the prefill pinned a UoM that is still selected.
+        setForm((prev) => {
+          const material = materialData.find((m) => String(m.id) === prev.materialId)
+          if (!material) return prev
+          if (prefill?.uomId && prev.uomId === String(prefill.uomId)) return prev
+          return { ...prev, uomId: String(resolveDisplayUomId(material)) }
+        })
       })
       .catch(() => {
         setWarehouses([])
@@ -99,15 +107,6 @@ export function ManualTransactionModal({
   )
 
   const showUnitCost = form.transactionType !== 'MANUAL_OUT'
-
-  useEffect(() => {
-    if (!selectedMaterial) return
-    setForm((prev) => {
-      if (prev.materialId !== String(selectedMaterial.id)) return prev
-      if (prefill?.uomId && prev.uomId === String(prefill.uomId)) return prev
-      return { ...prev, uomId: String(resolveDisplayUomId(selectedMaterial)) }
-    })
-  }, [prefill?.uomId, selectedMaterial])
 
   const compatibleUoms = useMemo(() => {
     if (!form.uomId) return uoms.filter((u) => u.active)
@@ -267,7 +266,19 @@ export function ManualTransactionModal({
           <FormField label={t('inventory.stock.manual.fields.material')}>
             <FormSelect
               value={form.materialId}
-              onChange={(e) => setForm((prev) => ({ ...prev, materialId: e.target.value }))}
+              onChange={(e) => {
+                const materialId = e.target.value
+                setForm((prev) => {
+                  // Picking a material defaults the UoM to its display UoM,
+                  // unless the prefill pinned a UoM that is still selected.
+                  const material = materials.find((m) => String(m.id) === materialId)
+                  if (!material) return { ...prev, materialId }
+                  if (prefill?.uomId && prev.uomId === String(prefill.uomId)) {
+                    return { ...prev, materialId }
+                  }
+                  return { ...prev, materialId, uomId: String(resolveDisplayUomId(material)) }
+                })
+              }}
               disabled={saving || lookupsLoading}
             >
               <option value="">{t('inventory.common.selectMaterial')}</option>

@@ -81,12 +81,20 @@ export function UserOverviewPanel({
   const branchDisplay = branchLabel.trim() ? branchLabel : t('common.empty.dash')
   const emptyDash = t('common.empty.dash')
 
-  useEffect(() => {
-    if (!editing) {
+  // Render-time reset (React's "adjusting state when a prop changes" pattern):
+  // reseed the draft while not editing, and mid-edit only when the user
+  // identity changes, so a background refresh never clobbers unsaved input
+  // but a stale draft can't be saved onto a different user.
+  const [prevUser, setPrevUser] = useState(user)
+  const [prevEditing, setPrevEditing] = useState(editing)
+  if (prevUser !== user || prevEditing !== editing) {
+    setPrevUser(user)
+    setPrevEditing(editing)
+    if (!editing || prevUser.id !== user.id) {
       setForm(formFromUser(user))
       setSaveError('')
     }
-  }, [user, editing])
+  }
 
   useEffect(() => {
     if (!editing) return

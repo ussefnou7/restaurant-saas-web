@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import {
   DetailField,
   DetailsCard,
@@ -57,12 +57,20 @@ export function BranchOverviewPanel({
   const { name: primaryName, nameAr } = getBranchFormNames(branch)
   const emptyDash = t('common.empty.dash')
 
-  useEffect(() => {
-    if (!editing) {
+  // Render-time reset (React's "adjusting state when a prop changes" pattern):
+  // reseed the draft while not editing, and mid-edit only when the branch
+  // identity changes, so a background refresh never clobbers unsaved input
+  // but a stale draft can't be saved onto a different branch.
+  const [prevBranch, setPrevBranch] = useState(branch)
+  const [prevEditing, setPrevEditing] = useState(editing)
+  if (prevBranch !== branch || prevEditing !== editing) {
+    setPrevBranch(branch)
+    setPrevEditing(editing)
+    if (!editing || prevBranch.id !== branch.id) {
       setForm(formFromBranch(branch))
       setSaveError('')
     }
-  }, [branch, editing])
+  }
 
   function validate(): string | null {
     if (!form.name.trim()) return t('branchDetails.validation.nameRequired')

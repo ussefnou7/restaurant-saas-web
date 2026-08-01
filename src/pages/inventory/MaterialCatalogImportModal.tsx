@@ -69,9 +69,24 @@ export function MaterialCatalogImportModal({
         active: true,
       })
       setItems(data)
+      // Selections are pruned to the freshly visible rows so hidden items can
+      // never be imported; deselection is permanent across filter changes.
+      const visibleIds = new Set(
+        (SHOW_ALREADY_IMPORTED ? data : data.filter((item) => !isAlreadyImported(item))).map(
+          (item) => item.id,
+        ),
+      )
+      setSelectedIds((current) => {
+        const next = new Set<number>()
+        for (const id of current) {
+          if (visibleIds.has(id)) next.add(id)
+        }
+        return next.size === current.size ? current : next
+      })
     } catch (err) {
       setError(translateApiError(err, t).message)
       setItems([])
+      setSelectedIds(new Set())
     } finally {
       setLoading(false)
     }
@@ -100,17 +115,6 @@ export function MaterialCatalogImportModal({
 
   const allVisibleSelected =
     visibleItems.length > 0 && visibleItems.every((item) => selectedIds.has(item.id))
-
-  useEffect(() => {
-    const visibleIds = new Set(visibleItems.map((item) => item.id))
-    setSelectedIds((current) => {
-      const next = new Set<number>()
-      for (const id of current) {
-        if (visibleIds.has(id)) next.add(id)
-      }
-      return next.size === current.size ? current : next
-    })
-  }, [visibleItems])
 
   function toggleSelect(id: number) {
     setSelectedIds((current) => {

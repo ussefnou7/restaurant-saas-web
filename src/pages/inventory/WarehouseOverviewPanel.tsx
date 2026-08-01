@@ -84,12 +84,20 @@ export function WarehouseOverviewPanel({
     return t('common.empty.dash')
   }, [branchOptions, locale, t, warehouse.branchId, warehouse.branchName])
 
-  useEffect(() => {
-    if (!editing) {
+  // Render-time reset (React's "adjusting state when a prop changes" pattern):
+  // reseed the draft while not editing, and mid-edit only when the warehouse
+  // identity changes, so a background refresh never clobbers unsaved input
+  // but a stale draft can't be saved onto a different warehouse.
+  const [prevWarehouse, setPrevWarehouse] = useState(warehouse)
+  const [prevEditing, setPrevEditing] = useState(editing)
+  if (prevWarehouse !== warehouse || prevEditing !== editing) {
+    setPrevWarehouse(warehouse)
+    setPrevEditing(editing)
+    if (!editing || prevWarehouse.id !== warehouse.id) {
       setForm(formFromWarehouse(warehouse))
       setSaveError('')
     }
-  }, [warehouse, editing])
+  }
 
   useEffect(() => {
     if (!editing) return
