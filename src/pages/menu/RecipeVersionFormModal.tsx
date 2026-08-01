@@ -74,7 +74,6 @@ export function RecipeVersionFormModal({
   useEffect(() => {
     if (!open || !product) {
       // Recipe rows are modal draft state and reset when the modal closes.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRows([])
       setSavedSnapshot('')
       setError('')

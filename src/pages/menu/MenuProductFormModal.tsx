@@ -160,7 +160,6 @@ export function MenuProductFormModal({
   useEffect(() => {
     if (!open) return
     // The form draft intentionally resets when a different product or create role opens.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setError('')
     // Default to the first tab available for this product's role.
     setActiveTab(product?.parent ? 'variants' : 'recipe')
@@ -197,7 +196,6 @@ export function MenuProductFormModal({
   useEffect(() => {
     if (!open || !isCreate || activeCategories.length === 0) return
     // Defaulting the category is part of initializing a newly opened draft.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setForm((prev) => {
       if (prev.menuCategoryId) return prev
       return { ...prev, menuCategoryId: String(activeCategories[0].id) }
