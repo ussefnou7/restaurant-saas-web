@@ -1,0 +1,15 @@
+#!/bin/sh
+# Lint staged TS/TSX files before commit. Installed via `npm install`
+# (the `prepare` script sets core.hooksPath to .githooks).
+#
+# Note: this lints the working-tree contents of staged files. If a file is
+# partially staged, the unstaged part is linted too — acceptable trade-off
+# for a zero-dependency hook (vs. adding husky + lint-staged).
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR -- '*.ts' '*.tsx')
+if [ -z "$staged" ]; then
+  exit 0
+fi
+
+git diff --cached --name-only --diff-filter=ACMR -z -- '*.ts' '*.tsx' \
+  | xargs -0 npx eslint
