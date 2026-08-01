@@ -947,6 +947,7 @@ export const inventoryEn: TranslationDictionary = {
   'inventory.physicalCounts.postFreeze.rowTitle': '{{material}} — {{direction}} {{quantity}}',
   'inventory.physicalCounts.postFreeze.rowMeta':
     '{{source}} · received {{receivedDate}} · registered {{registeredAt}}, after the freeze',
+  'inventory.physicalCounts.postFreeze.afterCountHeading': 'Recorded after the count — not included in the adjustment',
   'inventory.physicalCounts.postFreeze.referenceWithCode': '{{type}} {{code}}',
   'inventory.physicalCounts.postFreeze.referenceType.PURCHASE_INVOICE': 'Invoice',
   'inventory.physicalCounts.postFreeze.referenceType.PURCHASE_RETURN': 'Purchase return',

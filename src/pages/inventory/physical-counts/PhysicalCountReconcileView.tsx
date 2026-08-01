@@ -548,6 +548,21 @@ function PostFreezeMovementsBanner({
     return rowsByMaterial
   }, [movements])
 
+  const afterCountRowsByMaterial = useMemo(() => {
+    const rowsByMaterial = new Map<number, PostFreezeMovementRowResponse[]>()
+    for (const row of movements?.afterCount ?? []) {
+      const rows = rowsByMaterial.get(row.materialId) ?? []
+      rows.push(row)
+      rowsByMaterial.set(row.materialId, rows)
+    }
+
+    for (const rows of rowsByMaterial.values()) {
+      rows.sort((first, second) => first.createdAt.localeCompare(second.createdAt))
+    }
+
+    return rowsByMaterial
+  }, [movements])
+
   if (!movements || movements.totalMovementCount === 0) return null
 
   return (
@@ -585,6 +600,7 @@ function PostFreezeMovementsBanner({
                   key={material.materialId}
                   material={material}
                   includedRows={includedRowsByMaterial.get(material.materialId) ?? []}
+                  afterCountRows={afterCountRowsByMaterial.get(material.materialId) ?? []}
                   locale={locale}
                   t={t}
                 />
@@ -600,11 +616,13 @@ function PostFreezeMovementsBanner({
 function PostFreezeMaterialMovement({
   material,
   includedRows,
+  afterCountRows,
   locale,
   t,
 }: {
   material: PostFreezeMaterialMovementResponse
   includedRows: PostFreezeMovementRowResponse[]
+  afterCountRows: PostFreezeMovementRowResponse[]
   locale: Locale
   t: (key: string, params?: Record<string, string | number>) => string
 }) {
@@ -635,6 +653,22 @@ function PostFreezeMaterialMovement({
           ))}
         </div>
       ) : null}
+      {afterCountRows.length > 0 ? (
+        <div className="physical-count-post-freeze__rows physical-count-post-freeze__rows--after-count">
+          <p className="physical-count-post-freeze__rows-heading">
+            {t('inventory.physicalCounts.postFreeze.afterCountHeading')}
+          </p>
+          {afterCountRows.map((row) => (
+            <PostFreezeMovementRow
+              key={`${row.referenceType ?? 'movement'}-${row.referenceId ?? row.createdAt}-${row.materialId}-${row.direction}`}
+              row={row}
+              locale={locale}
+              t={t}
+              tone="after-count"
+            />
+          ))}
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -643,10 +677,12 @@ function PostFreezeMovementRow({
   row,
   locale,
   t,
+  tone = 'included',
 }: {
   row: PostFreezeMovementRowResponse
   locale: Locale
   t: (key: string, params?: Record<string, string | number>) => string
+  tone?: 'included' | 'after-count'
 }) {
   const materialName = getMaterialDisplayName(row, locale)
   const uomDisplay = getPhysicalCountUomDisplay(row.uomSymbol, locale, t)
@@ -655,7 +691,7 @@ function PostFreezeMovementRow({
   const source = formatMovementSource(row, t)
 
   return (
-    <div className="physical-count-post-freeze__row">
+    <div className={`physical-count-post-freeze__row physical-count-post-freeze__row--${tone}`}>
       <p className="physical-count-post-freeze__row-title">
         {t('inventory.physicalCounts.postFreeze.rowTitle', {
           material: materialName,

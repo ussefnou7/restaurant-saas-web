@@ -942,6 +942,7 @@ export const inventoryAr: TranslationDictionary = {
   'inventory.physicalCounts.postFreeze.rowTitle': '{{material}} — {{direction}} {{quantity}}',
   'inventory.physicalCounts.postFreeze.rowMeta':
     '{{source}} · استلام {{receivedDate}} · تسجيل {{registeredAt}}، بعد التجميد',
+  'inventory.physicalCounts.postFreeze.afterCountHeading': 'سُجلت بعد العد — غير مدرجة في التعديل',
   'inventory.physicalCounts.postFreeze.referenceWithCode': '{{type}} {{code}}',
   'inventory.physicalCounts.postFreeze.referenceType.PURCHASE_INVOICE': 'فاتورة',
   'inventory.physicalCounts.postFreeze.referenceType.PURCHASE_RETURN': 'مرتجع مشتريات',
