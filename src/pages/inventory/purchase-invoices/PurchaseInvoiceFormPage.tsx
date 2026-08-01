@@ -271,12 +271,14 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
 
   useEffect(() => {
     if (!canView) return
-    void loadLookups()
+    const timer = window.setTimeout(() => void loadLookups(), 0)
+    return () => window.clearTimeout(timer)
   }, [canView, loadLookups])
 
   useEffect(() => {
     if (!canView || isCreate || !id) return
-    void loadInvoice(id)
+    const timer = window.setTimeout(() => void loadInvoice(id), 0)
+    return () => window.clearTimeout(timer)
   }, [canView, isCreate, id, loadInvoice])
 
   const viewTotals = invoice
