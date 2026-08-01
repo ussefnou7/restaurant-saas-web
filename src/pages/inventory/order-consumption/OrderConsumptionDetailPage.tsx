@@ -126,13 +126,16 @@ export function OrderConsumptionDetailPage() {
 
   useEffect(() => {
     if (!canManage) return
-    void loadUsers()
+    const timer = window.setTimeout(() => void loadUsers(), 0)
+    return () => window.clearTimeout(timer)
   }, [canManage, loadUsers])
 
   useEffect(() => {
     if (activeTab === TAB_MATERIALS) {
-      void loadMaterialsSummary()
+      const timer = window.setTimeout(() => void loadMaterialsSummary(), 0)
+      return () => window.clearTimeout(timer)
     }
+    return undefined
   }, [activeTab, loadMaterialsSummary])
 
   async function handleRecalculate() {
