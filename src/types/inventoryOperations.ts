@@ -173,6 +173,23 @@ export type PostFreezeMaterialMovementResponse = {
   netQuantity: string
 }
 
+export type PostFreezeMovementDirection = 'IN' | 'OUT'
+
+export type PostFreezeMovementRowResponse = {
+  materialId: number
+  materialName: string
+  materialNameAr?: string | null
+  quantity: number
+  uomId: number
+  uomSymbol: string
+  direction: PostFreezeMovementDirection
+  movementDate: string
+  createdAt: string
+  referenceType: string | null
+  referenceId: number | null
+  referenceCode: string | null
+}
+
 export type PostFreezeMovementsResponse = {
   countId: number
   warehouseId: number
@@ -180,4 +197,6 @@ export type PostFreezeMovementsResponse = {
   totalMovementCount: number
   affectedMaterialCount: number
   materials: PostFreezeMaterialMovementResponse[]
+  included: PostFreezeMovementRowResponse[]
+  afterCount: PostFreezeMovementRowResponse[]
 }

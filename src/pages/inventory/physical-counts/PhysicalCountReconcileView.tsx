@@ -15,6 +15,7 @@ import type { Locale } from '../../../i18n/types'
 import type {
   PhysicalCountLineResponse,
   PostFreezeMaterialMovementResponse,
+  PostFreezeMovementRowResponse,
   PostFreezeMovementsResponse,
   PhysicalCountResponse,
 } from '../../../types/inventoryOperations'
@@ -26,6 +27,8 @@ import {
   getVarianceCellClass,
   hasEstimatedVarianceValue,
   formatPhysicalCountQuantity,
+  formatPhysicalCountDate,
+  formatPhysicalCountDateTime,
   formatSignedMoney,
   formatVarianceQuantity,
   sumLineVarianceValues,
@@ -482,6 +485,21 @@ function PostFreezeMovementsBanner({
   locale: Locale
   t: (key: string, params?: Record<string, string | number>) => string
 }) {
+  const includedRowsByMaterial = useMemo(() => {
+    const rowsByMaterial = new Map<number, PostFreezeMovementRowResponse[]>()
+    for (const row of movements?.included ?? []) {
+      const rows = rowsByMaterial.get(row.materialId) ?? []
+      rows.push(row)
+      rowsByMaterial.set(row.materialId, rows)
+    }
+
+    for (const rows of rowsByMaterial.values()) {
+      rows.sort((first, second) => first.createdAt.localeCompare(second.createdAt))
+    }
+
+    return rowsByMaterial
+  }, [movements])
+
   if (!movements || movements.totalMovementCount === 0) return null
 
   return (
@@ -518,6 +536,7 @@ function PostFreezeMovementsBanner({
                 <PostFreezeMaterialMovement
                   key={material.materialId}
                   material={material}
+                  includedRows={includedRowsByMaterial.get(material.materialId) ?? []}
                   locale={locale}
                   t={t}
                 />
@@ -532,10 +551,12 @@ function PostFreezeMovementsBanner({
 
 function PostFreezeMaterialMovement({
   material,
+  includedRows,
   locale,
   t,
 }: {
   material: PostFreezeMaterialMovementResponse
+  includedRows: PostFreezeMovementRowResponse[]
   locale: Locale
   t: (key: string, params?: Record<string, string | number>) => string
 }) {
@@ -554,8 +575,88 @@ function PostFreezeMaterialMovement({
           netQuantity: formatQuantity(material.netQuantity),
         })}
       </span>
+      {includedRows.length > 0 ? (
+        <div className="physical-count-post-freeze__rows">
+          {includedRows.map((row) => (
+            <PostFreezeMovementRow
+              key={`${row.referenceType ?? 'movement'}-${row.referenceId ?? row.createdAt}-${row.materialId}-${row.direction}`}
+              row={row}
+              locale={locale}
+              t={t}
+            />
+          ))}
+        </div>
+      ) : null}
     </div>
   )
+}
+
+function PostFreezeMovementRow({
+  row,
+  locale,
+  t,
+}: {
+  row: PostFreezeMovementRowResponse
+  locale: Locale
+  t: (key: string, params?: Record<string, string | number>) => string
+}) {
+  const materialName = getMaterialDisplayName(row, locale)
+  const uomDisplay = getPhysicalCountUomDisplay(row.uomSymbol, locale, t)
+  const quantity = `${formatPhysicalCountQuantity(row.quantity)} ${uomDisplay.label}`
+  const direction = t(`inventory.physicalCounts.postFreeze.direction.${row.direction}`)
+  const source = formatMovementSource(row, t)
+
+  return (
+    <div className="physical-count-post-freeze__row">
+      <p className="physical-count-post-freeze__row-title">
+        {t('inventory.physicalCounts.postFreeze.rowTitle', {
+          material: materialName,
+          direction,
+          quantity,
+        })}
+      </p>
+      <p className="physical-count-post-freeze__row-meta">
+        {t('inventory.physicalCounts.postFreeze.rowMeta', {
+          source,
+          receivedDate: formatPhysicalCountDate(row.movementDate),
+          registeredAt: formatPhysicalCountDateTime(row.createdAt),
+        })}
+      </p>
+    </div>
+  )
+}
+
+function formatMovementSource(
+  row: PostFreezeMovementRowResponse,
+  t: (key: string, params?: Record<string, string | number>) => string,
+): string {
+  const typeLabel = getReferenceTypeLabel(row.referenceType, t)
+  const referenceCode = row.referenceCode?.trim()
+  if (!referenceCode) return typeLabel
+  return t('inventory.physicalCounts.postFreeze.referenceWithCode', {
+    type: typeLabel,
+    code: referenceCode,
+  })
+}
+
+function getReferenceTypeLabel(
+  referenceType: string | null,
+  t: (key: string) => string,
+): string {
+  switch (referenceType) {
+    case 'PURCHASE_INVOICE':
+      return t('inventory.physicalCounts.postFreeze.referenceType.PURCHASE_INVOICE')
+    case 'PURCHASE_RETURN':
+      return t('inventory.physicalCounts.postFreeze.referenceType.PURCHASE_RETURN')
+    case 'ORDER_CONSUMPTION_DOC':
+      return t('inventory.physicalCounts.postFreeze.referenceType.ORDER_CONSUMPTION_DOC')
+    case 'WASTE_DOCUMENT':
+      return t('inventory.physicalCounts.postFreeze.referenceType.WASTE_DOCUMENT')
+    case 'PHYSICAL_COUNT':
+      return t('inventory.physicalCounts.postFreeze.referenceType.PHYSICAL_COUNT')
+    default:
+      return t('inventory.physicalCounts.postFreeze.referenceType.UNKNOWN')
+  }
 }
 
 interface PhysicalCountReconciledViewProps {
