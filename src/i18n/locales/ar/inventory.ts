@@ -936,6 +936,8 @@ export const inventoryAr: TranslationDictionary = {
   'inventory.physicalCounts.postFreeze.scopeNote': 'الإجماليات تشمل المستودع كله؛ والتفصيل أدناه يخص فقط مواد هذا الجرد.',
   'inventory.physicalCounts.postFreeze.showBreakdown': 'عرض التفصيل',
   'inventory.physicalCounts.postFreeze.hideBreakdown': 'إخفاء التفصيل',
+  'inventory.physicalCounts.postFreeze.viewMovementRows': 'عرض تفاصيل الحركات',
+  'inventory.physicalCounts.postFreeze.movementRowsTitle': 'تفاصيل الحركات',
   'inventory.physicalCounts.postFreeze.materialMeta': '{{movementCount}} حركة · وارد {{quantityIn}} · صادر {{quantityOut}} · صافي {{netQuantity}}',
   'inventory.physicalCounts.postFreeze.direction.IN': 'وارد',
   'inventory.physicalCounts.postFreeze.direction.OUT': 'صادر',

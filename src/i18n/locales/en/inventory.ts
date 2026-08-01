@@ -941,6 +941,8 @@ export const inventoryEn: TranslationDictionary = {
   'inventory.physicalCounts.postFreeze.scopeNote': 'Totals cover the whole warehouse; the breakdown below only includes materials in this count.',
   'inventory.physicalCounts.postFreeze.showBreakdown': 'Show breakdown',
   'inventory.physicalCounts.postFreeze.hideBreakdown': 'Hide breakdown',
+  'inventory.physicalCounts.postFreeze.viewMovementRows': 'View movement details',
+  'inventory.physicalCounts.postFreeze.movementRowsTitle': 'Movement details',
   'inventory.physicalCounts.postFreeze.materialMeta': '{{movementCount}} moves · in {{quantityIn}} · out {{quantityOut}} · net {{netQuantity}}',
   'inventory.physicalCounts.postFreeze.direction.IN': 'in',
   'inventory.physicalCounts.postFreeze.direction.OUT': 'out',
