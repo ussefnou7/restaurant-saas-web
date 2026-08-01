@@ -1,14 +1,12 @@
 export { DetailField, type DetailFieldProps } from './DetailField'
 export { FormField, type FormFieldProps } from './FormField'
+export { FormInput, FormSelect, FormTextarea } from './FormControls'
 export {
-  FormInput,
-  FormSelect,
-  FormTextarea,
   formDropdownClassName,
   formInputClassName,
   formSelectClassName,
   formTextareaClassName,
-} from './FormControls'
+} from './formControlClasses'
 export { FieldGrid, type FieldGridProps } from './FieldGrid'
 export { SectionGroup, type SectionGroupProps } from './SectionGroup'
 export { DetailsCard, FormCard, type DetailsCardProps } from './DetailsCard'

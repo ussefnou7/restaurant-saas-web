@@ -31,13 +31,6 @@ export default defineConfig([
       // fixing — that is a manual pass; do not treat this disable as clearing
       // them.
       'react-hooks/set-state-in-effect': 'off',
-      // Temporarily downgraded (2026-08) so that wiring lint into `build`
-      // does not fail on 6 pre-existing findings (5x only-export-components
-      // in FormControls.tsx / MenuCategoriesContext.tsx, 1x
-      // preserve-manual-memoization in useInventoryLookups.ts). Fix those in
-      // a follow-up, then raise both back to 'error'.
-      'react-refresh/only-export-components': 'warn',
-      'react-hooks/preserve-manual-memoization': 'warn',
     },
   },
 ])

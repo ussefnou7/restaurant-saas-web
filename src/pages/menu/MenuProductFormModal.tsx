@@ -9,7 +9,7 @@ import { Modal } from '../../components/ui/Modal'
 import { useTranslation } from '../../i18n/useTranslation'
 import * as menuService from '../../services/menuService'
 import type { MenuCategory, Product } from '../../types/menu'
-import { useMenuCategories } from './MenuCategoriesContext'
+import { useMenuCategories } from './useMenuCategories'
 import {
   formatMenuPrice,
   parseNonNegativeNumber,

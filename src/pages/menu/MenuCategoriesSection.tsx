@@ -22,7 +22,7 @@ import { useTranslation } from '../../i18n/useTranslation'
 import * as menuService from '../../services/menuService'
 import type { MenuCategory } from '../../types/menu'
 import { translateApiError } from '../../utils/errors'
-import { useMenuCategories } from './MenuCategoriesContext'
+import { useMenuCategories } from './useMenuCategories'
 import { formatMenuNumber } from './menuNumberUtils'
 import { MenuCategoryFormModal } from './MenuCategoryFormModal'
 

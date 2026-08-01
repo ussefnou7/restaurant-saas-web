@@ -22,7 +22,7 @@ import { useTranslation } from '../../i18n/useTranslation'
 import * as menuService from '../../services/menuService'
 import type { Product } from '../../types/menu'
 import { translateApiError } from '../../utils/errors'
-import { useMenuCategories } from './MenuCategoriesContext'
+import { useMenuCategories } from './useMenuCategories'
 
 const variantCache = new Map<number, Product[]>()
 const variantRequests = new Map<number, Promise<Product[]>>()

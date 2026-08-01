@@ -14,10 +14,15 @@ export function useInventoryLookups(options?: {
   const [branches, setBranches] = useState<BranchResponse[]>([])
   const [loading, setLoading] = useState(true)
 
+  // Capture the primitives, not the options object: callers pass inline
+  // literals whose identity changes every render, and closing over the object
+  // would defeat the memoization below.
+  const { forCatalog, includeBranches } = options ?? {}
+
   const reload = useCallback(async () => {
     setLoading(true)
     try {
-      const loadCategories = options?.forCatalog
+      const loadCategories = forCatalog
         ? inventoryService.getGlobalMaterialCategories({ active: true })
         : inventoryService.getMaterialCategories({ active: true })
 
@@ -28,18 +33,18 @@ export function useInventoryLookups(options?: {
       setCategories(categoryData)
       setUoms(uomData)
 
-      if (options?.includeBranches) {
+      if (includeBranches) {
         const branchData = await branchService.getBranches()
         setBranches(branchData)
       }
     } catch {
       setCategories([])
       setUoms([])
-      if (options?.includeBranches) setBranches([])
+      if (includeBranches) setBranches([])
     } finally {
       setLoading(false)
     }
-  }, [options?.forCatalog, options?.includeBranches])
+  }, [forCatalog, includeBranches])
 
   useEffect(() => {
     void reload()

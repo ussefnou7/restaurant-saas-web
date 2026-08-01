@@ -1,17 +1,9 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useTranslation } from '../../i18n/useTranslation'
 import * as menuService from '../../services/menuService'
 import type { MenuCategory } from '../../types/menu'
 import { translateApiError } from '../../utils/errors'
-
-type MenuCategoriesContextValue = {
-  categories: MenuCategory[]
-  loading: boolean
-  error: string
-  refreshCategories: () => Promise<MenuCategory[]>
-}
-
-const MenuCategoriesContext = createContext<MenuCategoriesContextValue | null>(null)
+import { MenuCategoriesContext } from './useMenuCategories'
 
 export function MenuCategoriesProvider({ children }: { children: ReactNode }) {
   const { t } = useTranslation()
@@ -46,12 +38,4 @@ export function MenuCategoriesProvider({ children }: { children: ReactNode }) {
   )
 
   return <MenuCategoriesContext.Provider value={value}>{children}</MenuCategoriesContext.Provider>
-}
-
-export function useMenuCategories() {
-  const context = useContext(MenuCategoriesContext)
-  if (!context) {
-    throw new Error('useMenuCategories must be used within MenuCategoriesProvider')
-  }
-  return context
 }
