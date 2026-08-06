@@ -13,6 +13,7 @@ import {
   Undo2,
   X,
 } from 'lucide-react'
+import { Button } from '../../../components/ui/Button'
 import { PurchaseDocumentCancelModal } from '../../../components/inventory/PurchaseDocumentCancelModal'
 import { PurchaseDocumentReasonModal } from '../../../components/inventory/PurchaseDocumentReasonModal'
 import { ListPage } from '../../../components/ui/ListPage'
@@ -855,9 +856,8 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                   {!loading && showFormActions ? (
                     <div className="pi-form-topbar__actions-bar">
                       {canManage && persistedId && displayStatus === 'DRAFT' ? (
-                        <button
-                          type="button"
-                          className="pi-form-actions__complete"
+                        <Button
+                          variant="primary"
                           disabled={
                             headerSaving ||
                             actionLoading ||
@@ -879,12 +879,11 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                               {t('inventory.purchase.actions.complete')}
                             </span>
                           )}
-                        </button>
+                        </Button>
                       ) : null}
                       {canManage && persistedId && displayStatus === 'COMPLETE' ? (
-                        <button
-                          type="button"
-                          className="pi-form-actions__post"
+                        <Button
+                          variant="primary"
                           disabled={headerSaving || actionLoading || lineSaving}
                           onClick={() => void handlePostReturn()}
                         >
@@ -899,12 +898,11 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                               {t('inventory.purchase.actions.post')}
                             </span>
                           )}
-                        </button>
+                        </Button>
                       ) : null}
                       {canUncomplete && persistedId && displayStatus === 'COMPLETE' ? (
-                        <button
-                          type="button"
-                          className="pi-form-actions__unpost"
+                        <Button
+                          variant="secondary"
                           disabled={headerSaving || actionLoading || lineSaving}
                           onClick={() => setUncompleteModalOpen(true)}
                         >
@@ -916,15 +914,14 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                           ) : (
                             <span className="pi-form-actions__icon-text">
                               <Undo2 size={16} aria-hidden="true" />
-                              {t('inventory.purchaseReturn.actions.uncompleteReturn')}
+                              {t('inventory.purchase.actions.uncomplete')}
                             </span>
                           )}
-                        </button>
+                        </Button>
                       ) : null}
                       {canUnpost && persistedId && displayStatus === 'POSTED' ? (
-                        <button
-                          type="button"
-                          className="pi-form-actions__unpost"
+                        <Button
+                          variant="secondary"
                           disabled={headerSaving || actionLoading || lineSaving}
                           onClick={() => setUnpostModalOpen(true)}
                         >
@@ -936,22 +933,24 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                           ) : (
                             <span className="pi-form-actions__icon-text">
                               <Undo2 size={16} aria-hidden="true" />
-                              {t('inventory.purchaseReturn.actions.unpostReturn')}
+                              {t('inventory.purchase.actions.unpost')}
                             </span>
                           )}
-                        </button>
+                        </Button>
                       ) : null}
                       {canManage &&
                       persistedId &&
                       (displayStatus === 'DRAFT' || displayStatus === 'COMPLETE') ? (
-                        <IconActionButton
-                          className="action-btn action-btn--icon action-btn--cancel"
-                          label={t('inventory.purchase.actions.cancel')}
-                          onClick={() => setCancelOpen(true)}
+                        <Button
+                          variant="danger"
                           disabled={headerSaving || actionLoading || lineSaving}
+                          onClick={() => setCancelOpen(true)}
                         >
-                          <RotateCcw size={16} aria-hidden />
-                        </IconActionButton>
+                          <span className="pi-form-actions__icon-text">
+                            <RotateCcw size={16} aria-hidden />
+                            {t('inventory.purchase.actions.cancel')}
+                          </span>
+                        </Button>
                       ) : null}
                       {displayStatus !== 'POSTED' ? (
                         <IconActionButton
@@ -1001,9 +1000,8 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                         </>
                       ) : null}
                       {!persistedId ? (
-                        <button
-                          type="button"
-                          className="pi-form-actions__submit"
+                        <Button
+                          variant="primary"
                           disabled={headerSaving || lookupsLoading}
                           onClick={() => void handleSaveHeader()}
                         >
@@ -1015,7 +1013,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                           ) : (
                             t('inventory.purchase.form.saveHeader')
                           )}
-                        </button>
+                        </Button>
                       ) : null}
                     </div>
                   ) : null}
