@@ -482,7 +482,7 @@ export function ProductEditorPage() {
               className="product-editor__tabs"
             >
               <DetailTabPanel id="recipe" active={effectiveActiveTab === 'recipe'}>
-                {product ? <ProductRecipeTab product={product} readOnly={readOnly} /> : <p className="product-editor__tab-placeholder">{t('menu.editor.tabsHint')}</p>}
+                {product ? <ProductRecipeTab product={product} /> : <p className="product-editor__tab-placeholder">{t('menu.editor.tabsHint')}</p>}
               </DetailTabPanel>
               <DetailTabPanel id="variants" active={effectiveActiveTab === 'variants' && Boolean(product)}>
                 {product ? <ProductVariantsTab parent={product} readOnly={readOnly} onChanged={() => void loadProduct()} /> : null}

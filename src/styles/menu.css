@@ -1220,6 +1220,16 @@
   box-shadow: var(--shadow-sm);
 }
 
+.product-editor__tabs.detail-tabs--sub .detail-tabs__nav {
+  flex-wrap: nowrap;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.product-editor__tabs.detail-tabs--sub .detail-tabs__nav::-webkit-scrollbar {
+  display: none;
+}
+
 .product-editor__tab-placeholder {
   margin: 0;
   padding: 30px;
