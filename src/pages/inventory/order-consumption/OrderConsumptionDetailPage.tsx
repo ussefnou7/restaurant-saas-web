@@ -176,7 +176,7 @@ export function OrderConsumptionDetailPage() {
         title={getReference(doc)}
         actions={
           canRecalculate ? (
-            <Button onClick={() => void handleRecalculate()} disabled={recalculating}>
+            <Button variant="primary" onClick={() => void handleRecalculate()} disabled={recalculating}>
               <RotateCcw size={16} aria-hidden />
               {recalculating
                 ? t('orderConsumption.action.recalculating')
