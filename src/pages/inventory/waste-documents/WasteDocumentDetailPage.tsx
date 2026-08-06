@@ -11,6 +11,7 @@ import {
   Trash2,
   Undo2,
   X,
+  XCircle,
 } from 'lucide-react'
 import { PurchaseDocumentReasonModal } from '../../../components/inventory/PurchaseDocumentReasonModal'
 import { Button } from '../../../components/ui/Button'
@@ -673,9 +674,8 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                   {showFormActions ? (
                     <div className="pi-form-topbar__actions-bar">
                       {canManage && persistedId && isDraft ? (
-                        <button
-                          type="button"
-                          className="pi-form-actions__complete"
+                        <Button
+                          variant="primary"
                           disabled={
                             headerSaving ||
                             actionLoading ||
@@ -691,12 +691,11 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                             <CheckCircle size={16} aria-hidden="true" />
                             {t('inventory.waste.actions.complete')}
                           </span>
-                        </button>
+                        </Button>
                       ) : null}
                       {canManage && persistedId && isComplete ? (
-                        <button
-                          type="button"
-                          className="pi-form-actions__post"
+                        <Button
+                          variant="primary"
                           disabled={headerSaving || actionLoading || lineSaving}
                           onClick={() => setPostConfirmOpen(true)}
                         >
@@ -704,12 +703,11 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                             <Send size={16} aria-hidden="true" />
                             {t('inventory.waste.actions.post')}
                           </span>
-                        </button>
+                        </Button>
                       ) : null}
                       {canUncomplete && persistedId && isComplete ? (
-                        <button
-                          type="button"
-                          className="pi-form-actions__unpost"
+                        <Button
+                          variant="secondary"
                           disabled={headerSaving || actionLoading || lineSaving}
                           onClick={() => setUncompleteModalOpen(true)}
                         >
@@ -724,18 +722,18 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                               {t('inventory.waste.actions.uncomplete')}
                             </span>
                           )}
-                        </button>
+                        </Button>
                       ) : null}
                       {canManage && persistedId && (isDraft || isComplete) ? (
                         <Button
-                          type="button"
-                          variant="ghost"
-                          size="action"
-                          className="pi-form-actions__cancel-doc"
+                          variant="danger"
                           disabled={headerSaving || actionLoading || lineSaving}
                           onClick={() => setCancelModalOpen(true)}
                         >
-                          {t('inventory.waste.actions.cancel')}
+                          <span className="pi-form-actions__icon-text">
+                            <XCircle size={16} aria-hidden="true" />
+                            {t('inventory.waste.actions.cancel')}
+                          </span>
                         </Button>
                       ) : null}
                       <IconActionButton
@@ -784,9 +782,8 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                         </>
                       ) : null}
                       {!persistedId ? (
-                        <button
-                          type="button"
-                          className="pi-form-actions__submit"
+                        <Button
+                          variant="primary"
                           disabled={headerSaving || lookupsLoading}
                           onClick={() => void handleSaveHeader()}
                         >
@@ -798,7 +795,7 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                           ) : (
                             t('inventory.waste.form.saveHeader')
                           )}
-                        </button>
+                        </Button>
                       ) : null}
                     </div>
                   ) : (
