@@ -854,9 +854,8 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                   {!loading && showFormActions ? (
                     <div className="pi-form-topbar__actions-bar">
                       {canManage && persistedId && displayStatus === 'DRAFT' ? (
-                        <button
-                          type="button"
-                          className="pi-form-actions__complete"
+                        <Button
+                          variant="primary"
                           disabled={headerSaving || actionLoading || lineSaving || isEditingHeader || addingLine || editingLineId != null}
                           onClick={() => void handleCompleteInvoice()}
                         >
@@ -868,15 +867,14 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                           ) : (
                             <span className="pi-form-actions__icon-text">
                               <CheckCircle size={16} aria-hidden="true" />
-                              {t('inventory.purchase.actions.approveInvoice')}
+                              {t('inventory.purchase.actions.complete')}
                             </span>
                           )}
-                        </button>
+                        </Button>
                       ) : null}
                       {canManage && persistedId && displayStatus === 'COMPLETE' ? (
-                        <button
-                          type="button"
-                          className="pi-form-actions__post"
+                        <Button
+                          variant="primary"
                           disabled={headerSaving || actionLoading || postCheckLoading || lineSaving}
                           onClick={() => void handlePostInvoice()}
                         >
@@ -888,15 +886,14 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                           ) : (
                             <span className="pi-form-actions__icon-text">
                               <Send size={16} aria-hidden="true" />
-                              {t('inventory.purchase.actions.postInvoice')}
+                              {t('inventory.purchase.actions.post')}
                             </span>
                           )}
-                        </button>
+                        </Button>
                       ) : null}
                       {canUncomplete && persistedId && displayStatus === 'COMPLETE' ? (
-                        <button
-                          type="button"
-                          className="pi-form-actions__unpost"
+                        <Button
+                          variant="secondary"
                           disabled={headerSaving || actionLoading || lineSaving}
                           onClick={() => setUncompleteModalOpen(true)}
                         >
@@ -908,15 +905,14 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                           ) : (
                             <span className="pi-form-actions__icon-text">
                               <Undo2 size={16} aria-hidden="true" />
-                              {t('inventory.purchase.actions.uncompleteInvoice')}
+                              {t('inventory.purchase.actions.uncomplete')}
                             </span>
                           )}
-                        </button>
+                        </Button>
                       ) : null}
                       {canUnpost && persistedId && displayStatus === 'POSTED' ? (
-                        <button
-                          type="button"
-                          className="pi-form-actions__unpost"
+                        <Button
+                          variant="secondary"
                           disabled={headerSaving || actionLoading || lineSaving}
                           onClick={() => setUnpostModalOpen(true)}
                         >
@@ -928,30 +924,34 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                           ) : (
                             <span className="pi-form-actions__icon-text">
                               <Undo2 size={16} aria-hidden="true" />
-                              {t('inventory.purchase.actions.unpostInvoice')}
+                              {t('inventory.purchase.actions.unpost')}
                             </span>
                           )}
-                        </button>
+                        </Button>
                       ) : null}
                       {canManage && persistedId && displayStatus === 'DRAFT' ? (
-                        <IconActionButton
-                          className="action-btn action-btn--icon action-btn--cancel"
-                          label={t('inventory.purchase.actions.cancelInvoice')}
+                        <Button
+                          variant="danger"
+                          disabled={headerSaving || actionLoading || lineSaving}
                           onClick={() => setCancelInvoiceModalOpen(true)}
-                          disabled={headerSaving || actionLoading || lineSaving}
                         >
-                          <XCircle size={16} aria-hidden />
-                        </IconActionButton>
+                          <span className="pi-form-actions__icon-text">
+                            <XCircle size={16} aria-hidden="true" />
+                            {t('inventory.purchase.actions.cancel')}
+                          </span>
+                        </Button>
                       ) : null}
                       {canManage && persistedId && displayStatus === 'DRAFT' ? (
-                        <IconActionButton
-                          className="action-btn action-btn--icon action-btn--cancel"
-                          label={t('inventory.purchase.actions.deleteInvoice')}
-                          onClick={() => void handleDeleteInvoice()}
+                        <Button
+                          variant="danger"
                           disabled={headerSaving || actionLoading || lineSaving}
+                          onClick={() => void handleDeleteInvoice()}
                         >
-                          <Trash2 size={16} aria-hidden />
-                        </IconActionButton>
+                          <span className="pi-form-actions__icon-text">
+                            <Trash2 size={16} aria-hidden="true" />
+                            {t('inventory.purchase.actions.delete')}
+                          </span>
+                        </Button>
                       ) : null}
                       {displayStatus !== 'POSTED' ? (
                         <IconActionButton
@@ -1001,9 +1001,8 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                         </>
                       ) : null}
                       {!persistedId ? (
-                        <button
-                          type="button"
-                          className="pi-form-actions__submit"
+                        <Button
+                          variant="primary"
                           disabled={headerSaving || lookupsLoading}
                           onClick={() => void handleSaveHeader()}
                         >
@@ -1015,7 +1014,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                           ) : (
                             t('inventory.purchase.form.saveHeader')
                           )}
-                        </button>
+                        </Button>
                       ) : null}
                     </div>
                   ) : null}
