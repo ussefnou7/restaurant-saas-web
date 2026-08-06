@@ -145,7 +145,7 @@ export function PhysicalCountReconcileView({
             <TableHead>
               <TableRow>
                 <Th column="entity">{t('inventory.physicalCounts.lines.material')}</Th>
-                <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.uom')}</Th>
+                <Th>{t('inventory.physicalCounts.lines.uom')}</Th>
                 <Th className="table-cell--numeric">
                   <AdjustedExpectedHeader t={t} />
                 </Th>
@@ -313,7 +313,7 @@ export function PhysicalCountReconcileView({
                           {getMaterialDisplayName(line, locale)}
                         </span>
                       </td>
-                      <td dir={uomDisplay.dir} className="physical-count-reconcile-confirm__num">
+                      <td dir={uomDisplay.dir}>
                         {uomDisplay.label}
                       </td>
                       <td dir="ltr" className="physical-count-reconcile-confirm__num">
@@ -855,7 +855,7 @@ export function PhysicalCountReconciledView({ count, locale, t }: PhysicalCountR
           <TableHead>
             <TableRow>
               <Th column="entity">{t('inventory.physicalCounts.lines.material')}</Th>
-              <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.uom')}</Th>
+              <Th>{t('inventory.physicalCounts.lines.uom')}</Th>
               <Th className="table-cell--numeric">
                 <AdjustedExpectedHeader t={t} />
               </Th>

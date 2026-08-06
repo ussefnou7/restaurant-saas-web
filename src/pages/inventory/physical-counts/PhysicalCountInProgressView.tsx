@@ -160,7 +160,7 @@ export function PhysicalCountInProgressView({
               <TableRow>
                 <Th className="physical-count-counting__status-col">{t('inventory.physicalCounts.counting.col.status')}</Th>
                 <Th column="entity">{t('inventory.physicalCounts.lines.material')}</Th>
-                <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.uom')}</Th>
+                <Th>{t('inventory.physicalCounts.lines.uom')}</Th>
                 <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.expected')}</Th>
                 <Th className="table-cell--numeric physical-count-counting__counted-col">{t('inventory.physicalCounts.lines.counted')}</Th>
                 <Th>{t('inventory.physicalCounts.counting.col.lineNotes')}</Th>
@@ -196,7 +196,7 @@ export function PhysicalCountInProgressView({
                     <Td column="entity">
                       <span>{getMaterialDisplayName(line, locale)}</span>
                     </Td>
-                    <Td dir={uomDisplay.dir} className="table-cell--numeric">{uomDisplay.label}</Td>
+                    <Td dir={uomDisplay.dir}>{uomDisplay.label}</Td>
                     <Td dir="ltr" className="table-cell--numeric">
                       <PhysicalCountExpectedQuantity line={line} t={t} />
                     </Td>
