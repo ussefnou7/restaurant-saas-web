@@ -25,8 +25,7 @@
   color: var(--color-text-muted);
 }
 
-.order-consumption-status,
-.order-consumption-consumed {
+.order-consumption-status {
   display: inline-flex;
   align-items: center;
   gap: var(--space-xs);
@@ -38,8 +37,7 @@
   line-height: 1.2;
 }
 
-.order-consumption-status--muted,
-.order-consumption-consumed--no {
+.order-consumption-status--muted {
   background: var(--color-surface-soft);
   color: var(--color-text-muted);
 }
@@ -50,8 +48,7 @@
   border-color: var(--color-warning);
 }
 
-.order-consumption-status--success,
-.order-consumption-consumed--yes {
+.order-consumption-status--success {
   background: var(--color-success-soft);
   color: var(--color-success-text);
   border-color: var(--color-success);

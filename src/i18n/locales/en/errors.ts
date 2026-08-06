@@ -33,8 +33,6 @@ export const errorsEn: TranslationDictionary = {
     'Recipe {{recipeId}} has no material items and cannot be consumed.',
   'errors.ORDER_CONSUMPTION_MIXED_UOM':
     'Material {{materialId}} appears with multiple units in order consumption; use one unit per material.',
-  'errors.ORDER_CONSUMPTION_ERROR_SERIALIZATION_FAILED':
-    'Could not save order consumption error details. Please retry.',
   'errors.RESOURCE_NOT_AVAILABLE_FOR_TENANT':
     'The requested item is not available to your account ({{entityType}} #{{entityId}})',
   'errors.DUPLICATE_CODE': "A {{entityType}} with code '{{code}}' already exists",
@@ -42,6 +40,7 @@ export const errorsEn: TranslationDictionary = {
   'errors.UOM_IN_USE': 'This unit of measure is in use and cannot be deleted',
   'errors.GLOBAL_UOM_NOT_DELETABLE':
     'Global units of measure cannot be deleted, only deactivated',
+  'errors.BRANCH_WAREHOUSE_REQUIRES_BRANCH': 'Branch warehouses must be linked to a branch',
   'errors.UNPOST_BLOCKED_HAS_RETURN':
     'Cannot unpost: a purchase return is linked to this invoice ({{returnCodes}}). Unpost the return first.',
   'errors.UNPOST_BLOCKED_ORIGINAL_INVOICE_NOT_POSTED':

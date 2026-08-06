@@ -32,14 +32,13 @@ export const errorsAr: TranslationDictionary = {
     'الوصفة {{recipeId}} لا تحتوي على مواد ولا يمكن استهلاكها.',
   'errors.ORDER_CONSUMPTION_MIXED_UOM':
     'المادة {{materialId}} مستخدمة بأكثر من وحدة في استهلاك الطلبات؛ استخدم وحدة واحدة لكل مادة.',
-  'errors.ORDER_CONSUMPTION_ERROR_SERIALIZATION_FAILED':
-    'تعذر حفظ تفاصيل أخطاء استهلاك الطلبات. يرجى إعادة المحاولة.',
   'errors.RESOURCE_NOT_AVAILABLE_FOR_TENANT':
     'العنصر المطلوب غير متاح لحسابك ({{entityType}} رقم {{entityId}})',
   'errors.DUPLICATE_CODE': "يوجد بالفعل {{entityType}} بالرمز '{{code}}'",
   'errors.CODE_IMMUTABLE': 'لا يمكن تغيير الرمز بعد إنشاء {{entityType}}',
   'errors.UOM_IN_USE': 'وحدة القياس مستخدمة ولا يمكن حذفها',
   'errors.GLOBAL_UOM_NOT_DELETABLE': 'لا يمكن حذف وحدات القياس العامة، يمكن إلغاء تفعيلها فقط',
+  'errors.BRANCH_WAREHOUSE_REQUIRES_BRANCH': 'يجب ربط مستودع الفرع بفرع',
   'errors.UNPOST_BLOCKED_HAS_RETURN':
     'لا يمكن إلغاء الترحيل: يوجد مرتجع مرتبط بهذه الفاتورة ({{returnCodes}}). قم بإلغاء ترحيل المرتجع أولًا.',
   'errors.UNPOST_BLOCKED_ORIGINAL_INVOICE_NOT_POSTED':

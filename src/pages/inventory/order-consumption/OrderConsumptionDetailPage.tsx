@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Check, CircleAlert, Minus, RotateCcw } from 'lucide-react'
+import { CircleAlert, RotateCcw } from 'lucide-react'
 import { useParams } from 'react-router-dom'
 import { DetailsCard } from '../../../components/fields'
 import { DetailTabPanel, DetailTabs } from '../../../components/entity-detail/DetailTabs'
@@ -33,8 +33,10 @@ import '../../../styles/order-consumption.css'
 const TAB_DETAILS = 'details'
 const TAB_MATERIALS = 'materials'
 
-function canRecalculateStatus(status: OrderConsumptionDocDetailResponse['status']): boolean {
-  return status === 'PARTIAL' || status === 'CONFLICT'
+// TEMP: recalculate is shown for every status while testing.
+// Restore: `status === 'PARTIAL' || status === 'CONFLICT'` (param: OrderConsumptionDocDetailResponse['status']).
+function canRecalculateStatus(): boolean {
+  return true
 }
 
 function formatDecimalString(value: string | number | null | undefined): string {
@@ -163,10 +165,12 @@ export function OrderConsumptionDetailPage() {
     return userNameById.get(userId) ?? t('orderConsumption.lines.unknownUser', { id: userId })
   }
 
-  const blockedMaterials = doc?.status === 'PARTIAL'
-    ? doc.errorDetails?.filter((item) => item.requiredQuantity != null || item.availableQuantity != null) ?? []
-    : []
-  const canRecalculate = doc ? canRecalculateStatus(doc.status) : false
+  // Both lists come from the persisted (doc, material) rows, split by why each one failed.
+  const failedMaterials =
+    doc?.materials.filter((item) => item.failureReason === 'TECHNICAL_FAILURE') ?? []
+  const blockedMaterials =
+    doc?.materials.filter((item) => item.failureReason === 'INSUFFICIENT_STOCK') ?? []
+  const canRecalculate = doc ? canRecalculateStatus() : false
 
   const overview = doc ? (
     <div className="order-consumption-detail">
@@ -221,7 +225,7 @@ export function OrderConsumptionDetailPage() {
 
       <DetailTabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab}>
         <DetailTabPanel id={TAB_DETAILS} active={activeTab === TAB_DETAILS}>
-          {doc.status === 'CONFLICT' && doc.errorDetails ? (
+          {doc.status === 'CONFLICT' ? (
             <section className="order-consumption-conflicts" aria-labelledby="order-consumption-conflicts-title">
               <div className="order-consumption-conflicts__header">
                 <CircleAlert size={20} aria-hidden />
@@ -232,16 +236,16 @@ export function OrderConsumptionDetailPage() {
               <p className="order-consumption-conflicts__description">
                 {t('orderConsumption.conflicts.description')}
               </p>
-              {doc.errorDetails.length ? (
+              {failedMaterials.length ? (
                 <ul className="order-consumption-conflicts__list">
-                  {doc.errorDetails.map((item, index) => (
+                  {failedMaterials.map((item) => (
                     <li
-                      key={`${item.materialId}-${index}`}
+                      key={item.materialId}
                       className="order-consumption-conflicts__item"
-                      title={item.exceptionClass}
+                      title={item.exceptionClass ?? undefined}
                     >
                       <strong>{item.materialName}</strong>
-                      <span>{item.message}</span>
+                      <span>{item.exceptionMessage}</span>
                       <span className="order-consumption-conflicts__meta">
                         {item.exceptionClass}
                       </span>
@@ -275,12 +279,11 @@ export function OrderConsumptionDetailPage() {
                         <Th column="entity">{t('orderConsumption.materials.material')}</Th>
                         <Th>{t('orderConsumption.blocked.required')}</Th>
                         <Th>{t('orderConsumption.blocked.available')}</Th>
-                        <Th>{t('orderConsumption.blocked.warehouse')}</Th>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {blockedMaterials.map((item, index) => (
-                        <TableRow key={`${item.materialId}-${item.warehouseId ?? 'warehouse'}-${index}`}>
+                      {blockedMaterials.map((item) => (
+                        <TableRow key={item.materialId}>
                           <Td column="entity">{item.materialName}</Td>
                           <Td dir="ltr">
                             {formatQuantityWithUnit(item.requiredQuantity, item.uomSymbol)}
@@ -288,7 +291,6 @@ export function OrderConsumptionDetailPage() {
                           <Td dir="ltr">
                             {formatQuantityWithUnit(item.availableQuantity, item.uomSymbol)}
                           </Td>
-                          <Td>{item.warehouseName ?? '-'}</Td>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -314,7 +316,6 @@ export function OrderConsumptionDetailPage() {
                     <TableRow>
                       <Th>{t('orderConsumption.lines.orderId')}</Th>
                       <Th column="entity">{t('orderConsumption.lines.createdBy')}</Th>
-                      <Th column="status">{t('orderConsumption.lines.consumed')}</Th>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -322,22 +323,6 @@ export function OrderConsumptionDetailPage() {
                       <TableRow key={line.id}>
                         <Td dir="ltr">#{line.orderId}</Td>
                         <Td column="entity">{getCreatedByName(line.createdBy)}</Td>
-                        <Td column="status">
-                          <span
-                            className={`order-consumption-consumed order-consumption-consumed--${
-                              line.consumed ? 'yes' : 'no'
-                            }`}
-                          >
-                            {line.consumed ? (
-                              <Check size={14} aria-hidden />
-                            ) : (
-                              <Minus size={14} aria-hidden />
-                            )}
-                            {line.consumed
-                              ? t('orderConsumption.consumed.true')
-                              : t('orderConsumption.consumed.false')}
-                          </span>
-                        </Td>
                       </TableRow>
                     ))}
                   </TableBody>

@@ -10,24 +10,30 @@ export interface OrderConsumptionDocListResponse {
   lineCount: number
 }
 
-export interface OrderConsumptionErrorDetail {
+export type OrderConsumptionFailureReason = 'INSUFFICIENT_STOCK' | 'TECHNICAL_FAILURE'
+
+/**
+ * One (doc, material) outcome row. requiredQuantity and availableQuantity are both in
+ * uomId/uomSymbol — the material's display unit.
+ */
+export interface OrderConsumptionDocMaterialResponse {
   materialId: number
   materialName: string
-  requiredQuantity: string | null
+  requiredQuantity: string
+  uomId: number
+  uomSymbol: string
+  consumed: boolean
   availableQuantity: string | null
-  uomId: number | null
-  uomSymbol: string | null
-  warehouseId: number | null
-  warehouseName: string | null
-  exceptionClass: string
-  message: string
+  failureReason: OrderConsumptionFailureReason | null
+  exceptionClass: string | null
+  exceptionMessage: string | null
 }
 
+/** No consumed flag: consumption is per material, and one line needs several materials. */
 export interface OrderConsumptionDocLineResponse {
   id: number
   orderId: number
   createdBy: number
-  consumed: boolean
 }
 
 export interface OrderConsumptionDocDetailResponse {
@@ -37,7 +43,7 @@ export interface OrderConsumptionDocDetailResponse {
   status: OrderConsumptionStatus
   createdAt: string
   processedAt: string | null
-  errorDetails: OrderConsumptionErrorDetail[] | null
+  materials: OrderConsumptionDocMaterialResponse[]
   lines: OrderConsumptionDocLineResponse[]
 }
 
