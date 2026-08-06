@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { Check, CheckCircle, ChevronRight, Loader2, Pencil, Plus, Receipt, Send, Trash2, Undo2, X, XCircle } from 'lucide-react'
+import { AlertTriangle, Check, CheckCircle, ChevronRight, Loader2, Pencil, Plus, Receipt, Send, Trash2, Undo2, X, XCircle } from 'lucide-react'
+import { Button } from '../../../components/ui/Button'
 import { ListPage } from '../../../components/ui/ListPage'
 import { MaterialSelect } from '../../../components/ui/MaterialSelect'
+import { Modal } from '../../../components/ui/Modal'
 import { IconActionButton } from '../../../components/ui/RowActions'
 import { useNotify } from '../../../components/ui/NotificationContext'
 import { PurchaseDocumentReasonModal } from '../../../components/inventory/PurchaseDocumentReasonModal'
@@ -12,6 +14,7 @@ import * as inventoryService from '../../../services/inventoryService'
 import * as purchaseInvoiceService from '../../../services/purchaseInvoiceService'
 import type { MaterialResponse, SupplierResponse, UomResponse, WarehouseResponse } from '../../../types/inventory'
 import type {
+  BackdatedConsumptionCheckResponse,
   PurchaseInvoiceLineRequest,
   PurchaseInvoiceLineResponse,
   PurchaseInvoiceResponse,
@@ -202,6 +205,8 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [actionLoading, setActionLoading] = useState(false)
+  const [postCheckLoading, setPostCheckLoading] = useState(false)
+  const postInFlightRef = useRef(false)
 
   const [isEditingHeader, setIsEditingHeader] = useState(false)
   const [headerSaving, setHeaderSaving] = useState(false)
@@ -213,6 +218,8 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
   const [unpostModalOpen, setUnpostModalOpen] = useState(false)
   const [uncompleteModalOpen, setUncompleteModalOpen] = useState(false)
   const [cancelInvoiceModalOpen, setCancelInvoiceModalOpen] = useState(false)
+  const [backdatedWarningOpen, setBackdatedWarningOpen] = useState(false)
+  const [backdatedConflicts, setBackdatedConflicts] = useState<BackdatedConsumptionCheckResponse[]>([])
 
   const isCreate = mode === 'create'
   const isView = mode === 'view'
@@ -521,7 +528,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
     }
   }
 
-  async function handlePostInvoice() {
+  async function postInvoiceToStock() {
     if (!persistedId || displayStatus !== 'COMPLETE') return
     setActionLoading(true)
     try {
@@ -533,6 +540,45 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
       // API errors are translated and toasted by the global axios interceptor.
     } finally {
       setActionLoading(false)
+    }
+  }
+
+  async function handlePostInvoice() {
+    if (!persistedId || displayStatus !== 'COMPLETE' || actionLoading || postCheckLoading || postInFlightRef.current) return
+    postInFlightRef.current = true
+    setPostCheckLoading(true)
+    let shouldPost = false
+    try {
+      const conflicts = await purchaseInvoiceService.getBackdatedConsumptionCheck(persistedId)
+      if (conflicts.length > 0) {
+        setBackdatedConflicts(conflicts)
+        setBackdatedWarningOpen(true)
+        return
+      }
+      shouldPost = true
+    } catch (error) {
+      console.error('[purchase-invoices] Backdated consumption check failed; posting anyway.', error)
+      shouldPost = true
+    } finally {
+      setPostCheckLoading(false)
+      if (!shouldPost) postInFlightRef.current = false
+    }
+
+    try {
+      await postInvoiceToStock()
+    } finally {
+      postInFlightRef.current = false
+    }
+  }
+
+  async function handlePostAnyway() {
+    if (!persistedId || displayStatus !== 'COMPLETE' || actionLoading || postInFlightRef.current) return
+    postInFlightRef.current = true
+    setBackdatedWarningOpen(false)
+    try {
+      await postInvoiceToStock()
+    } finally {
+      postInFlightRef.current = false
     }
   }
 
@@ -831,7 +877,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                         <button
                           type="button"
                           className="pi-form-actions__post"
-                          disabled={headerSaving || actionLoading || lineSaving}
+                          disabled={headerSaving || actionLoading || postCheckLoading || lineSaving}
                           onClick={() => void handlePostInvoice()}
                         >
                           {actionLoading ? (
@@ -1372,6 +1418,58 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
         onClose={() => setCancelInvoiceModalOpen(false)}
         onConfirm={(reason) => void handleCancelInvoice(reason)}
       />
+
+      <Modal
+        open={backdatedWarningOpen}
+        title={t('inventory.purchase.backdatedWarning.title')}
+        onClose={() => setBackdatedWarningOpen(false)}
+        size="medium"
+        className="pi-backdated-warning"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setBackdatedWarningOpen(false)} disabled={actionLoading}>
+              {t('inventory.purchase.backdatedWarning.backToEdit')}
+            </Button>
+            <Button variant="warning" onClick={() => void handlePostAnyway()} disabled={actionLoading}>
+              {actionLoading ? t('common.loading') : t('inventory.purchase.backdatedWarning.postAnyway')}
+            </Button>
+          </>
+        }
+      >
+        <div className="pi-backdated-warning__body">
+          <div className="pi-backdated-warning__alert" role="alert">
+            <AlertTriangle size={20} aria-hidden="true" />
+            <p>
+              {t('inventory.purchase.backdatedWarning.intro', {
+                date: formatDate(header.receiptDate || invoice?.receiptDate, locale),
+              })}
+            </p>
+          </div>
+          <ul className="pi-backdated-warning__list">
+            {backdatedConflicts.map((conflict) => (
+              <li key={conflict.materialId} className="pi-backdated-warning__item">
+                <span className="pi-backdated-warning__material">
+                  {getInventoryLocalizedName(
+                    {
+                      name: conflict.materialName ?? '',
+                      nameAr: conflict.materialNameAr ?? undefined,
+                    },
+                    locale,
+                  )}
+                </span>
+                <span className="pi-backdated-warning__date">
+                  {t('inventory.purchase.backdatedWarning.lastConsumed', {
+                    date: formatDate(conflict.lastConsumptionDate, locale),
+                  })}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className="pi-backdated-warning__note">
+            {t('inventory.purchase.backdatedWarning.futureMessage')}
+          </p>
+        </div>
+      </Modal>
     </ListPage>
   )
 }

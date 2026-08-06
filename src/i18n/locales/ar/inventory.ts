@@ -447,6 +447,14 @@ export const inventoryAr: TranslationDictionary = {
   'inventory.purchase.confirm.cancelInvoiceConfirm': 'تأكيد الإلغاء',
   'inventory.purchase.confirm.optionalReasonLabel': 'السبب (اختياري)',
   'inventory.purchase.confirm.back': 'رجوع',
+  'inventory.purchase.backdatedWarning.title': 'تاريخ استلام سابق',
+  'inventory.purchase.backdatedWarning.intro':
+    'تاريخ الاستلام ({{date}}) أقدم من آخر استهلاك مسجّل لهذه المواد:',
+  'inventory.purchase.backdatedWarning.lastConsumed': 'آخر استهلاك {{date}}',
+  'inventory.purchase.backdatedWarning.futureMessage':
+    'الاستهلاك القادم سيسحب من هذه الفاتورة أولاً. الاستهلاك المسجّل سابقاً لن يتغير.',
+  'inventory.purchase.backdatedWarning.backToEdit': 'العودة للتعديل',
+  'inventory.purchase.backdatedWarning.postAnyway': 'الترحيل على أي حال',
   'inventory.purchase.toast.createSuccess': 'تم إنشاء فاتورة المشتريات.',
   'inventory.purchase.toast.updateSuccess': 'تم تحديث فاتورة المشتريات.',
   'inventory.purchase.toast.completeSuccess': 'تم إكمال الفاتورة.',

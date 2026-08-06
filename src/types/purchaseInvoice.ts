@@ -56,6 +56,13 @@ export type PurchaseInvoiceResponse = {
   lines: PurchaseInvoiceLineResponse[]
 }
 
+export type BackdatedConsumptionCheckResponse = {
+  materialId: number
+  materialName?: string | null
+  materialNameAr?: string | null
+  lastConsumptionDate: string
+}
+
 export type PurchaseInvoiceLineRequest = {
   materialId: number
   quantity: number

@@ -454,6 +454,14 @@ export const inventoryEn: TranslationDictionary = {
   'inventory.purchase.confirm.cancelInvoiceConfirm': 'Confirm cancellation',
   'inventory.purchase.confirm.optionalReasonLabel': 'Reason (optional)',
   'inventory.purchase.confirm.back': 'Back',
+  'inventory.purchase.backdatedWarning.title': 'Backdated receipt date',
+  'inventory.purchase.backdatedWarning.intro':
+    'Receipt date ({{date}}) is earlier than the last recorded consumption for these materials:',
+  'inventory.purchase.backdatedWarning.lastConsumed': 'last consumed {{date}}',
+  'inventory.purchase.backdatedWarning.futureMessage':
+    'Future consumption will draw from this invoice first. Consumption already recorded will not change.',
+  'inventory.purchase.backdatedWarning.backToEdit': 'Back to edit',
+  'inventory.purchase.backdatedWarning.postAnyway': 'Post anyway',
   'inventory.purchase.toast.createSuccess': 'Purchase invoice created.',
   'inventory.purchase.toast.updateSuccess': 'Purchase invoice updated.',
   'inventory.purchase.toast.completeSuccess': 'Purchase invoice completed.',

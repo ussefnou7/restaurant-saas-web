@@ -1,4 +1,5 @@
 import type {
+  BackdatedConsumptionCheckResponse,
   CreatePurchaseInvoiceHeaderRequest,
   PurchaseInvoiceLineRequest,
   PurchaseInvoiceListParams,
@@ -131,6 +132,15 @@ export async function postPurchaseInvoice(id: number | string): Promise<Purchase
     `/api/inventory/purchase-invoices/${id}/post`,
   )
   return normalizePurchaseInvoice(response.data)
+}
+
+export async function getBackdatedConsumptionCheck(
+  id: number | string,
+): Promise<BackdatedConsumptionCheckResponse[]> {
+  const response = await api.get<BackdatedConsumptionCheckResponse[]>(
+    `/api/inventory/purchase-invoices/${id}/backdated-consumption-check`,
+  )
+  return response.data
 }
 
 export async function cancelPurchaseInvoice(
