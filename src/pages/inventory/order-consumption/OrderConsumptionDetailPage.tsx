@@ -33,10 +33,8 @@ import '../../../styles/order-consumption.css'
 const TAB_DETAILS = 'details'
 const TAB_MATERIALS = 'materials'
 
-// TEMP: recalculate is shown for every status while testing.
-// Restore: `status === 'PARTIAL' || status === 'CONFLICT'` (param: OrderConsumptionDocDetailResponse['status']).
-function canRecalculateStatus(): boolean {
-  return true
+function canRecalculateStatus(status: OrderConsumptionDocDetailResponse['status']): boolean {
+  return status === 'PARTIAL' || status === 'CONFLICT'
 }
 
 function formatDecimalString(value: string | number | null | undefined): string {
@@ -170,7 +168,7 @@ export function OrderConsumptionDetailPage() {
     doc?.materials.filter((item) => item.failureReason === 'TECHNICAL_FAILURE') ?? []
   const blockedMaterials =
     doc?.materials.filter((item) => item.failureReason === 'INSUFFICIENT_STOCK') ?? []
-  const canRecalculate = doc ? canRecalculateStatus() : false
+  const canRecalculate = doc ? canRecalculateStatus(doc.status) : false
 
   const overview = doc ? (
     <div className="order-consumption-detail">
