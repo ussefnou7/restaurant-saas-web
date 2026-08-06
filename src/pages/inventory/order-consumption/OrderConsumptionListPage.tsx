@@ -48,8 +48,10 @@ const STATUS_FILTERS: Array<OrderConsumptionStatus | ''> = [
   'CONFLICT',
 ]
 
-function canRecalculateStatus(status: OrderConsumptionStatus): boolean {
-  return status === 'PARTIAL' || status === 'CONFLICT'
+// TEMP: recalculate is shown for every status while testing.
+// Restore: `status === 'PARTIAL' || status === 'CONFLICT'` (param: OrderConsumptionStatus).
+function canRecalculateStatus(): boolean {
+  return true
 }
 
 export function OrderConsumptionListPage() {
@@ -234,7 +236,7 @@ export function OrderConsumptionListPage() {
                     <Td column="date" dir="ltr">{formatDateTime(doc.processedAt)}</Td>
                     <Td dir="ltr">{doc.lineCount}</Td>
                     <StopPropagationCell className="order-consumption-page__actions" cellAlign="end">
-                      {canRecalculateStatus(doc.status) ? (
+                      {canRecalculateStatus() ? (
                         <button
                           type="button"
                           className="order-consumption-recalculate-action"
