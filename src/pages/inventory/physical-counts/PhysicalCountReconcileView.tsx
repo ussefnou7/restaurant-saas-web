@@ -145,6 +145,7 @@ export function PhysicalCountReconcileView({
             <TableHead>
               <TableRow>
                 <Th column="entity">{t('inventory.physicalCounts.lines.material')}</Th>
+                <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.uom')}</Th>
                 <Th className="table-cell--numeric">
                   <AdjustedExpectedHeader t={t} />
                 </Th>
@@ -295,6 +296,7 @@ export function PhysicalCountReconcileView({
               <thead>
                 <tr>
                   <th>{t('inventory.physicalCounts.lines.material')}</th>
+                  <th>{t('inventory.physicalCounts.lines.uom')}</th>
                   <th>{t('inventory.physicalCounts.confirm.reconcileColExpectedCounted')}</th>
                   <th>{t('inventory.physicalCounts.lines.variance')}</th>
                   <th>{t('inventory.physicalCounts.lines.varianceValue')}</th>
@@ -303,15 +305,16 @@ export function PhysicalCountReconcileView({
               <tbody>
                 {varianceLines.map(({ line, display }) => {
                   if (!display) return null
+                  const uomDisplay = getPhysicalCountUomDisplay(line.uomSymbol, locale, t)
                   return (
                     <tr key={line.id}>
                       <td>
                         <span className="physical-count-reconcile-confirm__material">
                           {getMaterialDisplayName(line, locale)}
                         </span>
-                        <span className="entity-cell__code">
-                          {getPhysicalCountUomDisplay(line.uomSymbol, locale, t).label}
-                        </span>
+                      </td>
+                      <td dir={uomDisplay.dir} className="physical-count-reconcile-confirm__num">
+                        {uomDisplay.label}
                       </td>
                       <td dir="ltr" className="physical-count-reconcile-confirm__num">
                         {formatPhysicalCountQuantity(display.expectedDisplay)} → {formatPhysicalCountQuantity(line.countedQuantity)}
@@ -372,14 +375,16 @@ function ReconcileLineRow({
   locale,
   t,
 }: ReconcileLineRowProps) {
+  const uomDisplay = getPhysicalCountUomDisplay(line.uomSymbol, locale, t)
+
   if (!display) {
     return (
       <TableRow>
         <Td column="entity">
           <span>{getMaterialDisplayName(line, locale)}</span>
-          <span className="entity-cell__code">
-            {getPhysicalCountUomDisplay(line.uomSymbol, locale, t).label}
-          </span>
+        </Td>
+        <Td dir={uomDisplay.dir} className="table-cell--numeric">
+          {uomDisplay.label}
         </Td>
         <Td dir="ltr" className="table-cell--numeric">
           <PhysicalCountExpectedQuantity line={line} t={t} />
@@ -394,13 +399,14 @@ function ReconcileLineRow({
 
   const { variance, varianceValue, isProvisional } = display
   const isZeroVariance = variance === 0
-  const uomDisplay = getPhysicalCountUomDisplay(line.uomSymbol, locale, t)
 
   return (
     <TableRow className={isProvisional ? 'physical-count-line--provisional' : ''}>
       <Td column="entity">
         <span>{getMaterialDisplayName(line, locale)}</span>
-        <span className="entity-cell__code">{uomDisplay.label}</span>
+      </Td>
+      <Td dir={uomDisplay.dir} className="table-cell--numeric">
+        {uomDisplay.label}
       </Td>
       <Td dir="ltr" className="table-cell--numeric">
         <PhysicalCountExpectedQuantity line={line} t={t} />
@@ -849,6 +855,7 @@ export function PhysicalCountReconciledView({ count, locale, t }: PhysicalCountR
           <TableHead>
             <TableRow>
               <Th column="entity">{t('inventory.physicalCounts.lines.material')}</Th>
+              <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.uom')}</Th>
               <Th className="table-cell--numeric">
                 <AdjustedExpectedHeader t={t} />
               </Th>
@@ -862,14 +869,15 @@ export function PhysicalCountReconciledView({ count, locale, t }: PhysicalCountR
               const display = getLineVarianceDisplay(line)
               const variance = display?.variance ?? line.variance
               const varianceValue = display?.varianceValue ?? line.varianceValue
+              const uomDisplay = getPhysicalCountUomDisplay(line.uomSymbol, locale, t)
 
               return (
                 <TableRow key={line.id}>
                   <Td column="entity">
                     <span>{getMaterialDisplayName(line, locale)}</span>
-                    <span className="entity-cell__code">
-                      {getPhysicalCountUomDisplay(line.uomSymbol, locale, t).label}
-                    </span>
+                  </Td>
+                  <Td dir={uomDisplay.dir} className="table-cell--numeric">
+                    {uomDisplay.label}
                   </Td>
                   <Td dir="ltr" className="table-cell--numeric">
                     <PhysicalCountExpectedQuantity line={line} t={t} />
