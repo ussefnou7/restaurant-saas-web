@@ -18,23 +18,26 @@ import { translateApiError } from '../../../utils/errors'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { exportCsv, exportPdf } from '../../../utils/reportExport'
 
-function formatMoneyNumber(value: number): string {
+function formatMoneyNumber(value: number, includePlus = true): string {
   const absolute = Math.abs(value).toLocaleString(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })
   if (value < 0) return `-${absolute}`
-  if (value > 0) return `+${absolute}`
+  if (value > 0 && includePlus) return `+${absolute}`
   return absolute
 }
 
 function formatDecimalQuantity(value: string | number): string {
   const num = typeof value === 'number' ? value : parseFloat(String(value))
   if (Number.isNaN(num)) return String(value)
-  return num.toLocaleString(undefined, {
+  const absFormatted = Math.abs(num).toLocaleString(undefined, {
     minimumFractionDigits: 0,
     maximumFractionDigits: 4,
   })
+  if (num < 0) return `-${absFormatted}`
+  if (num > 0) return `+${absFormatted}`
+  return absFormatted
 }
 
 function getQuickRangeDates(preset: 'thisMonth' | 'lastMonth' | 'last30Days'): { dateFrom: string; dateTo: string } {
@@ -256,7 +259,6 @@ export function ShrinkageReport() {
           <div className="report-header-block">
             <div className="report-header-block__title-group">
               <h1 className="report-header-block__title">{t('reports.shrinkage')}</h1>
-              <span className="report-header-block__code-badge">{t('reports.code.shrinkage')}</span>
             </div>
             <p className="report-header-block__method">{t('reports.shrinkage.subtitle')}</p>
           </div>
@@ -377,7 +379,6 @@ export function ShrinkageReport() {
         <div className="report-header-block__top">
           <div className="report-header-block__title-group">
             <h1 className="report-header-block__title">{t('reports.shrinkage')}</h1>
-            <span className="report-header-block__code-badge">{t('reports.code.shrinkage')}</span>
           </div>
           <div className="reports-page__actions">
             <Button variant="secondary" onClick={handleEditFilters}>
@@ -418,8 +419,10 @@ export function ShrinkageReport() {
       <div className="report-summary-strip">
         <div className="report-summary-item">
           <span className="report-summary-item__label">{t('reports.summary.totalNetValue')}</span>
-          <span className="report-summary-item__val" dir="ltr">
-            {formatMoneyNumber(totalNetValue)}
+          <span className="report-summary-item__val">
+            <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>
+              {formatMoneyNumber(totalNetValue, false)}
+            </span>
             <span className="report-summary-item__val-unit">{locale === 'ar' ? 'ج.م' : 'EGP'}</span>
           </span>
         </div>
@@ -442,7 +445,7 @@ export function ShrinkageReport() {
           </span>
           <span className="report-summary-item__val" dir="ltr">
             {largestGroup.percentage}%{' '}
-            <span className="report-summary-item__sub">{formatMoneyNumber(largestGroup.value)}</span>
+            <span className="report-summary-item__sub">{formatMoneyNumber(largestGroup.value, false)}</span>
           </span>
         </div>
       </div>
@@ -494,9 +497,6 @@ export function ShrinkageReport() {
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
                           <strong>{materialName}</strong>
-                          <span style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-xs)' }}>
-                            ({row.materialCode})
-                          </span>
                           {isInactive && (
                             <span className="report-marker--inactive">{t('reports.markers.inactive')}</span>
                           )}
@@ -512,10 +512,9 @@ export function ShrinkageReport() {
                             {t('reports.markers.unconvertibleUom')}
                           </span>
                         ) : (
-                          <>
-                            {formatDecimalQuantity(row.netQuantity ?? '')}
-                            <span className="report-uom-muted">{row.uomSymbol ?? ''}</span>
-                          </>
+                          <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>
+                            {formatDecimalQuantity(row.netQuantity ?? '')} {row.uomSymbol ?? ''}
+                          </span>
                         )}
                       </td>
                       <td
@@ -525,7 +524,9 @@ export function ShrinkageReport() {
                             : 'report-cell--negative'
                         }`}
                       >
-                        {formatMoneyNumber(numValue)}
+                        <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>
+                          {formatMoneyNumber(numValue, false)}
+                        </span>
                       </td>
                       <td className="report-cell--numeric">{row.movementCount}</td>
                     </tr>
@@ -538,7 +539,9 @@ export function ShrinkageReport() {
                     {t('reports.totals.lines', { count: totalLinesCount })}
                   </td>
                   <td className="report-cell--numeric report-cell--value">
-                    {formatMoneyNumber(totalNetValue)}
+                    <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>
+                      {formatMoneyNumber(totalNetValue, false)}
+                    </span>
                   </td>
                   <td></td>
                 </tr>

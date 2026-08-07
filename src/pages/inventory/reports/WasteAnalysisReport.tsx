@@ -268,7 +268,6 @@ export function WasteAnalysisReport() {
           <div className="report-header-block">
             <div className="report-header-block__title-group">
               <h1 className="report-header-block__title">{t('reports.wasteAnalysis')}</h1>
-              <span className="report-header-block__code-badge">{t('reports.code.wasteAnalysis')}</span>
             </div>
             <p className="report-header-block__method">{t('reports.wasteAnalysis.subtitle')}</p>
           </div>
@@ -405,7 +404,6 @@ export function WasteAnalysisReport() {
         <div className="report-header-block__top">
           <div className="report-header-block__title-group">
             <h1 className="report-header-block__title">{t('reports.wasteAnalysis')}</h1>
-            <span className="report-header-block__code-badge">{t('reports.code.wasteAnalysis')}</span>
           </div>
           <div className="reports-page__actions">
             <Button variant="secondary" onClick={handleEditFilters}>
@@ -446,8 +444,10 @@ export function WasteAnalysisReport() {
       <div className="report-summary-strip">
         <div className="report-summary-item">
           <span className="report-summary-item__label">{t('reports.summary.totalWastedValue')}</span>
-          <span className="report-summary-item__val" dir="ltr">
-            {formatMoneyNumber(totalWastedValue)}
+          <span className="report-summary-item__val">
+            <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>
+              {formatMoneyNumber(totalWastedValue)}
+            </span>
             <span className="report-summary-item__val-unit">{locale === 'ar' ? 'ج.م' : 'EGP'}</span>
           </span>
         </div>
@@ -525,9 +525,6 @@ export function WasteAnalysisReport() {
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
                           <strong>{materialName}</strong>
-                          <span style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-xs)' }}>
-                            ({row.materialCode})
-                          </span>
                           {isInactive && (
                             <span className="report-marker--inactive">{t('reports.markers.inactive')}</span>
                           )}
@@ -546,14 +543,15 @@ export function WasteAnalysisReport() {
                             {t('reports.markers.unconvertibleUom')}
                           </span>
                         ) : (
-                          <>
-                            {formatDecimalQuantity(row.netQuantity ?? '')}
-                            <span className="report-uom-muted">{row.uomSymbol ?? ''}</span>
-                          </>
+                          <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>
+                            {formatDecimalQuantity(row.netQuantity ?? '')} {row.uomSymbol ?? ''}
+                          </span>
                         )}
                       </td>
                       <td className="report-cell--numeric report-cell--value">
-                        {formatMoneyNumber(wastedVal)}
+                        <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>
+                          {formatMoneyNumber(wastedVal)}
+                        </span>
                       </td>
                       <td className="report-cell--numeric">{row.movementCount}</td>
                     </tr>
@@ -566,7 +564,9 @@ export function WasteAnalysisReport() {
                     {t('reports.totals.lines', { count: totalLinesCount })}
                   </td>
                   <td className="report-cell--numeric report-cell--value">
-                    {formatMoneyNumber(totalWastedValue)}
+                    <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>
+                      {formatMoneyNumber(totalWastedValue)}
+                    </span>
                   </td>
                   <td></td>
                 </tr>

@@ -202,7 +202,6 @@ export function StockValuationReport() {
         <div className="report-header-block__top">
           <div className="report-header-block__title-group">
             <h1 className="report-header-block__title">{t('reports.stockValuation')}</h1>
-            <span className="report-header-block__code-badge">{t('reports.code.stockValuation')}</span>
           </div>
           <div className="reports-page__actions">
             <Button variant="secondary" onClick={loadRows} disabled={loadingRows}>

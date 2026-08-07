@@ -148,7 +148,6 @@ export function LowStockReport() {
         <div className="report-header-block__top">
           <div className="report-header-block__title-group">
             <h1 className="report-header-block__title">{t('reports.lowStock')}</h1>
-            <span className="report-header-block__code-badge">{t('reports.code.lowStock')}</span>
           </div>
           <div className="reports-page__actions">
             <Button variant="secondary" onClick={loadRows} disabled={loadingRows}>
