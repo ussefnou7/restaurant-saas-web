@@ -931,7 +931,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                       ) : null}
                       {canManage && persistedId && displayStatus === 'DRAFT' ? (
                         <Button
-                          variant="danger"
+                          variant="cancelDoc"
                           disabled={headerSaving || actionLoading || lineSaving}
                           onClick={() => setCancelInvoiceModalOpen(true)}
                         >
@@ -942,25 +942,13 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                         </Button>
                       ) : null}
                       {canManage && persistedId && displayStatus === 'DRAFT' ? (
-                        <Button
-                          variant="danger"
-                          disabled={headerSaving || actionLoading || lineSaving}
-                          onClick={() => void handleDeleteInvoice()}
-                        >
-                          <span className="pi-form-actions__icon-text">
-                            <Trash2 size={16} aria-hidden="true" />
-                            {t('inventory.purchase.actions.delete')}
-                          </span>
-                        </Button>
-                      ) : null}
-                      {displayStatus !== 'POSTED' ? (
                         <IconActionButton
-                          className="action-btn action-btn--icon"
-                          label={t('common.cancel')}
-                          onClick={() => navigate('/purchase/purchase-invoices')}
+                          className="action-btn action-btn--icon action-btn--delete-danger"
+                          label={t('inventory.purchase.actions.delete')}
+                          onClick={() => void handleDeleteInvoice()}
                           disabled={headerSaving || actionLoading || lineSaving}
                         >
-                          <X size={16} aria-hidden />
+                          <Trash2 size={18} aria-hidden="true" />
                         </IconActionButton>
                       ) : null}
 

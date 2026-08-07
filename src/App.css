@@ -1022,6 +1022,49 @@ input {
   color: #92400e;
 }
 
+.button-cancel-doc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding-inline: 16px;
+  border-radius: 10px;
+  background: #fff1f2;
+  color: #be123c;
+  border: 1px solid #fecdd3;
+  font-size: 13.5px;
+  font-weight: 600;
+  box-shadow: none;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.button-cancel-doc:hover:not(:disabled) {
+  background: #ffe4e6;
+  border-color: #fda4af;
+  color: #9f1239;
+}
+
+.action-btn--delete-danger {
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  min-width: 38px;
+  height: 38px;
+  padding: 0 10px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.action-btn--delete-danger:hover:not(:disabled) {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
 .button-warning {
   background: var(--gradient-warning);
   color: #92400E;

@@ -726,7 +726,7 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                       ) : null}
                       {canManage && persistedId && (isDraft || isComplete) ? (
                         <Button
-                          variant="danger"
+                          variant="cancelDoc"
                           disabled={headerSaving || actionLoading || lineSaving}
                           onClick={() => setCancelModalOpen(true)}
                         >
@@ -736,14 +736,6 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                           </span>
                         </Button>
                       ) : null}
-                      <IconActionButton
-                        className="action-btn action-btn--icon"
-                        label={t('inventory.waste.form.backToList')}
-                        onClick={() => navigate('/inventory/waste-documents')}
-                        disabled={headerSaving || actionLoading || lineSaving}
-                      >
-                        <X size={16} aria-hidden />
-                      </IconActionButton>
 
                       <span className="pi-form-topbar__actions-divider" aria-hidden />
 

@@ -214,12 +214,12 @@ export function PhysicalCountReconcileView({
             ) : null}
             {canDelete ? (
               <IconActionButton
-                className="action-btn action-btn--icon action-btn--cancel"
+                className="action-btn action-btn--icon action-btn--delete-danger"
                 label={t('inventory.physicalCounts.actions.delete')}
                 onClick={onDelete}
                 disabled={reconciling || actionLoading}
               >
-                <Trash2 size={16} aria-hidden />
+                <Trash2 size={18} aria-hidden />
               </IconActionButton>
             ) : null}
           </div>
