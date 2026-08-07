@@ -1,3 +1,5 @@
+import type { WasteReasonCode } from './wasteDocument'
+
 export type ReportColumnType = 'text' | 'number' | 'currency'
 
 export type ColumnMeta<T> = {
@@ -20,9 +22,13 @@ export type ReportConfig<T> = {
 }
 
 export type ReportFilters = {
-  branchId: string
-  warehouseId: string
-  categoryId: string
+  branchId?: string
+  warehouseId?: string
+  categoryId?: string
+  dateFrom?: string
+  dateTo?: string
+  negativesOnly?: boolean
+  reasonCode?: string
 }
 
 export type ReportCellValue = string | number | null | undefined
@@ -58,3 +64,21 @@ export type LowStockRow = {
   minQuantity: string
   shortfall: string
 }
+
+export type ShrinkageRow = {
+  materialId: number
+  materialCode: string
+  materialName: string
+  materialNameAr?: string | null
+  netQuantity?: string
+  uomId?: number
+  uomSymbol?: string
+  netValue: string
+  movementCount: number
+  materialActive?: boolean
+}
+
+export type WasteAnalysisRow = ShrinkageRow & {
+  reasonCode: WasteReasonCode | 'UNSPECIFIED'
+}
+
