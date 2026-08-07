@@ -177,18 +177,15 @@
 }
 
 .report-totals-row {
-  font-weight: 800;
-  background: var(--color-surface-selected, #f1f5f9);
-  border-block-start: 2px solid var(--color-text);
-  border-block-end: 2px solid var(--color-text);
-  color: var(--color-text);
+  font-weight: 700;
+  background: var(--color-neutral-200, #e2e8f0);
+  border-block-start: 2px solid var(--border-color);
 }
 
 .report-totals-row td {
-  font-size: var(--font-size-base);
-  font-weight: 800;
-  color: var(--color-text);
-  padding: var(--space-md);
+  border-block-end: none;
+  font-size: var(--font-size-sm);
+  padding: var(--space-sm) var(--space-md);
 }
 
 /* Filter Bar & Controls */
