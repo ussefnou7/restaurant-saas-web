@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 
-type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'dangerConfirm' | 'warning' | 'ghost'
+type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'dangerConfirm' | 'warning' | 'ghost' | 'post' | 'unpost'
 type ButtonSize = 'md' | 'sm' | 'action'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -16,6 +16,8 @@ const variantClass: Record<ButtonVariant, string> = {
   dangerConfirm: 'button-danger button-danger--confirm',
   warning: 'button-warning',
   ghost: 'button-secondary',
+  post: 'button-post',
+  unpost: 'button-unpost',
 }
 
 const sizeClass: Record<ButtonSize, string> = {

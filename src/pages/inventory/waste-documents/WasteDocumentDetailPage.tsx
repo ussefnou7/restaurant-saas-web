@@ -695,7 +695,7 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                       ) : null}
                       {canManage && persistedId && isComplete ? (
                         <Button
-                          variant="primary"
+                          variant="post"
                           disabled={headerSaving || actionLoading || lineSaving}
                           onClick={() => setPostConfirmOpen(true)}
                         >

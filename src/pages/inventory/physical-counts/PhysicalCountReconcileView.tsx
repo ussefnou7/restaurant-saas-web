@@ -194,7 +194,7 @@ export function PhysicalCountReconcileView({
           <div className="physical-count-detail__actions">
             {canManage ? (
               <Button
-                variant="primary"
+                variant="post"
                 onClick={() => setConfirmOpen(true)}
                 disabled={reconciling || actionLoading}
               >
@@ -204,8 +204,7 @@ export function PhysicalCountReconcileView({
             {canRevert ? (
               <Button
                 type="button"
-                variant="secondary"
-                className="pi-form-actions__unpost"
+                variant="unpost"
                 disabled={reconciling || actionLoading}
                 onClick={onRevertToDraft}
               >

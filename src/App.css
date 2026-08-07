@@ -976,6 +976,36 @@ input {
   border-color: #F5A8A8;
 }
 
+.button-post {
+  background: #059669;
+  color: #ffffff;
+  border: 1px solid #047857;
+  box-shadow: 0 1px 3px rgba(5, 150, 105, 0.25);
+  font-weight: 600;
+}
+
+.button-post:hover:not(:disabled) {
+  background: #047857;
+  border-color: #065f46;
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.35);
+}
+
+.button-unpost {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+  box-shadow: 0 1px 2px rgba(180, 83, 9, 0.05);
+  font-weight: 600;
+}
+
+.button-unpost:hover:not(:disabled) {
+  background: #fef3c7;
+  border-color: #fcd34d;
+  color: #92400e;
+  box-shadow: 0 1px 3px rgba(180, 83, 9, 0.12);
+}
+
 .button-warning {
   background: var(--gradient-warning);
   color: #92400E;

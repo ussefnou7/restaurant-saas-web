@@ -285,7 +285,7 @@ export function PurchaseReturnsPage() {
                             {canManage && purchaseReturn.status === 'COMPLETE' ? (
                               <button
                                 type="button"
-                                className="action-btn action-btn--neutral"
+                                className="action-btn action-btn--post"
                                 onClick={() => setConfirmAction({ type: 'post', purchaseReturn })}
                                 disabled={busy}
                               >

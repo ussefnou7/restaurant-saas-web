@@ -874,7 +874,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                       ) : null}
                       {canManage && persistedId && displayStatus === 'COMPLETE' ? (
                         <Button
-                          variant="primary"
+                          variant="post"
                           disabled={headerSaving || actionLoading || postCheckLoading || lineSaving}
                           onClick={() => void handlePostInvoice()}
                         >
@@ -912,7 +912,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                       ) : null}
                       {canUnpost && persistedId && displayStatus === 'POSTED' ? (
                         <Button
-                          variant="secondary"
+                          variant="unpost"
                           disabled={headerSaving || actionLoading || lineSaving}
                           onClick={() => setUnpostModalOpen(true)}
                         >

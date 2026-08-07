@@ -680,6 +680,32 @@ td.table-cell--numeric {
   border-color: #d1d5db;
 }
 
+.action-btn--post {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+  font-weight: 600;
+}
+
+.action-btn--post:hover:not(:disabled) {
+  background: #d1fae5;
+  border-color: #6ee7b7;
+  color: #065f46;
+}
+
+.action-btn--unpost {
+  background: #fffbeb;
+  color: #b45309;
+  border-color: #fde68a;
+  font-weight: 600;
+}
+
+.action-btn--unpost:hover:not(:disabled) {
+  background: #fef3c7;
+  border-color: #fcd34d;
+  color: #92400e;
+}
+
 .action-menu__trigger {
   width: 32px;
   height: 32px;
