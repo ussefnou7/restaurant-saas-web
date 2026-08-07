@@ -62,9 +62,38 @@ export const reportsAr: TranslationDictionary = {
   'reports.markers.unconvertibleUomTooltip': 'إعداد وحدة المادة غير مكتمل؛ تعذر التعبير عن الكمية بوحدة العرض.',
   'reports.markers.inactive': 'غير نشط',
 
-  'reports.empty.missingDateRangeTitle': 'التاريخ مطلوب',
-  'reports.empty.missingDateRangeSubtitle': 'يرجى تحديد نطاق زمني صحيح لتحميل بيانات التقرير.',
-  'reports.empty.noDataTitle': 'لم يتم العثور على فروقات',
-  'reports.empty.noDataSubtitle': 'لا يوجد عجز أو هالك مسجل للفترة والفلاتر المحددة.',
+  'reports.code.stockValuation': 'تقرير · INV-01',
+  'reports.code.lowStock': 'تقرير · INV-02',
+  'reports.code.shrinkage': 'تقرير · INV-03',
+  'reports.code.wasteAnalysis': 'تقرير · INV-04',
+
+  'reports.method.stockValuation': 'مقيم بمتوسط التكلفة المتحرك بتاريخ {{date}}',
+  'reports.method.lowStock': 'مقيم مقارنة بالحد الأدنى بتاريخ {{date}}',
+  'reports.method.period': 'فترة التحليل من {{dateFrom}} إلى {{dateTo}}',
+
+  'reports.summary.totalStockValue': 'إجمالي قيمة المخزون',
+  'reports.summary.linesValued': 'البنود المقيمة',
+  'reports.summary.materialGroups': 'مجموعات المواد',
+  'reports.summary.concentration': 'التركيز — {{group}}',
+  'reports.summary.materialsBelowMin': 'أقل من الحد الأدنى',
+  'reports.summary.outOfStock': 'نفذ من المخزون (صفر)',
+  'reports.summary.totalWastedValue': 'إجمالي قيمة الهالك',
+  'reports.summary.mainCause': 'السبب الرئيسي',
+  'reports.summary.of': 'من',
+
+  'reports.quickRange.thisMonth': 'هذا الشهر',
+  'reports.quickRange.lastMonth': 'الشهر الماضي',
+  'reports.quickRange.last30Days': 'آخر 30 يوماً',
+
+  'reports.actions.editFilters': 'تعديل الفلاتر',
+  'reports.actions.viewReport': 'عرض التقرير',
+  'reports.totals.lines': 'الإجمالي — {{count}} بند',
+  'reports.unclassified': 'غير تصنيف',
+
+  'reports.empty.missingDateRangeTitle': 'اختر النطاق الزمني',
+  'reports.empty.missingDateRangeSubtitle': 'اختر نطاقاً زمنياً لتوليد تحليل التقرير.',
+  'reports.empty.noDataTitle': 'لا توجد بيانات',
+  'reports.empty.noDataSubtitle': 'لم يتم العثور على سجلات تطابق المحددات والأنماط المحددة.',
 }
+
 

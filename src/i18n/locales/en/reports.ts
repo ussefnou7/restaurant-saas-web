@@ -62,9 +62,38 @@ export const reportsEn: TranslationDictionary = {
   'reports.markers.unconvertibleUomTooltip': 'Material unit setup is incomplete; quantity cannot be expressed in display UOM.',
   'reports.markers.inactive': 'Inactive',
 
-  'reports.empty.missingDateRangeTitle': 'Date range required',
-  'reports.empty.missingDateRangeSubtitle': 'Please select a valid date range to load report data.',
-  'reports.empty.noDataTitle': 'No discrepancies found',
-  'reports.empty.noDataSubtitle': 'No shrinkage or waste recorded for the selected period and filters.',
+  'reports.code.stockValuation': 'REPORT · INV-01',
+  'reports.code.lowStock': 'REPORT · INV-02',
+  'reports.code.shrinkage': 'REPORT · INV-03',
+  'reports.code.wasteAnalysis': 'REPORT · INV-04',
+
+  'reports.method.stockValuation': 'Valued at moving average cost as of {{date}}',
+  'reports.method.lowStock': 'Evaluated against minimum thresholds as of {{date}}',
+  'reports.method.period': 'Analysis period {{dateFrom}} to {{dateTo}}',
+
+  'reports.summary.totalStockValue': 'TOTAL STOCK VALUE',
+  'reports.summary.linesValued': 'LINES VALUED',
+  'reports.summary.materialGroups': 'MATERIAL GROUPS',
+  'reports.summary.concentration': 'CONCENTRATION — {{group}}',
+  'reports.summary.materialsBelowMin': 'BELOW MINIMUM',
+  'reports.summary.outOfStock': 'OUT OF STOCK (ZERO)',
+  'reports.summary.totalWastedValue': 'TOTAL WASTED VALUE',
+  'reports.summary.mainCause': 'MAIN CAUSE',
+  'reports.summary.of': 'of',
+
+  'reports.quickRange.thisMonth': 'This Month',
+  'reports.quickRange.lastMonth': 'Last Month',
+  'reports.quickRange.last30Days': 'Last 30 Days',
+
+  'reports.actions.editFilters': 'Edit Filters',
+  'reports.actions.viewReport': 'View Report',
+  'reports.totals.lines': 'TOTAL — {{count}} lines',
+  'reports.unclassified': 'Unclassified',
+
+  'reports.empty.missingDateRangeTitle': 'Select date range',
+  'reports.empty.missingDateRangeSubtitle': 'Choose a date range to generate the report analysis.',
+  'reports.empty.noDataTitle': 'No report data',
+  'reports.empty.noDataSubtitle': 'No records found matching the specified parameters.',
 }
+
 

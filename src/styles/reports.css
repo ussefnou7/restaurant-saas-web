@@ -10,6 +10,184 @@
   gap: var(--space-sm);
 }
 
+/* Report Header Block */
+.report-header-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-block-end: var(--space-md);
+  padding-block-end: var(--space-md);
+  border-block-end: 1px solid var(--border-color);
+}
+
+.report-header-block__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.report-header-block__title-group {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+}
+
+.report-header-block__title {
+  font-size: var(--font-size-2xl, 1.75rem);
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.report-header-block__code-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--font-size-xs, 0.75rem);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-hover, #f1f5f9);
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+}
+
+.report-header-block__method {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.report-header-block__filter-sentence {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.report-header-block__filter-sentence strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+/* Summary Strip — Ledger style hairline boxes */
+.report-summary-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  border: 1px solid var(--border-color);
+  border-radius: var(--card-radius);
+  background: var(--color-surface);
+  margin-block-end: var(--space-lg);
+  overflow: hidden;
+}
+
+.report-summary-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: var(--space-md) var(--space-lg);
+  border-inline-end: 1px solid var(--border-color);
+}
+
+.report-summary-item:last-child {
+  border-inline-end: none;
+}
+
+.report-summary-item__label {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.report-summary-item__val {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.report-summary-item__val-unit {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-inline-start: var(--space-xs);
+}
+
+.report-summary-item__sub {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+/* Table Ledger Styling */
+.report-ledger-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.report-ledger-table th {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  border-block-end: 2px solid var(--border-color);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.report-ledger-table td {
+  padding: var(--space-sm) var(--space-md);
+  border-block-end: 1px solid var(--border-color);
+  font-size: var(--font-size-sm);
+  vertical-align: middle;
+}
+
+.report-cell--numeric {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono, monospace), sans-serif;
+  text-align: end;
+}
+
+.report-cell--value {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.report-cell--positive {
+  color: var(--color-success, #059669);
+}
+
+.report-cell--negative {
+  color: var(--color-text);
+}
+
+.report-uom-muted {
+  font-size: var(--font-size-xs);
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  margin-inline-start: var(--space-xs);
+}
+
+.report-totals-row {
+  font-weight: 700;
+  background: var(--color-surface-hover, #f8fafc);
+  border-block-start: 2px solid var(--border-color);
+}
+
+.report-totals-row td {
+  border-block-end: none;
+  font-size: var(--font-size-sm);
+}
+
+/* Filter Bar & Controls */
 .report-filter-bar {
   display: flex;
   align-items: center;
@@ -56,35 +234,6 @@
   box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 
-.report-summary-bar {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--space-md);
-  margin-block-end: var(--space-md);
-}
-
-.report-summary-card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-  padding: var(--space-md);
-  background: var(--color-surface);
-  border: var(--border-width) solid var(--border-color);
-  border-radius: var(--card-radius);
-}
-
-.report-summary-card__title {
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  color: var(--color-text-secondary);
-}
-
-.report-summary-card__value {
-  font-size: var(--font-size-xl);
-  font-weight: 700;
-  color: var(--color-text);
-}
-
 .report-filter-bar__checkbox {
   display: flex;
   align-items: center;
@@ -105,23 +254,91 @@
   accent-color: var(--color-primary);
 }
 
-.report-table .data-table__td {
-  white-space: nowrap;
+/* Filter Screen (Filter-First Flow) */
+.report-filter-screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  max-width: 680px;
+  margin: 0 auto;
 }
 
-.report-table__cell--value {
-  font-weight: 700;
-  font-size: var(--font-size-md);
+.report-quick-presets {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-block-start: var(--space-xs);
 }
 
-.report-table__cell--positive {
-  color: var(--color-success, #059669);
+.report-preset-btn {
+  padding: 4px 12px;
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  border: 1px solid var(--border-color);
+  border-radius: 9999px;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-.report-table__cell--negative {
+.report-preset-btn:hover {
+  background: var(--color-surface-hover, #f1f5f9);
   color: var(--color-text);
 }
 
+.report-preset-btn--active {
+  background: var(--color-primary);
+  color: #ffffff;
+  border-color: var(--color-primary);
+}
+
+.report-filter-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--card-radius);
+}
+
+.report-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-md);
+}
+
+.report-filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.report-filter-field label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.report-filter-field input[type='date'],
+.report-filter-field select {
+  height: 40px;
+  padding-inline: var(--space-sm);
+  border: 1px solid var(--border-color);
+  border-radius: var(--card-radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.report-filter-error {
+  font-size: var(--font-size-xs);
+  color: var(--color-danger, #dc2626);
+}
+
+/* Markers & Badges */
 .report-marker--unconvertible {
   display: inline-flex;
   align-items: center;
@@ -159,14 +376,35 @@
   color: var(--color-text);
 }
 
+/* Landing Hub Cards Hierarchy */
+.reports-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-md);
+}
+
+.reports-hub-card--primary {
+  border: 2px solid var(--color-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
 @media (max-width: 720px) {
+  .report-summary-strip {
+    grid-template-columns: 1fr;
+  }
+  .report-summary-item {
+    border-inline-end: none;
+    border-block-end: 1px solid var(--border-color);
+  }
+  .report-summary-item:last-child {
+    border-block-end: none;
+  }
   .reports-page__actions,
   .report-filter-bar,
   .report-filter-bar__date-range {
     align-items: stretch;
     flex-direction: column;
   }
-
   .reports-page__actions > *,
   .report-filter-bar .dropdown,
   .report-filter-bar__date-field,
@@ -175,4 +413,5 @@
     width: 100%;
   }
 }
+
 
