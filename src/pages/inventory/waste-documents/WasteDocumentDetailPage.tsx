@@ -707,7 +707,7 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                       ) : null}
                       {canUncomplete && persistedId && isComplete ? (
                         <Button
-                          variant="secondary"
+                          variant="unpost"
                           disabled={headerSaving || actionLoading || lineSaving}
                           onClick={() => setUncompleteModalOpen(true)}
                         >

@@ -893,7 +893,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                       ) : null}
                       {canUncomplete && persistedId && displayStatus === 'COMPLETE' ? (
                         <Button
-                          variant="secondary"
+                          variant="unpost"
                           disabled={headerSaving || actionLoading || lineSaving}
                           onClick={() => setUncompleteModalOpen(true)}
                         >
