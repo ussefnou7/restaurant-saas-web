@@ -1,4 +1,4 @@
-import { AlertTriangle, Calculator, TrendingDown, Trash2 } from 'lucide-react'
+import { AlertTriangle, Calculator, Columns3, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
 import { HubNavCard } from '../../../components/hub/HubNavCard'
 import { ListPage } from '../../../components/ui/ListPage'
 import { PageHeader } from '../../../components/ui/PageHeader'
@@ -20,6 +20,18 @@ export function ReportsHub() {
       icon: Trash2,
       title: t('reports.wasteAnalysis'),
       to: '/inventory/reports/waste-analysis',
+    },
+    {
+      id: 'loss-comparison',
+      icon: Columns3,
+      title: t('reports.lossComparison'),
+      to: '/inventory/reports/loss-comparison',
+    },
+    {
+      id: 'purchase-price-drift',
+      icon: TrendingUp,
+      title: t('reports.purchasePriceDrift'),
+      to: '/inventory/reports/purchase-price-drift',
     },
     {
       id: 'stock-valuation',

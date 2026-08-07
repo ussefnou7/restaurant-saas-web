@@ -64,7 +64,9 @@ import { WasteDocumentDetailPage } from '../pages/inventory/waste-documents/Wast
 import { WasteDocumentsPage } from '../pages/inventory/waste-documents/WasteDocumentsPage'
 import { OrderConsumptionListPage } from '../pages/inventory/order-consumption/OrderConsumptionListPage'
 import { OrderConsumptionDetailPage } from '../pages/inventory/order-consumption/OrderConsumptionDetailPage'
+import { LossComparisonReport } from '../pages/inventory/reports/LossComparisonReport'
 import { LowStockReport } from '../pages/inventory/reports/LowStockReport'
+import { PurchasePriceDriftReport } from '../pages/inventory/reports/PurchasePriceDriftReport'
 import { ReportsHub } from '../pages/inventory/reports/ReportsHub'
 import { ShrinkageReport } from '../pages/inventory/reports/ShrinkageReport'
 import { StockValuationReport } from '../pages/inventory/reports/StockValuationReport'
@@ -280,6 +282,8 @@ export const router = createBrowserRouter([
                   { path: 'low-stock', element: <LowStockReport /> },
                   { path: 'shrinkage', element: <ShrinkageReport /> },
                   { path: 'waste-analysis', element: <WasteAnalysisReport /> },
+                  { path: 'loss-comparison', element: <LossComparisonReport /> },
+                  { path: 'purchase-price-drift', element: <PurchasePriceDriftReport /> },
                 ],
               },
               {

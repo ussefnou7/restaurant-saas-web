@@ -25,6 +25,7 @@ export type ReportFilters = {
   branchId?: string
   warehouseId?: string
   categoryId?: string
+  supplierId?: string
   dateFrom?: string
   dateTo?: string
   negativesOnly?: boolean
@@ -81,4 +82,37 @@ export type ShrinkageRow = {
 export type WasteAnalysisRow = ShrinkageRow & {
   reasonCode: WasteReasonCode | 'UNSPECIFIED'
 }
+
+export type LossComparisonRow = {
+  materialId: number
+  materialCode: string
+  materialName: string
+  materialNameAr?: string | null
+  wasteQuantity?: string | null
+  wasteValue: string
+  shrinkageQuantity?: string | null
+  shrinkageValue: string
+  totalValue: string
+  uomId?: number | null
+  uomSymbol?: string | null
+  materialActive?: boolean
+}
+
+export type PurchasePriceDriftRow = {
+  materialId: number
+  materialCode: string
+  materialName: string
+  materialNameAr?: string | null
+  firstPrice: string
+  firstPurchaseDate: string
+  lastPrice: string
+  lastPurchaseDate: string
+  priceChange: string
+  changePercent?: string | null
+  purchaseCount: number
+  uomId: number
+  uomSymbol: string
+  materialActive?: boolean
+}
+
 

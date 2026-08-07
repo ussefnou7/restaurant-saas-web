@@ -3,12 +3,14 @@ import {
   BarChart3,
   Calculator,
   ClipboardList,
+  Columns3,
   Package,
   RotateCcw,
   Ruler,
   Tag,
   Trash2,
   TrendingDown,
+  TrendingUp,
   Warehouse,
 } from 'lucide-react'
 import { HubNavCard } from '../../components/hub/HubNavCard'
@@ -58,6 +60,18 @@ export function InventoryHubSections({ userPermissions }: InventoryHubSectionsPr
       icon: Trash2,
       title: t('reports.wasteAnalysis'),
       to: '/inventory/reports/waste-analysis',
+    },
+    {
+      id: 'loss-comparison',
+      icon: Columns3,
+      title: t('reports.lossComparison'),
+      to: '/inventory/reports/loss-comparison',
+    },
+    {
+      id: 'purchase-price-drift',
+      icon: TrendingUp,
+      title: t('reports.purchasePriceDrift'),
+      to: '/inventory/reports/purchase-price-drift',
     },
     {
       id: 'stock-valuation',
