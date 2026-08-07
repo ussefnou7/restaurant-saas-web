@@ -498,9 +498,9 @@ export function WasteAnalysisReport() {
                 <tr>
                   <th>{t('reports.columns.materialName')}</th>
                   <th>{t('reports.columns.reason')}</th>
-                  <th style={{ textAlign: 'end' }}>{t('reports.columns.netQuantity')}</th>
-                  <th style={{ textAlign: 'end' }}>{t('reports.columns.netValue')}</th>
-                  <th style={{ textAlign: 'end' }}>{t('reports.columns.movementCount')}</th>
+                  <th className="report-cell--numeric">{t('reports.columns.netQuantity')}</th>
+                  <th className="report-cell--numeric">{t('reports.columns.netValue')}</th>
+                  <th className="report-cell--numeric">{t('reports.columns.movementCount')}</th>
                 </tr>
               </thead>
               <tbody>

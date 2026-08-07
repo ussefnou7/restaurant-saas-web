@@ -327,9 +327,9 @@ export function StockValuationReport() {
                   <th>{t('reports.columns.materialName')}</th>
                   <th>{t('reports.columns.categoryName')}</th>
                   <th>{t('reports.columns.warehouseName')}</th>
-                  <th style={{ textAlign: 'end' }}>{t('reports.columns.quantity')}</th>
-                  <th style={{ textAlign: 'end' }}>{t('reports.columns.averageCost')}</th>
-                  <th style={{ textAlign: 'end' }}>{t('reports.columns.totalValue')}</th>
+                  <th className="report-cell--numeric">{t('reports.columns.quantity')}</th>
+                  <th className="report-cell--numeric">{t('reports.columns.averageCost')}</th>
+                  <th className="report-cell--numeric">{t('reports.columns.totalValue')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -362,9 +362,15 @@ export function StockValuationReport() {
                               </td>
                               <td>{catName}</td>
                               <td>{whName}</td>
-                              <td className="report-cell--numeric">{qty}</td>
-                              <td className="report-cell--numeric">{avgCost}</td>
-                              <td className="report-cell--numeric report-cell--value">{totVal}</td>
+                              <td className="report-cell--numeric">
+                                <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{qty}</span>
+                              </td>
+                              <td className="report-cell--numeric">
+                                <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{avgCost}</span>
+                              </td>
+                              <td className="report-cell--numeric report-cell--value">
+                                <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{totVal}</span>
+                              </td>
                             </tr>
                           )
                         })}
@@ -373,7 +379,7 @@ export function StockValuationReport() {
                             {locale === 'ar' ? `المجموع الفرعي — ${group.warehouseName}` : `Subtotal — ${group.warehouseName}`}
                           </td>
                           <td className="report-cell--numeric report-cell--value">
-                            {formatMoneyNumber(group.subtotalValue)}
+                            <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{formatMoneyNumber(group.subtotalValue)}</span>
                           </td>
                         </tr>
                       </React.Fragment>
@@ -404,9 +410,15 @@ export function StockValuationReport() {
                           </td>
                           <td>{catName}</td>
                           <td>{whName}</td>
-                          <td className="report-cell--numeric">{qty}</td>
-                          <td className="report-cell--numeric">{avgCost}</td>
-                          <td className="report-cell--numeric report-cell--value">{totVal}</td>
+                          <td className="report-cell--numeric">
+                            <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{qty}</span>
+                          </td>
+                          <td className="report-cell--numeric">
+                            <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{avgCost}</span>
+                          </td>
+                          <td className="report-cell--numeric report-cell--value">
+                            <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{totVal}</span>
+                          </td>
                         </tr>
                       )
                     })}
@@ -417,7 +429,7 @@ export function StockValuationReport() {
                     {t('reports.totals.lines', { count: totalLinesCount })}
                   </td>
                   <td className="report-cell--numeric report-cell--value">
-                    {formatMoneyNumber(totalStockValue)}
+                    <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{formatMoneyNumber(totalStockValue)}</span>
                   </td>
                 </tr>
               </tfoot>

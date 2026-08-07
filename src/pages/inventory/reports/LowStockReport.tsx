@@ -256,9 +256,9 @@ export function LowStockReport() {
                   <th>{t('reports.columns.materialName')}</th>
                   <th>{t('reports.columns.categoryName')}</th>
                   <th>{t('reports.columns.warehouseName')}</th>
-                  <th style={{ textAlign: 'end' }}>{t('reports.columns.quantity')}</th>
-                  <th style={{ textAlign: 'end' }}>{t('reports.columns.minQuantity')}</th>
-                  <th style={{ textAlign: 'end' }}>{t('reports.columns.shortfall')}</th>
+                  <th className="report-cell--numeric">{t('reports.columns.quantity')}</th>
+                  <th className="report-cell--numeric">{t('reports.columns.minQuantity')}</th>
+                  <th className="report-cell--numeric">{t('reports.columns.shortfall')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -288,9 +288,15 @@ export function LowStockReport() {
                       </td>
                       <td>{catName}</td>
                       <td>{whName}</td>
-                      <td className="report-cell--numeric">{qty}</td>
-                      <td className="report-cell--numeric">{minQty}</td>
-                      <td className="report-cell--numeric report-cell--value">{shortfall}</td>
+                      <td className="report-cell--numeric">
+                        <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{qty}</span>
+                      </td>
+                      <td className="report-cell--numeric">
+                        <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{minQty}</span>
+                      </td>
+                      <td className="report-cell--numeric report-cell--value">
+                        <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{shortfall}</span>
+                      </td>
                     </tr>
                   )
                 })}
