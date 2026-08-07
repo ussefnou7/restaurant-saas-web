@@ -56,8 +56,107 @@
   box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 
+.report-summary-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-md);
+  margin-block-end: var(--space-md);
+}
+
+.report-summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-md);
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--card-radius);
+}
+
+.report-summary-card__title {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.report-summary-card__value {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.report-filter-bar__checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  user-select: none;
+  min-height: 40px;
+  padding-inline: var(--space-sm);
+}
+
+.report-filter-bar__checkbox input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--color-primary);
+}
+
 .report-table .data-table__td {
   white-space: nowrap;
+}
+
+.report-table__cell--value {
+  font-weight: 700;
+  font-size: var(--font-size-md);
+}
+
+.report-table__cell--positive {
+  color: var(--color-success, #059669);
+}
+
+.report-table__cell--negative {
+  color: var(--color-text);
+}
+
+.report-marker--unconvertible {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-warning-text, #b45309);
+  background: var(--color-warning-bg, #fef3c7);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.report-marker--inactive {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: var(--color-subtle-bg, #f1f5f9);
+  border: 1px solid var(--border-color);
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-inline-start: var(--space-xs);
+}
+
+.report-reason-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  border-radius: 4px;
+  background: var(--color-surface-hover, #f8fafc);
+  border: 1px solid var(--border-color);
+  color: var(--color-text);
 }
 
 @media (max-width: 720px) {
@@ -71,7 +170,9 @@
   .reports-page__actions > *,
   .report-filter-bar .dropdown,
   .report-filter-bar__date-field,
-  .report-filter-bar__date-field input {
+  .report-filter-bar__date-field input,
+  .report-filter-bar__checkbox {
     width: 100%;
   }
 }
+

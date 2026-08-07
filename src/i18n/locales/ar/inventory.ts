@@ -984,6 +984,7 @@ export const inventoryAr: TranslationDictionary = {
   'inventory.waste.reasonCode.DAMAGED': 'تضرر',
   'inventory.waste.reasonCode.PREPARATION_LOSS': 'فقد أثناء التحضير',
   'inventory.waste.reasonCode.OTHER': 'أخرى',
+  'inventory.waste.reasonCode.UNSPECIFIED': 'غير محدد',
   'inventory.waste.form.createTitle': 'مستند هدر جديد',
   'inventory.waste.form.createSubtitle': 'اختر موقع التخزين والتاريخ وسبب الشطب.',
   'inventory.waste.form.viewTitle': 'مستند الهدر',

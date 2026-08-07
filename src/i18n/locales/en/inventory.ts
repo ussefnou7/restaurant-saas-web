@@ -989,6 +989,7 @@ export const inventoryEn: TranslationDictionary = {
   'inventory.waste.reasonCode.DAMAGED': 'Damaged',
   'inventory.waste.reasonCode.PREPARATION_LOSS': 'Preparation loss',
   'inventory.waste.reasonCode.OTHER': 'Other',
+  'inventory.waste.reasonCode.UNSPECIFIED': 'Unspecified',
   'inventory.waste.form.createTitle': 'New Waste Document',
   'inventory.waste.form.createSubtitle': 'Select the storage location, date, and reason for the write-off.',
   'inventory.waste.form.viewTitle': 'Waste Document',

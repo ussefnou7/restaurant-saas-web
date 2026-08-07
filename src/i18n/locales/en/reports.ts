@@ -25,6 +25,19 @@ export const reportsEn: TranslationDictionary = {
   'reports.stockValuation.subtitle': 'Inventory value by material and storage location.',
   'reports.lowStock': 'Low Stock',
   'reports.lowStock.subtitle': 'Materials below minimum quantity by storage location.',
+  'reports.shrinkage': 'Shrinkage Analysis',
+  'reports.shrinkage.subtitle': 'Materials with unexplainable physical count shortfalls and their financial impact.',
+  'reports.wasteAnalysis': 'Waste Analysis',
+  'reports.wasteAnalysis.subtitle': 'Track deliberate inventory write-offs by cause and financial impact.',
+
+  'reports.filters.dateFrom': 'From Date',
+  'reports.filters.dateTo': 'To Date',
+  'reports.filters.negativesOnly': 'Shortages/Waste only',
+  'reports.filters.reasonCode': 'Reason',
+  'reports.filters.allReasons': 'All reasons',
+
+  'reports.summary.totalNetValue': 'Total Net Value',
+  'reports.summary.affectedMaterials': 'Affected Materials',
 
   'reports.columns.warehouseId': 'Warehouse ID',
   'reports.columns.warehouseName': 'Warehouse',
@@ -40,4 +53,18 @@ export const reportsEn: TranslationDictionary = {
   'reports.columns.totalValue': 'Total Value',
   'reports.columns.minQuantity': 'Minimum Quantity',
   'reports.columns.shortfall': 'Shortfall',
+  'reports.columns.netQuantity': 'Net Quantity',
+  'reports.columns.netValue': 'Net Value',
+  'reports.columns.movementCount': 'Movements',
+  'reports.columns.reason': 'Reason',
+
+  'reports.markers.unconvertibleUom': 'UOM conversion unavailable',
+  'reports.markers.unconvertibleUomTooltip': 'Material unit setup is incomplete; quantity cannot be expressed in display UOM.',
+  'reports.markers.inactive': 'Inactive',
+
+  'reports.empty.missingDateRangeTitle': 'Date range required',
+  'reports.empty.missingDateRangeSubtitle': 'Please select a valid date range to load report data.',
+  'reports.empty.noDataTitle': 'No discrepancies found',
+  'reports.empty.noDataSubtitle': 'No shrinkage or waste recorded for the selected period and filters.',
 }
+

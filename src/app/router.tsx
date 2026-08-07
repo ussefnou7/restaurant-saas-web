@@ -66,7 +66,9 @@ import { OrderConsumptionListPage } from '../pages/inventory/order-consumption/O
 import { OrderConsumptionDetailPage } from '../pages/inventory/order-consumption/OrderConsumptionDetailPage'
 import { LowStockReport } from '../pages/inventory/reports/LowStockReport'
 import { ReportsHub } from '../pages/inventory/reports/ReportsHub'
+import { ShrinkageReport } from '../pages/inventory/reports/ShrinkageReport'
 import { StockValuationReport } from '../pages/inventory/reports/StockValuationReport'
+import { WasteAnalysisReport } from '../pages/inventory/reports/WasteAnalysisReport'
 import { NotFoundPage } from '../pages/NotFoundPage'
 import { CustomersListSection } from '../pages/orders/CustomersListSection'
 import { OrderDetailPage } from '../pages/orders/OrderDetailPage'
@@ -276,6 +278,8 @@ export const router = createBrowserRouter([
                   { index: true, element: <ReportsHub /> },
                   { path: 'stock-valuation', element: <StockValuationReport /> },
                   { path: 'low-stock', element: <LowStockReport /> },
+                  { path: 'shrinkage', element: <ShrinkageReport /> },
+                  { path: 'waste-analysis', element: <WasteAnalysisReport /> },
                 ],
               },
               {
