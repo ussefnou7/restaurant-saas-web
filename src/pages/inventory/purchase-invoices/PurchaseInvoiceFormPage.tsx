@@ -903,12 +903,12 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                         >
                           {actionLoading ? (
                             <>
-                              <Loader2 className="pi-form-actions__submit-spinner" size={16} aria-hidden="true" />
+                              <Loader2 className="pi-form-actions__submit-spinner" size={18} aria-hidden="true" />
                               {t('common.loading')}
                             </>
                           ) : (
                             <span className="pi-form-actions__icon-text">
-                              <CheckCircle size={16} aria-hidden="true" />
+                              <CheckCircle size={18} aria-hidden="true" />
                               {t('inventory.purchase.actions.complete')}
                             </span>
                           )}
@@ -922,12 +922,12 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                         >
                           {actionLoading ? (
                             <>
-                              <Loader2 className="pi-form-actions__submit-spinner" size={16} aria-hidden="true" />
+                              <Loader2 className="pi-form-actions__submit-spinner" size={18} aria-hidden="true" />
                               {t('common.loading')}
                             </>
                           ) : (
                             <span className="pi-form-actions__icon-text">
-                              <Send size={16} aria-hidden="true" />
+                              <Send size={18} aria-hidden="true" />
                               {t('inventory.purchase.actions.post')}
                             </span>
                           )}
@@ -941,12 +941,12 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                         >
                           {actionLoading ? (
                             <>
-                              <Loader2 className="pi-form-actions__submit-spinner" size={16} aria-hidden="true" />
+                              <Loader2 className="pi-form-actions__submit-spinner" size={18} aria-hidden="true" />
                               {t('common.loading')}
                             </>
                           ) : (
                             <span className="pi-form-actions__icon-text">
-                              <Undo2 size={16} aria-hidden="true" />
+                              <Undo2 size={18} aria-hidden="true" />
                               {t('inventory.purchase.actions.uncomplete')}
                             </span>
                           )}
@@ -960,12 +960,12 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                         >
                           {actionLoading ? (
                             <>
-                              <Loader2 className="pi-form-actions__submit-spinner" size={16} aria-hidden="true" />
+                              <Loader2 className="pi-form-actions__submit-spinner" size={18} aria-hidden="true" />
                               {t('common.loading')}
                             </>
                           ) : (
                             <span className="pi-form-actions__icon-text">
-                              <Undo2 size={16} aria-hidden="true" />
+                              <Undo2 size={18} aria-hidden="true" />
                               {t('inventory.purchase.actions.unpost')}
                             </span>
                           )}
@@ -978,7 +978,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                           onClick={() => setCancelInvoiceModalOpen(true)}
                         >
                           <span className="pi-form-actions__icon-text">
-                            <XCircle size={16} aria-hidden="true" />
+                            <XCircle size={18} aria-hidden="true" />
                             {t('inventory.purchase.actions.cancel')}
                           </span>
                         </Button>

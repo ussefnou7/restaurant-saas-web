@@ -728,7 +728,7 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                           onClick={() => setCompleteConfirmOpen(true)}
                         >
                           <span className="pi-form-actions__icon-text">
-                            <CheckCircle size={16} aria-hidden="true" />
+                            <CheckCircle size={18} aria-hidden="true" />
                             {t('inventory.waste.actions.complete')}
                           </span>
                         </Button>
@@ -740,7 +740,7 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                           onClick={() => setPostConfirmOpen(true)}
                         >
                           <span className="pi-form-actions__icon-text">
-                            <Send size={16} aria-hidden="true" />
+                            <Send size={18} aria-hidden="true" />
                             {t('inventory.waste.actions.post')}
                           </span>
                         </Button>
@@ -753,12 +753,12 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                         >
                           {actionLoading ? (
                             <>
-                              <Loader2 className="pi-form-actions__submit-spinner" size={16} aria-hidden="true" />
+                              <Loader2 className="pi-form-actions__submit-spinner" size={18} aria-hidden="true" />
                               {t('common.loading')}
                             </>
                           ) : (
                             <span className="pi-form-actions__icon-text">
-                              <Undo2 size={16} aria-hidden="true" />
+                              <Undo2 size={18} aria-hidden="true" />
                               {t('inventory.waste.actions.uncomplete')}
                             </span>
                           )}
@@ -771,7 +771,7 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                           onClick={() => setCancelModalOpen(true)}
                         >
                           <span className="pi-form-actions__icon-text">
-                            <XCircle size={16} aria-hidden="true" />
+                            <XCircle size={18} aria-hidden="true" />
                             {t('inventory.waste.actions.cancel')}
                           </span>
                         </Button>
