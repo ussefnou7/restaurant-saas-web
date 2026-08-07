@@ -203,7 +203,7 @@ export function PhysicalCountCreatePage() {
               <TableHead>
                 <TableRow>
                   <Th column="entity">{t('inventory.physicalCounts.lines.material')}</Th>
-                  <Th className="table-cell--numeric">{t('inventory.physicalCounts.lines.uom')}</Th>
+                  <Th>{t('inventory.physicalCounts.lines.uom')}</Th>
                   {canManage ? <Th>{t('inventory.col.actions')}</Th> : null}
                 </TableRow>
               </TableHead>
@@ -214,7 +214,7 @@ export function PhysicalCountCreatePage() {
                       <span>{getInventoryLocalizedName(material, locale)}</span>
                       <span className="entity-cell__code">{material.code}</span>
                     </Td>
-                    <Td dir="ltr" className="table-cell--numeric">{material.stockUomSymbol ?? material.stockUomCode}</Td>
+                    <Td dir="ltr">{material.stockUomSymbol ?? material.stockUomCode}</Td>
                     {canManage ? (
                       <StopPropagationCell>
                         <Button
