@@ -15,6 +15,7 @@ import { PageHeader } from '../../../components/ui/PageHeader'
 import { SelectFilter } from '../../../components/ui/SelectFilter'
 import { useNotify } from '../../../components/ui/NotificationContext'
 import {
+  ClickableTableRow,
   DataTable,
   StopPropagationCell,
   TableBody,
@@ -25,7 +26,7 @@ import {
 } from '../../../components/ui/Table'
 import { FormInput } from '../../../components/fields'
 import { ActionMenu, type ActionMenuItem } from '../../../components/ui/ActionMenu'
-import { RowActionGroup, PermissionsActionButton } from '../../../components/ui/RowActions'
+import { RowActionGroup } from '../../../components/ui/RowActions'
 import { useTranslation } from '../../../i18n/useTranslation'
 import * as transferService from '../../../services/inventoryTransferService'
 import type { InventoryTransferResponse, TransferStatus } from '../../../types/inventoryOperations'
@@ -242,7 +243,10 @@ export function TransfersPage() {
                   const busy = rowActionId === transfer.id
                   const menuItems = buildMenuItems(transfer)
                   return (
-                    <TableRow key={transfer.id}>
+                    <ClickableTableRow
+                      key={transfer.id}
+                      onClick={() => navigate(`/inventory/transfers/${transfer.id}`)}
+                    >
                       <Td dir="ltr" className="table-cell--numeric">
                         <span className="transfer-code">{transfer.code}</span>
                       </Td>
@@ -276,22 +280,19 @@ export function TransfersPage() {
                         </Badge>
                       </Td>
                       <StopPropagationCell>
-                        <RowActionGroup>
-                          <PermissionsActionButton
-                            label={t('inventory.transfers.actions.view')}
-                            onClick={() => navigate(`/inventory/transfers/${transfer.id}`)}
-                            disabled={busy}
-                          />
-                          {menuItems.length > 0 ? (
+                        {menuItems.length > 0 ? (
+                          <RowActionGroup>
                             <ActionMenu
                               items={menuItems}
                               disabled={busy}
                               ariaLabel={t('common.actions')}
                             />
-                          ) : null}
-                        </RowActionGroup>
+                          </RowActionGroup>
+                        ) : (
+                          <span className="text-muted">-</span>
+                        )}
                       </StopPropagationCell>
-                    </TableRow>
+                    </ClickableTableRow>
                   )
                 })}
               </TableBody>

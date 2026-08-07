@@ -17,6 +17,7 @@ import { PageHeader } from '../../../components/ui/PageHeader'
 import { SelectFilter } from '../../../components/ui/SelectFilter'
 import { useNotify } from '../../../components/ui/NotificationContext'
 import {
+  ClickableTableRow,
   DataTable,
   StopPropagationCell,
   TableBody,
@@ -28,7 +29,6 @@ import {
 import { FormInput } from '../../../components/fields'
 import {
   EditActionButton,
-  PermissionsActionButton,
   RowActionGroup,
 } from '../../../components/ui/RowActions'
 import { useTranslation } from '../../../i18n/useTranslation'
@@ -308,8 +308,13 @@ export function PurchaseInvoicesPage() {
                       )
                     : t('common.empty.dash')
 
+                  const hasRowActions = canManage && (invoice.status === 'DRAFT' || invoice.status === 'COMPLETE')
+
                   return (
-                    <TableRow key={invoice.id}>
+                    <ClickableTableRow
+                      key={invoice.id}
+                      onClick={() => navigate(`/purchase/purchase-invoices/${invoice.id}`)}
+                    >
                       <Td dir="ltr" className="table-cell--numeric">
                         {invoice.invoiceNumber?.trim() || t('common.empty.dash')}
                       </Td>
@@ -337,55 +342,54 @@ export function PurchaseInvoicesPage() {
                         <PurchaseInvoiceStatusBadges status={invoice.status} />
                       </Td>
                       <StopPropagationCell>
-                        <RowActionGroup>
-                          <PermissionsActionButton
-                            label={t('inventory.purchase.actions.view')}
-                            onClick={() => navigate(`/purchase/purchase-invoices/${invoice.id}`)}
-                            disabled={busy}
-                          />
-                          {canManage && invoice.status === 'DRAFT' ? (
-                            <EditActionButton
-                              label={t('inventory.purchase.actions.edit')}
-                              onClick={() =>
-                                navigate(`/purchase/purchase-invoices/${invoice.id}/edit`)
-                              }
-                              disabled={busy}
-                            />
-                          ) : null}
-                          {canManage && invoice.status === 'DRAFT' ? (
-                            <button
-                              type="button"
-                              className="action-btn action-btn--neutral"
-                              onClick={() => setConfirmAction({ type: 'complete', invoice })}
-                              disabled={busy}
-                            >
-                              {t('inventory.purchase.actions.complete')}
-                            </button>
-                          ) : null}
-                          {canManage && invoice.status === 'COMPLETE' ? (
-                            <button
-                              type="button"
-                              className="action-btn action-btn--neutral"
-                              onClick={() => setConfirmAction({ type: 'post', invoice })}
-                              disabled={busy}
-                            >
-                              {t('inventory.purchase.actions.post')}
-                            </button>
-                          ) : null}
-                          {canManage &&
-                          (invoice.status === 'DRAFT' || invoice.status === 'COMPLETE') ? (
-                            <button
-                              type="button"
-                              className="action-btn action-btn--neutral"
-                              onClick={() => setConfirmAction({ type: 'cancel', invoice })}
-                              disabled={busy}
-                            >
-                              {t('inventory.purchase.actions.cancel')}
-                            </button>
-                          ) : null}
-                        </RowActionGroup>
+                        {hasRowActions ? (
+                          <RowActionGroup>
+                            {canManage && invoice.status === 'DRAFT' ? (
+                              <EditActionButton
+                                label={t('inventory.purchase.actions.edit')}
+                                onClick={() =>
+                                  navigate(`/purchase/purchase-invoices/${invoice.id}/edit`)
+                                }
+                                disabled={busy}
+                              />
+                            ) : null}
+                            {canManage && invoice.status === 'DRAFT' ? (
+                              <button
+                                type="button"
+                                className="action-btn action-btn--neutral"
+                                onClick={() => setConfirmAction({ type: 'complete', invoice })}
+                                disabled={busy}
+                              >
+                                {t('inventory.purchase.actions.complete')}
+                              </button>
+                            ) : null}
+                            {canManage && invoice.status === 'COMPLETE' ? (
+                              <button
+                                type="button"
+                                className="action-btn action-btn--neutral"
+                                onClick={() => setConfirmAction({ type: 'post', invoice })}
+                                disabled={busy}
+                              >
+                                {t('inventory.purchase.actions.post')}
+                              </button>
+                            ) : null}
+                            {canManage &&
+                            (invoice.status === 'DRAFT' || invoice.status === 'COMPLETE') ? (
+                              <button
+                                type="button"
+                                className="action-btn action-btn--neutral"
+                                onClick={() => setConfirmAction({ type: 'cancel', invoice })}
+                                disabled={busy}
+                              >
+                                {t('inventory.purchase.actions.cancel')}
+                              </button>
+                            ) : null}
+                          </RowActionGroup>
+                        ) : (
+                          <span className="text-muted">-</span>
+                        )}
                       </StopPropagationCell>
-                    </TableRow>
+                    </ClickableTableRow>
                   )
                 })}
               </TableBody>

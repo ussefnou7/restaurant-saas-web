@@ -16,6 +16,7 @@ import { PageHeader } from '../../../components/ui/PageHeader'
 import { SelectFilter } from '../../../components/ui/SelectFilter'
 import { useNotify } from '../../../components/ui/NotificationContext'
 import {
+  ClickableTableRow,
   DataTable,
   StopPropagationCell,
   TableBody,
@@ -25,7 +26,7 @@ import {
   Th,
 } from '../../../components/ui/Table'
 import { FormInput } from '../../../components/fields'
-import { PermissionsActionButton, RowActionGroup } from '../../../components/ui/RowActions'
+import { RowActionGroup } from '../../../components/ui/RowActions'
 import { useTranslation } from '../../../i18n/useTranslation'
 import * as purchaseReturnService from '../../../services/purchaseReturnService'
 import type { PurchaseReturnResponse, PurchaseReturnStatus } from '../../../types/purchaseReturn'
@@ -240,8 +241,13 @@ export function PurchaseReturnsPage() {
                       )
                     : t('common.empty.dash')
 
+                  const hasRowActions = canManage && (purchaseReturn.status === 'DRAFT' || purchaseReturn.status === 'COMPLETE')
+
                   return (
-                    <TableRow key={purchaseReturn.id}>
+                    <ClickableTableRow
+                      key={purchaseReturn.id}
+                      onClick={() => navigate(`/purchase/purchase-returns/${purchaseReturn.id}`)}
+                    >
                       <Td dir="ltr" className="table-cell--numeric">
                         {purchaseReturn.returnNumber?.trim() || t('common.empty.dash')}
                       </Td>
@@ -262,53 +268,50 @@ export function PurchaseReturnsPage() {
                         <PurchaseInvoiceStatusBadges status={purchaseReturn.status} />
                       </Td>
                       <StopPropagationCell>
-                        <RowActionGroup>
-                          <PermissionsActionButton
-                            label={t('inventory.purchase.actions.view')}
-                            onClick={() =>
-                              navigate(`/purchase/purchase-returns/${purchaseReturn.id}`)
-                            }
-                            disabled={busy}
-                          />
-                          {canManage && purchaseReturn.status === 'DRAFT' ? (
-                            <button
-                              type="button"
-                              className="action-btn action-btn--neutral"
-                              onClick={() =>
-                                setConfirmAction({ type: 'complete', purchaseReturn })
-                              }
-                              disabled={busy}
-                            >
-                              {t('inventory.purchase.actions.complete')}
-                            </button>
-                          ) : null}
-                          {canManage && purchaseReturn.status === 'COMPLETE' ? (
-                            <button
-                              type="button"
-                              className="action-btn action-btn--neutral"
-                              onClick={() => setConfirmAction({ type: 'post', purchaseReturn })}
-                              disabled={busy}
-                            >
-                              {t('inventory.purchase.actions.post')}
-                            </button>
-                          ) : null}
-                          {canManage &&
-                          (purchaseReturn.status === 'DRAFT' ||
-                            purchaseReturn.status === 'COMPLETE') ? (
-                            <button
-                              type="button"
-                              className="action-btn action-btn--neutral"
-                              onClick={() =>
-                                setConfirmAction({ type: 'cancel', purchaseReturn })
-                              }
-                              disabled={busy}
-                            >
-                              {t('inventory.purchase.actions.cancel')}
-                            </button>
-                          ) : null}
-                        </RowActionGroup>
+                        {hasRowActions ? (
+                          <RowActionGroup>
+                            {canManage && purchaseReturn.status === 'DRAFT' ? (
+                              <button
+                                type="button"
+                                className="action-btn action-btn--neutral"
+                                onClick={() =>
+                                  setConfirmAction({ type: 'complete', purchaseReturn })
+                                }
+                                disabled={busy}
+                              >
+                                {t('inventory.purchase.actions.complete')}
+                              </button>
+                            ) : null}
+                            {canManage && purchaseReturn.status === 'COMPLETE' ? (
+                              <button
+                                type="button"
+                                className="action-btn action-btn--neutral"
+                                onClick={() => setConfirmAction({ type: 'post', purchaseReturn })}
+                                disabled={busy}
+                              >
+                                {t('inventory.purchase.actions.post')}
+                              </button>
+                            ) : null}
+                            {canManage &&
+                            (purchaseReturn.status === 'DRAFT' ||
+                              purchaseReturn.status === 'COMPLETE') ? (
+                              <button
+                                type="button"
+                                className="action-btn action-btn--neutral"
+                                onClick={() =>
+                                  setConfirmAction({ type: 'cancel', purchaseReturn })
+                                }
+                                disabled={busy}
+                              >
+                                {t('inventory.purchase.actions.cancel')}
+                              </button>
+                            ) : null}
+                          </RowActionGroup>
+                        ) : (
+                          <span className="text-muted">-</span>
+                        )}
                       </StopPropagationCell>
-                    </TableRow>
+                    </ClickableTableRow>
                   )
                 })}
               </TableBody>
