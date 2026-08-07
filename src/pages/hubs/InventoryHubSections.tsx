@@ -48,18 +48,6 @@ export function InventoryHubSections({ userPermissions }: InventoryHubSectionsPr
 
   const reportChips = [
     {
-      id: 'stock-valuation',
-      icon: Calculator,
-      title: t('reports.stockValuation'),
-      to: '/inventory/reports/stock-valuation',
-    },
-    {
-      id: 'low-stock',
-      icon: AlertTriangle,
-      title: t('reports.lowStock'),
-      to: '/inventory/reports/low-stock',
-    },
-    {
       id: 'shrinkage',
       icon: TrendingDown,
       title: t('reports.shrinkage'),
@@ -70,6 +58,18 @@ export function InventoryHubSections({ userPermissions }: InventoryHubSectionsPr
       icon: Trash2,
       title: t('reports.wasteAnalysis'),
       to: '/inventory/reports/waste-analysis',
+    },
+    {
+      id: 'stock-valuation',
+      icon: Calculator,
+      title: t('reports.stockValuation'),
+      to: '/inventory/reports/stock-valuation',
+    },
+    {
+      id: 'low-stock',
+      icon: AlertTriangle,
+      title: t('reports.lowStock'),
+      to: '/inventory/reports/low-stock',
     },
   ]
 

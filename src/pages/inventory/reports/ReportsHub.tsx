@@ -9,6 +9,19 @@ export function ReportsHub() {
 
   const cards = [
     {
+      id: 'shrinkage',
+      icon: TrendingDown,
+      title: t('reports.shrinkage'),
+      to: '/inventory/reports/shrinkage',
+      className: 'reports-hub-card--primary',
+    },
+    {
+      id: 'waste-analysis',
+      icon: Trash2,
+      title: t('reports.wasteAnalysis'),
+      to: '/inventory/reports/waste-analysis',
+    },
+    {
       id: 'stock-valuation',
       icon: Calculator,
       title: t('reports.stockValuation'),
@@ -19,18 +32,6 @@ export function ReportsHub() {
       icon: AlertTriangle,
       title: t('reports.lowStock'),
       to: '/inventory/reports/low-stock',
-    },
-    {
-      id: 'shrinkage',
-      icon: TrendingDown,
-      title: t('reports.shrinkage'),
-      to: '/inventory/reports/shrinkage',
-    },
-    {
-      id: 'waste-analysis',
-      icon: Trash2,
-      title: t('reports.wasteAnalysis'),
-      to: '/inventory/reports/waste-analysis',
     },
   ]
 
