@@ -994,17 +994,6 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                         </IconActionButton>
                       ) : null}
 
-                      <IconActionButton
-                        className="action-btn action-btn--icon action-btn--header-back"
-                        label={t('inventory.purchase.form.backToList')}
-                        onClick={handleBackToListClick}
-                        disabled={headerSaving || lineSaving || actionLoading}
-                      >
-                        {locale === 'ar' ? <ArrowRight size={18} aria-hidden /> : <ArrowLeft size={18} aria-hidden />}
-                      </IconActionButton>
-
-                      <span className="pi-form-topbar__actions-divider" aria-hidden />
-
                       {displayStatus === 'DRAFT' && canManage && persistedId ? (
                         isEditingHeader ? (
                           <>
@@ -1015,9 +1004,9 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                               disabled={headerSaving}
                             >
                               {headerSaving ? (
-                                <Loader2 size={18} className="pi-form-actions__submit-spinner" aria-hidden />
+                                <Loader2 size={20} className="pi-form-actions__submit-spinner" aria-hidden />
                               ) : (
-                                <Check size={18} aria-hidden />
+                                <Check size={20} aria-hidden />
                               )}
                             </IconActionButton>
                             <IconActionButton
@@ -1026,7 +1015,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                               onClick={handleEditButtonClick}
                               disabled={headerSaving}
                             >
-                              <X size={18} aria-hidden />
+                              <X size={20} aria-hidden />
                             </IconActionButton>
                           </>
                         ) : (
@@ -1036,10 +1025,21 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                             onClick={handleEditButtonClick}
                             disabled={headerSaving || lineSaving || actionLoading}
                           >
-                            <Pencil size={18} aria-hidden />
+                            <Pencil size={20} aria-hidden />
                           </IconActionButton>
                         )
                       ) : null}
+
+                      <span className="pi-form-topbar__actions-divider" aria-hidden />
+
+                      <IconActionButton
+                        className="action-btn action-btn--icon action-btn--header-back"
+                        label={t('inventory.purchase.form.backToList')}
+                        onClick={handleBackToListClick}
+                        disabled={headerSaving || lineSaving || actionLoading}
+                      >
+                        {locale === 'ar' ? <ArrowRight size={20} aria-hidden /> : <ArrowLeft size={20} aria-hidden />}
+                      </IconActionButton>
                       {!persistedId ? (
                         <Button
                           variant="primary"
