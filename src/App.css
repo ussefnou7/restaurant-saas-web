@@ -3438,12 +3438,27 @@ button:disabled {
 
 /* Icon-only actions */
 .action-btn--icon {
-  width: 34px;
-  min-width: 34px;
-  height: 34px;
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
   padding: 0;
   border-radius: 10px;
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn--header-back {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.action-btn--header-back:hover:not(:disabled) {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+  color: #0f172a;
 }
 
 .action-btn--icon[data-tooltip]::after {

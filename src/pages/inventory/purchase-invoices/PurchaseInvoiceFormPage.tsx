@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { AlertTriangle, Check, CheckCircle, ChevronRight, Loader2, Pencil, Plus, Receipt, Send, Trash2, Undo2, X, XCircle } from 'lucide-react'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { AlertTriangle, ArrowLeft, ArrowRight, Check, CheckCircle, Loader2, Pencil, Plus, Receipt, Send, Trash2, Undo2, X, XCircle } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
+import { ConfirmModal } from '../../../components/ui/ConfirmModal'
 import { ListPage } from '../../../components/ui/ListPage'
 import { MaterialSelect } from '../../../components/ui/MaterialSelect'
 import { Modal } from '../../../components/ui/Modal'
@@ -220,18 +221,65 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
   const [cancelInvoiceModalOpen, setCancelInvoiceModalOpen] = useState(false)
   const [backdatedWarningOpen, setBackdatedWarningOpen] = useState(false)
   const [backdatedConflicts, setBackdatedConflicts] = useState<BackdatedConsumptionCheckResponse[]>([])
+  const [discardModalOpen, setDiscardModalOpen] = useState(false)
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
 
   const isCreate = mode === 'create'
   const isView = mode === 'view'
-  // Once a create-mode document is auto-persisted (first "add line" or explicit header save),
-  // persistedId becomes the source of truth instead of the route id, so the rest of the page
-  // behaves like edit/view without requiring navigation.
   const persistedId = invoice != null ? String(invoice.id) : id
   const displayStatus: PurchaseInvoiceStatus = invoice?.status ?? 'DRAFT'
   const isDraft = displayStatus === 'DRAFT'
   const headerFieldsEnabled = !persistedId || isEditingHeader
   const headerInputsDisabled = !headerFieldsEnabled || headerSaving || lookupsLoading || actionLoading
   const showDraftLineActions = isDraft && canManage
+
+  const isHeaderDirty = useMemo(() => {
+    if (!invoice) return false
+    const initial = mapInvoiceToHeader(invoice)
+    return (
+      header.supplierId !== initial.supplierId ||
+      header.warehouseId !== initial.warehouseId ||
+      header.invoiceDate !== initial.invoiceDate ||
+      header.notes !== initial.notes
+    )
+  }, [invoice, header])
+
+  function handleEditButtonClick() {
+    if (!isEditingHeader) {
+      setIsEditingHeader(true)
+    } else {
+      if (isHeaderDirty) {
+        setPendingNavigation(null)
+        setDiscardModalOpen(true)
+      } else {
+        setIsEditingHeader(false)
+        setFieldErrors({})
+      }
+    }
+  }
+
+  function handleBackToListClick() {
+    if (isEditingHeader && isHeaderDirty) {
+      setPendingNavigation('/purchase/purchase-invoices')
+      setDiscardModalOpen(true)
+    } else {
+      navigate('/purchase/purchase-invoices')
+    }
+  }
+
+  function handleConfirmDiscard() {
+    if (invoice) {
+      setHeader(mapInvoiceToHeader(invoice))
+    }
+    setFieldErrors({})
+    setIsEditingHeader(false)
+    setDiscardModalOpen(false)
+    if (pendingNavigation) {
+      const target = pendingNavigation
+      setPendingNavigation(null)
+      navigate(target)
+    }
+  }
 
   const loadLookups = useCallback(async () => {
     setLookupsLoading(true)
@@ -412,12 +460,6 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
     setEditingLineId(null)
     setEditLineForm(null)
     setFieldErrors({})
-  }
-
-  function handleCancelHeaderEdit() {
-    if (invoice) setHeader(mapInvoiceToHeader(invoice))
-    setFieldErrors({})
-    setIsEditingHeader(false)
   }
 
   function handleNewLineMaterialChange(materialId: string) {
@@ -952,41 +994,51 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                         </IconActionButton>
                       ) : null}
 
+                      <IconActionButton
+                        className="action-btn action-btn--icon action-btn--header-back"
+                        label={t('inventory.purchase.form.backToList')}
+                        onClick={handleBackToListClick}
+                        disabled={headerSaving || lineSaving || actionLoading}
+                      >
+                        {locale === 'ar' ? <ArrowRight size={18} aria-hidden /> : <ArrowLeft size={18} aria-hidden />}
+                      </IconActionButton>
+
                       <span className="pi-form-topbar__actions-divider" aria-hidden />
 
-                      {displayStatus === 'DRAFT' && !isEditingHeader && canManage && persistedId ? (
-                        <IconActionButton
-                          className="action-btn action-btn--icon"
-                          label={t('inventory.purchase.actions.editHeader')}
-                          onClick={() => setIsEditingHeader(true)}
-                          disabled={headerSaving || lineSaving || actionLoading}
-                        >
-                          <Pencil size={16} aria-hidden />
-                        </IconActionButton>
-                      ) : null}
-                      {isEditingHeader ? (
-                        <>
+                      {displayStatus === 'DRAFT' && canManage && persistedId ? (
+                        isEditingHeader ? (
+                          <>
+                            <IconActionButton
+                              className="action-btn action-btn--icon action-btn--confirm"
+                              label={t('inventory.purchase.form.saveHeader')}
+                              onClick={() => void handleSaveHeader()}
+                              disabled={headerSaving}
+                            >
+                              {headerSaving ? (
+                                <Loader2 size={18} className="pi-form-actions__submit-spinner" aria-hidden />
+                              ) : (
+                                <Check size={18} aria-hidden />
+                              )}
+                            </IconActionButton>
+                            <IconActionButton
+                              className="action-btn action-btn--icon action-btn--cancel"
+                              label={t('common.cancel')}
+                              onClick={handleEditButtonClick}
+                              disabled={headerSaving}
+                            >
+                              <X size={18} aria-hidden />
+                            </IconActionButton>
+                          </>
+                        ) : (
                           <IconActionButton
-                            className="action-btn action-btn--icon action-btn--confirm"
-                            label={t('inventory.purchase.form.saveHeader')}
-                            onClick={() => void handleSaveHeader()}
-                            disabled={headerSaving}
+                            className="action-btn action-btn--icon"
+                            label={t('inventory.purchase.actions.editHeader')}
+                            onClick={handleEditButtonClick}
+                            disabled={headerSaving || lineSaving || actionLoading}
                           >
-                            {headerSaving ? (
-                              <Loader2 size={16} className="pi-form-actions__submit-spinner" aria-hidden />
-                            ) : (
-                              <Check size={16} aria-hidden />
-                            )}
+                            <Pencil size={18} aria-hidden />
                           </IconActionButton>
-                          <IconActionButton
-                            className="action-btn action-btn--icon action-btn--cancel"
-                            label={t('common.cancel')}
-                            onClick={handleCancelHeaderEdit}
-                            disabled={headerSaving}
-                          >
-                            <X size={16} aria-hidden />
-                          </IconActionButton>
-                        </>
+                        )
                       ) : null}
                       {!persistedId ? (
                         <Button
@@ -1007,13 +1059,6 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                     </div>
                   ) : null}
                 </div>
-              </div>
-
-              <div className="pi-form-header-card__nav">
-                <Link to="/purchase/purchase-invoices" className="pi-form-topbar__back">
-                  <ChevronRight size={18} aria-hidden="true" />
-                  {t('inventory.purchase.form.backToList')}
-                </Link>
               </div>
 
               <div className="pi-form-header-card__divider" />
@@ -1457,6 +1502,24 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
           </p>
         </div>
       </Modal>
+
+      <ConfirmModal
+        open={discardModalOpen}
+        title={locale === 'ar' ? 'تجاهل التغييرات غير محفوظة؟' : 'Discard unsaved changes?'}
+        message={
+          locale === 'ar'
+            ? 'لديك تغييرات غير محفوظة في بيانات الفاتورة. هل تريد تجاهل هذه التغييرات؟'
+            : 'You have unsaved changes in the document header. Are you sure you want to discard them?'
+        }
+        confirmLabel={locale === 'ar' ? 'تجاهل التغييرات' : 'Discard Changes'}
+        cancelLabel={locale === 'ar' ? 'متابعة التعديل' : 'Keep Editing'}
+        confirmVariant="danger"
+        onClose={() => {
+          setDiscardModalOpen(false)
+          setPendingNavigation(null)
+        }}
+        onConfirm={handleConfirmDiscard}
+      />
     </ListPage>
   )
 }
