@@ -93,7 +93,6 @@ export type MaterialResponse = {
   defaultUomName?: string | null
   defaultUomCode?: string | null
   defaultUomSymbol?: string | null
-  minimumStockLevel?: number | null
   catalogId?: number | null
   active: boolean
   notes?: string | null
@@ -107,7 +106,6 @@ export type CreateMaterialRequest = {
   categoryId: number
   stockUomId: number
   displayUomId: number
-  minimumStockLevel?: number | null
   active: boolean
   notes?: string | null
 }

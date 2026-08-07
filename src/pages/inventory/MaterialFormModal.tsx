@@ -46,7 +46,6 @@ const emptyForm = {
   categoryId: '',
   stockUomId: '',
   displayUomId: '',
-  minimumStockLevel: '',
   active: true,
   notes: '',
 }
@@ -82,8 +81,6 @@ export function MaterialFormModal({
         categoryId: String(material.categoryId),
         stockUomId: String(resolveStockUomId(material)),
         displayUomId: String(resolveDisplayUomId(material)),
-        minimumStockLevel:
-          material.minimumStockLevel != null ? String(material.minimumStockLevel) : '',
         active: material.active,
         notes: material.notes ?? '',
       })
@@ -166,10 +163,6 @@ export function MaterialFormModal({
       return
     }
 
-    const minimumStockLevel = form.minimumStockLevel.trim()
-      ? Number(form.minimumStockLevel)
-      : null
-
     setSaving(true)
     try {
       const payload = {
@@ -178,7 +171,6 @@ export function MaterialFormModal({
         categoryId: Number(form.categoryId),
         stockUomId: Number(form.stockUomId),
         displayUomId: Number(form.displayUomId),
-        minimumStockLevel: Number.isNaN(minimumStockLevel as number) ? null : minimumStockLevel,
         active: form.active,
         notes: form.notes.trim() || null,
       }
@@ -288,22 +280,6 @@ export function MaterialFormModal({
               ))}
             </FormSelect>
             <p className="form-hint">{t('inventory.col.displayUomHint')}</p>
-          </FormField>
-          <FormField
-            label={t('inventory.materials.fields.minimumStockLevel')}
-            htmlFor="material-min-stock"
-          >
-            <FormInput
-              id="material-min-stock"
-              type="number"
-              min={0}
-              ltr
-              value={form.minimumStockLevel}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, minimumStockLevel: e.target.value }))
-              }
-              disabled={saving}
-            />
           </FormField>
           <FormField label={t('common.status')}>
             <StatusSwitch
