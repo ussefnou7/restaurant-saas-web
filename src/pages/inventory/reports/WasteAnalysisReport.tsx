@@ -496,8 +496,8 @@ export function WasteAnalysisReport() {
             <table className="report-ledger-table">
               <thead>
                 <tr>
-                  <th>{t('reports.columns.materialName')}</th>
-                  <th>{t('reports.columns.reason')}</th>
+                  <th className="report-cell--text">{t('reports.columns.materialName')}</th>
+                  <th className="report-cell--center">{t('reports.columns.reason')}</th>
                   <th className="report-cell--numeric">{t('reports.columns.netQuantity')}</th>
                   <th className="report-cell--numeric">{t('reports.columns.netValue')}</th>
                   <th className="report-cell--numeric">{t('reports.columns.movementCount')}</th>
@@ -524,7 +524,7 @@ export function WasteAnalysisReport() {
 
                   return (
                     <tr key={`${row.materialId}-${row.reasonCode}-${idx}`}>
-                      <td>
+                      <td className="report-cell--text">
                         <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
                           <strong>{materialName}</strong>
                           {isInactive && (
@@ -532,7 +532,7 @@ export function WasteAnalysisReport() {
                           )}
                         </div>
                       </td>
-                      <td>
+                      <td className="report-cell--center">
                         <span className="report-reason-badge">{reasonLabel}</span>
                       </td>
                       <td className="report-cell--numeric">

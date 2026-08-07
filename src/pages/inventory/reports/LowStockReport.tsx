@@ -253,9 +253,9 @@ export function LowStockReport() {
             <table className="report-ledger-table">
               <thead>
                 <tr>
-                  <th>{t('reports.columns.materialName')}</th>
-                  <th>{t('reports.columns.categoryName')}</th>
-                  <th>{t('reports.columns.warehouseName')}</th>
+                  <th className="report-cell--text">{t('reports.columns.materialName')}</th>
+                  <th className="report-cell--center">{t('reports.columns.categoryName')}</th>
+                  <th className="report-cell--center">{t('reports.columns.warehouseName')}</th>
                   <th className="report-cell--numeric">{t('reports.columns.quantity')}</th>
                   <th className="report-cell--numeric">{t('reports.columns.minQuantity')}</th>
                   <th className="report-cell--numeric">{t('reports.columns.shortfall')}</th>
@@ -283,11 +283,11 @@ export function LowStockReport() {
 
                   return (
                     <tr key={`${row.materialId}-${row.warehouseId}-${idx}`}>
-                      <td>
+                      <td className="report-cell--text">
                         <strong>{matName}</strong>
                       </td>
-                      <td>{catName}</td>
-                      <td>{whName}</td>
+                      <td className="report-cell--center">{catName}</td>
+                      <td className="report-cell--center">{whName}</td>
                       <td className="report-cell--numeric">
                         <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{qty}</span>
                       </td>

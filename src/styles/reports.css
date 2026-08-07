@@ -148,6 +148,14 @@
   vertical-align: middle;
 }
 
+.report-cell--text {
+  text-align: start;
+}
+
+.report-cell--center {
+  text-align: center;
+}
+
 .report-cell--numeric {
   font-variant-numeric: tabular-nums;
   text-align: end;

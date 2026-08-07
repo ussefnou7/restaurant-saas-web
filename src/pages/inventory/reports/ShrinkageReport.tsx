@@ -473,7 +473,7 @@ export function ShrinkageReport() {
             <table className="report-ledger-table">
               <thead>
                 <tr>
-                  <th>{t('reports.columns.materialName')}</th>
+                  <th className="report-cell--text">{t('reports.columns.materialName')}</th>
                   <th className="report-cell--numeric">{t('reports.columns.netQuantity')}</th>
                   <th className="report-cell--numeric">{t('reports.columns.netValue')}</th>
                   <th className="report-cell--numeric">{t('reports.columns.movementCount')}</th>
@@ -496,7 +496,7 @@ export function ShrinkageReport() {
 
                   return (
                     <tr key={`${row.materialId}-${idx}`}>
-                      <td>
+                      <td className="report-cell--text">
                         <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
                           <strong>{materialName}</strong>
                           {isInactive && (
