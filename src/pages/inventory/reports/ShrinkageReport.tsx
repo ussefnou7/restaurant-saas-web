@@ -428,10 +428,10 @@ export function ShrinkageReport() {
         </div>
         <div className="report-summary-item">
           <span className="report-summary-item__label">{t('reports.summary.linesValued')}</span>
-          <span className="report-summary-item__val" dir="ltr">
-            {valuedLinesCount}{' '}
+          <span className="report-summary-item__val">
+            <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{valuedLinesCount}</span>{' '}
             <span className="report-summary-item__sub">
-              {t('reports.summary.of')} {totalLinesCount}
+              {t('reports.summary.of')} <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{totalLinesCount}</span>
             </span>
           </span>
         </div>
@@ -443,9 +443,11 @@ export function ShrinkageReport() {
           <span className="report-summary-item__label">
             {t('reports.summary.concentration', { group: largestGroup.name })}
           </span>
-          <span className="report-summary-item__val" dir="ltr">
-            {largestGroup.percentage}%{' '}
-            <span className="report-summary-item__sub">{formatMoneyNumber(largestGroup.value, false)}</span>
+          <span className="report-summary-item__val">
+            <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{largestGroup.percentage}%</span>{' '}
+            <span className="report-summary-item__sub" dir="ltr" style={{ unicodeBidi: 'isolate' }}>
+              {formatMoneyNumber(largestGroup.value, false)}
+            </span>
           </span>
         </div>
       </div>

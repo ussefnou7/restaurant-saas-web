@@ -453,18 +453,20 @@ export function WasteAnalysisReport() {
         </div>
         <div className="report-summary-item">
           <span className="report-summary-item__label">{t('reports.summary.linesValued')}</span>
-          <span className="report-summary-item__val" dir="ltr">
-            {valuedLinesCount}{' '}
+          <span className="report-summary-item__val">
+            <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{valuedLinesCount}</span>{' '}
             <span className="report-summary-item__sub">
-              {t('reports.summary.of')} {totalLinesCount}
+              {t('reports.summary.of')} <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{totalLinesCount}</span>
             </span>
           </span>
         </div>
         <div className="report-summary-item">
           <span className="report-summary-item__label">{t('reports.summary.mainCause')}</span>
-          <span className="report-summary-item__val" dir="ltr">
+          <span className="report-summary-item__val">
             {mainCause.label}{' '}
-            <span className="report-summary-item__sub">({mainCause.percentage}%)</span>
+            <span className="report-summary-item__sub">
+              (<span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{mainCause.percentage}%</span>)
+            </span>
           </span>
         </div>
         <div className="report-summary-item">
