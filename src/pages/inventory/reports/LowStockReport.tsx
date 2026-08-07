@@ -11,13 +11,10 @@ import {
 import { LoadingRows } from '../../../components/ui/LoadingRows'
 import { SelectFilter } from '../../../components/ui/SelectFilter'
 import { useTranslation } from '../../../i18n/useTranslation'
-import * as branchService from '../../../services/branchService'
 import * as inventoryService from '../../../services/inventoryService'
 import * as reportService from '../../../services/reportService'
-import type { BranchResponse } from '../../../types/branch'
 import type { MaterialCategoryResponse, WarehouseResponse } from '../../../types/inventory'
 import type { LowStockRow, ReportFilters } from '../../../types/reports'
-import { getLocalizedBranchName } from '../../../utils/branchDisplay'
 import { translateApiError } from '../../../utils/errors'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { exportCsv, exportPdf } from '../../../utils/reportExport'
@@ -35,12 +32,10 @@ export function LowStockReport() {
   const { t, locale } = useTranslation()
 
   const [filters, setFilters] = useState<ReportFilters>({
-    branchId: '',
     warehouseId: '',
     categoryId: '',
   })
 
-  const [branches, setBranches] = useState<BranchResponse[]>([])
   const [warehouses, setWarehouses] = useState<WarehouseResponse[]>([])
   const [categories, setCategories] = useState<MaterialCategoryResponse[]>([])
   const [rows, setRows] = useState<LowStockRow[]>([])
@@ -57,7 +52,7 @@ export function LowStockReport() {
         '/api/inventory/reports/low-stock',
         filters,
       )
-      // Sort by shortfall descending by default
+      // Sort by shortfall against minimum descending by default
       const sorted = [...data].sort((a, b) => (parseFloat(b.shortfall) || 0) - (parseFloat(a.shortfall) || 0))
       setRows(sorted)
       setFetchedAt(new Date())
@@ -72,33 +67,15 @@ export function LowStockReport() {
   useEffect(() => {
     setLoadingOptions(true)
     void Promise.all([
-      branchService.getBranches().catch(() => []),
+      inventoryService.getWarehouses({ active: true }).catch(() => []),
       inventoryService.getMaterialCategories({ active: true }).catch(() => []),
     ])
-      .then(([branchData, categoryData]) => {
-        setBranches(branchData)
+      .then(([warehouseData, categoryData]) => {
+        setWarehouses(warehouseData)
         setCategories(categoryData)
       })
       .finally(() => setLoadingOptions(false))
   }, [])
-
-  useEffect(() => {
-    if (!filters.branchId) {
-      setWarehouses([])
-      return
-    }
-    void inventoryService
-      .getWarehouses({ branchId: filters.branchId, active: true })
-      .then((data) => {
-        setWarehouses(data)
-        setFilters((current) =>
-          current.warehouseId && !data.some((wh) => String(wh.id) === current.warehouseId)
-            ? { ...current, warehouseId: '' }
-            : current,
-        )
-      })
-      .catch(() => setWarehouses([]))
-  }, [filters.branchId])
 
   useEffect(() => {
     void loadRows()
@@ -123,18 +100,16 @@ export function LowStockReport() {
   }, [rows])
 
   const filterSentence = useMemo(() => {
-    const selectedBranch = branches.find((b) => String(b.id) === filters.branchId)
     const selectedWh = warehouses.find((w) => String(w.id) === filters.warehouseId)
     const selectedCat = categories.find((c) => String(c.id) === filters.categoryId)
 
-    const branchText = selectedBranch ? getLocalizedBranchName(selectedBranch, locale) : t('reports.filters.allBranches')
     const whText = selectedWh ? (locale === 'ar' ? selectedWh.nameAr || selectedWh.name : selectedWh.name) : t('reports.filters.allWarehouses')
     const catText = selectedCat ? (locale === 'ar' ? selectedCat.nameAr || selectedCat.nameEn || selectedCat.name : selectedCat.nameEn || selectedCat.name) : t('reports.filters.allCategories')
 
     return locale === 'ar'
-      ? `مفلتر حسب الفرع ${branchText}، المستودع ${whText}، المجموعة ${catText}. مرتب حسب النقص، تنازلياً.`
-      : `Filtered by branch ${branchText}, warehouse ${whText}, group ${catText}. Sorted by shortfall, descending.`
-  }, [branches, warehouses, categories, filters, locale, t])
+      ? `مفلتر حسب المستودع ${whText}، المجموعة ${catText}. مرتب حسب النقص، تنازلياً.`
+      : `Filtered by warehouse ${whText}, group ${catText}. Sorted by shortfall, descending.`
+  }, [warehouses, categories, filters, locale, t])
 
   const methodLine = useMemo(() => {
     const timestamp = fetchedAt
@@ -230,34 +205,17 @@ export function LowStockReport() {
           toolbar={
             <div className="report-filter-bar">
               <SelectFilter
-                value={filters.branchId || ''}
-                onChange={(branchId) => setFilters((prev) => ({ ...prev, branchId, warehouseId: '' }))}
-                options={[
-                  { value: '', label: t('reports.filters.allBranches') },
-                  ...branches.filter((b) => b.active).map((b) => ({
-                    value: String(b.id),
-                    label: getLocalizedBranchName(b, locale),
-                  })),
-                ]}
-                ariaLabel={t('reports.filters.branch')}
-                disabled={loadingOptions}
-              />
-              <SelectFilter
                 value={filters.warehouseId || ''}
                 onChange={(warehouseId) => setFilters((prev) => ({ ...prev, warehouseId }))}
-                options={
-                  filters.branchId
-                    ? [
-                        { value: '', label: t('reports.filters.allWarehouses') },
-                        ...warehouses.map((wh) => ({
-                          value: String(wh.id),
-                          label: locale === 'ar' ? wh.nameAr || wh.name : wh.name,
-                        })),
-                      ]
-                    : [{ value: '', label: t('reports.filters.selectBranchFirst') }]
-                }
+                options={[
+                  { value: '', label: t('reports.filters.allWarehouses') },
+                  ...warehouses.map((wh) => ({
+                    value: String(wh.id),
+                    label: locale === 'ar' ? wh.nameAr || wh.name : wh.name,
+                  })),
+                ]}
                 ariaLabel={t('reports.filters.warehouse')}
-                disabled={!filters.branchId || loadingOptions}
+                disabled={loadingOptions}
               />
               <SelectFilter
                 value={filters.categoryId || ''}
