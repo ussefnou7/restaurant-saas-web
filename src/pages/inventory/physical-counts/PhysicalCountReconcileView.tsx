@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, Info, Trash2, Undo2 } from 'lucide-react'
+import { AlertTriangle, CheckCircle, Info, Trash2, Undo2 } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
 import { IconActionButton } from '../../../components/ui/RowActions'
 import { Modal } from '../../../components/ui/Modal'
@@ -245,7 +245,7 @@ export function PhysicalCountReconcileView({
             <Button
               variant="dangerConfirm"
               onClick={onReconcile}
-              disabled={reconciling || varianceLines.length === 0}
+              disabled={reconciling}
             >
               {reconciling
                 ? t('common.loading')
@@ -255,34 +255,51 @@ export function PhysicalCountReconcileView({
         }
       >
         <div className="physical-count-reconcile-confirm">
-          <p className="confirm-modal-message">
-            {t('inventory.physicalCounts.confirm.reconcileIntro')}
-          </p>
-          <div className="physical-count-reconcile-confirm__summary">
-            <div className="physical-count-reconcile-confirm__summary-item">
-              <span className="physical-count-reconcile-confirm__summary-label">
-                {t('inventory.physicalCounts.reconcile.totalVarianceValue')}
-              </span>
-              <span
-                className={`physical-count-reconcile-confirm__summary-value ${getVarianceCellClass(totalVarianceValue)}`}
-                dir="ltr"
-              >
-                <VarianceValueDisplay
-                  value={totalVarianceValue}
-                  estimated={hasEstimatedValues}
-                  t={t}
-                />
-              </span>
+          {varianceLines.length === 0 ? (
+            <div className="physical-count-reconcile-confirm__no-variance">
+              <CheckCircle size={24} className="physical-count-reconcile-confirm__no-variance-icon" aria-hidden />
+              <div className="physical-count-reconcile-confirm__no-variance-content">
+                <p className="physical-count-reconcile-confirm__no-variance-title">
+                  {t('inventory.physicalCounts.confirm.noVarianceTitle')}
+                </p>
+                <p className="physical-count-reconcile-confirm__no-variance-text">
+                  {t('inventory.physicalCounts.confirm.noVarianceMessage')}
+                </p>
+              </div>
             </div>
-            <div className="physical-count-reconcile-confirm__summary-item">
-              <span className="physical-count-reconcile-confirm__summary-label">
-                {t('inventory.physicalCounts.confirm.movementLines')}
-              </span>
-              <span className="physical-count-reconcile-confirm__summary-value" dir="ltr">
-                {varianceLines.length}
-              </span>
-            </div>
-          </div>
+          ) : (
+            <>
+              <p className="confirm-modal-message">
+                {t('inventory.physicalCounts.confirm.reconcileIntro')}
+              </p>
+              <div className="physical-count-reconcile-confirm__summary">
+                <div className="physical-count-reconcile-confirm__summary-item">
+                  <span className="physical-count-reconcile-confirm__summary-label">
+                    {t('inventory.physicalCounts.reconcile.totalVarianceValue')}
+                  </span>
+                  <span
+                    className={`physical-count-reconcile-confirm__summary-value ${getVarianceCellClass(totalVarianceValue)}`}
+                    dir="ltr"
+                  >
+                    <VarianceValueDisplay
+                      value={totalVarianceValue}
+                      estimated={hasEstimatedValues}
+                      t={t}
+                    />
+                  </span>
+                </div>
+                <div className="physical-count-reconcile-confirm__summary-item">
+                  <span className="physical-count-reconcile-confirm__summary-label">
+                    {t('inventory.physicalCounts.confirm.movementLines')}
+                  </span>
+                  <span className="physical-count-reconcile-confirm__summary-value" dir="ltr">
+                    {varianceLines.length}
+                  </span>
+                </div>
+              </div>
+            </>
+          )}
+
           <p className="physical-count-reconcile-confirm__finality">
             {t('inventory.physicalCounts.confirm.reconcileFinality')}
           </p>
@@ -291,71 +308,76 @@ export function PhysicalCountReconcileView({
             locale={locale}
             t={t}
           />
-          <div className="physical-count-reconcile-confirm__table-wrap">
-            <table className="physical-count-reconcile-confirm__table">
-              <thead>
-                <tr>
-                  <th>{t('inventory.physicalCounts.lines.material')}</th>
-                  <th>{t('inventory.physicalCounts.lines.uom')}</th>
-                  <th>{t('inventory.physicalCounts.confirm.reconcileColExpectedCounted')}</th>
-                  <th>{t('inventory.physicalCounts.lines.variance')}</th>
-                  <th>{t('inventory.physicalCounts.lines.varianceValue')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {varianceLines.map(({ line, display }) => {
-                  if (!display) return null
-                  const uomDisplay = getPhysicalCountUomDisplay(line.uomSymbol, locale, t)
-                  return (
-                    <tr key={line.id}>
-                      <td>
-                        <span className="physical-count-reconcile-confirm__material">
-                          {getMaterialDisplayName(line, locale)}
-                        </span>
-                      </td>
-                      <td dir={uomDisplay.dir}>
-                        {uomDisplay.label}
-                      </td>
-                      <td dir="ltr" className="physical-count-reconcile-confirm__num">
-                        {formatPhysicalCountQuantity(display.expectedDisplay)} → {formatPhysicalCountQuantity(line.countedQuantity)}
-                      </td>
-                      <td
-                        dir="ltr"
-                        className={`physical-count-reconcile-confirm__num ${getVarianceCellClass(display.variance)}`}
-                      >
-                        {formatVarianceQuantity(display.variance)}
-                      </td>
-                      <td
-                        dir="ltr"
-                        className={`physical-count-reconcile-confirm__num ${getVarianceCellClass(display.varianceValue)}`}
-                      >
-                        <VarianceValueDisplay
-                          value={display.varianceValue}
-                          estimated={hasEstimatedVarianceValue(line)}
-                          t={t}
-                        />
-                      </td>
+
+          {varianceLines.length > 0 ? (
+            <>
+              <div className="physical-count-reconcile-confirm__table-wrap">
+                <table className="physical-count-reconcile-confirm__table">
+                  <thead>
+                    <tr>
+                      <th>{t('inventory.physicalCounts.lines.material')}</th>
+                      <th>{t('inventory.physicalCounts.lines.uom')}</th>
+                      <th>{t('inventory.physicalCounts.confirm.reconcileColExpectedCounted')}</th>
+                      <th>{t('inventory.physicalCounts.lines.variance')}</th>
+                      <th>{t('inventory.physicalCounts.lines.varianceValue')}</th>
                     </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-          <div className="physical-count-reconcile-confirm__total">
-            <span className="physical-count-reconcile-confirm__total-label">
-              {t('inventory.physicalCounts.reconcile.totalVarianceValue')}
-            </span>
-            <span
-              className={`physical-count-reconcile-confirm__total-value ${getVarianceCellClass(totalVarianceValue)}`}
-              dir="ltr"
-            >
-              <VarianceValueDisplay
-                value={totalVarianceValue}
-                estimated={hasEstimatedValues}
-                t={t}
-              />
-            </span>
-          </div>
+                  </thead>
+                  <tbody>
+                    {varianceLines.map(({ line, display }) => {
+                      if (!display) return null
+                      const uomDisplay = getPhysicalCountUomDisplay(line.uomSymbol, locale, t)
+                      return (
+                        <tr key={line.id}>
+                          <td>
+                            <span className="physical-count-reconcile-confirm__material">
+                              {getMaterialDisplayName(line, locale)}
+                            </span>
+                          </td>
+                          <td dir={uomDisplay.dir}>
+                            {uomDisplay.label}
+                          </td>
+                          <td dir="ltr" className="physical-count-reconcile-confirm__num">
+                            {formatPhysicalCountQuantity(display.expectedDisplay)} → {formatPhysicalCountQuantity(line.countedQuantity)}
+                          </td>
+                          <td
+                            dir="ltr"
+                            className={`physical-count-reconcile-confirm__num ${getVarianceCellClass(display.variance)}`}
+                          >
+                            {formatVarianceQuantity(display.variance)}
+                          </td>
+                          <td
+                            dir="ltr"
+                            className={`physical-count-reconcile-confirm__num ${getVarianceCellClass(display.varianceValue)}`}
+                          >
+                            <VarianceValueDisplay
+                              value={display.varianceValue}
+                              estimated={hasEstimatedVarianceValue(line)}
+                              t={t}
+                            />
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <div className="physical-count-reconcile-confirm__total">
+                <span className="physical-count-reconcile-confirm__total-label">
+                  {t('inventory.physicalCounts.reconcile.totalVarianceValue')}
+                </span>
+                <span
+                  className={`physical-count-reconcile-confirm__total-value ${getVarianceCellClass(totalVarianceValue)}`}
+                  dir="ltr"
+                >
+                  <VarianceValueDisplay
+                    value={totalVarianceValue}
+                    estimated={hasEstimatedValues}
+                    t={t}
+                  />
+                </span>
+              </div>
+            </>
+          ) : null}
         </div>
       </Modal>
     </>

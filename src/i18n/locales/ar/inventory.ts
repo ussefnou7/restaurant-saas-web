@@ -822,6 +822,9 @@ export const inventoryAr: TranslationDictionary = {
   'inventory.physicalCounts.confirm.reconcileConfirm': 'تأكيد المطابقة',
   'inventory.physicalCounts.confirm.reconcileBack': 'رجوع',
   'inventory.physicalCounts.confirm.reconcileColExpectedCounted': 'متوقع → معد',
+  'inventory.physicalCounts.confirm.noVarianceTitle': 'الكميات الجردية مطابقة للمخزون المتوقع',
+  'inventory.physicalCounts.confirm.noVarianceMessage':
+    'جميع الكميات المعدودة مطابقة لأرصدة المخزون المتوقعة. لن يتم إنشاء أي حركات تسوية مخزنية. التأكيد سيقوم بإغلاق هذا الجرد كـ كميات تسوية جردية.',
   'inventory.physicalCounts.confirm.movementLines': 'بنود الحركة',
   'inventory.physicalCounts.confirm.reconcileFinality': 'هذا الإجراء نهائي ولا يمكن التراجع عنه. أي تصحيح يحتاج إلى جرد جديد.',
   'inventory.physicalCounts.confirm.afterCountWarning':

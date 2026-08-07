@@ -2821,6 +2821,43 @@
   color: var(--color-text-muted);
 }
 
+.physical-count-reconcile-confirm__no-variance {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 8px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
+.physical-count-reconcile-confirm__no-variance-icon {
+  color: #059669;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.physical-count-reconcile-confirm__no-variance-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.physical-count-reconcile-confirm__no-variance-title {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: #065f46;
+}
+
+.physical-count-reconcile-confirm__no-variance-text {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
 .physical-count-reconcile-confirm__table-wrap {
   overflow-x: auto;
   max-height: min(48vh, 430px);

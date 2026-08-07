@@ -827,6 +827,9 @@ export const inventoryEn: TranslationDictionary = {
   'inventory.physicalCounts.confirm.reconcileConfirm': 'Confirm reconciliation',
   'inventory.physicalCounts.confirm.reconcileBack': 'Back',
   'inventory.physicalCounts.confirm.reconcileColExpectedCounted': 'Expected → counted',
+  'inventory.physicalCounts.confirm.noVarianceTitle': 'Count matches expected quantities',
+  'inventory.physicalCounts.confirm.noVarianceMessage':
+    'All counted quantities match expected stock balances. No stock adjustment movements will be created. Confirming will close this count as reconciled.',
   'inventory.physicalCounts.confirm.movementLines': 'Movement lines',
   'inventory.physicalCounts.confirm.reconcileFinality': 'This action is final and cannot be undone. Corrections require a new count.',
   'inventory.physicalCounts.confirm.afterCountWarning':
