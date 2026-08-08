@@ -36,7 +36,7 @@ import type {
   ReturnableLineResponse,
 } from '../../../types/purchaseReturn'
 import { translateApiError } from '../../../utils/errors'
-import { formatDate, formatMoney } from '../../../utils/format'
+import { formatDate, formatMoney, todayLocalDate } from '../../../utils/format'
 import {
   canManagePurchaseInvoices,
   canUncompletePurchaseReturns,
@@ -80,14 +80,10 @@ type FieldErrors = {
   lineError?: string
 }
 
-function todayDateInput(): string {
-  return new Date().toISOString().slice(0, 10)
-}
-
 function emptyHeader(): HeaderFormState {
   return {
     originalInvoiceId: '',
-    returnDate: todayDateInput(),
+    returnDate: todayLocalDate(),
     reason: '',
     notes: '',
   }

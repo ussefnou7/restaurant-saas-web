@@ -24,7 +24,7 @@ import type {
   CreateTransferLineRequest,
   InventoryTransferResponse,
 } from '../../../types/inventoryOperations'
-import { formatDate } from '../../../utils/format'
+import { formatDate, todayLocalDate } from '../../../utils/format'
 import { canViewInventoryStock } from '../../../utils/inventoryAccess'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { StockAccessDenied } from '../StockAccessDenied'
@@ -37,10 +37,6 @@ type LineFormState = {
   quantity: string
   uomId: string
   notes: string
-}
-
-function todayDateInput(): string {
-  return new Date().toISOString().slice(0, 10)
 }
 
 function newLine(): LineFormState {
@@ -79,7 +75,7 @@ function TransferFormInner({ mode, transfer }: { mode: FormMode; transfer: Inven
     transfer ? String(transfer.destinationWarehouseId) : '',
   )
   const [requestedDate, setRequestedDate] = useState(
-    transfer ? transfer.requestedDate.slice(0, 10) : todayDateInput(),
+    transfer ? transfer.requestedDate.slice(0, 10) : todayLocalDate(),
   )
   const [notes, setNotes] = useState(transfer?.notes ?? '')
   const [lines, setLines] = useState<LineFormState[]>(() => {

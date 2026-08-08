@@ -25,7 +25,7 @@ import type {
   UpdatePurchaseInvoiceLineRequest,
 } from '../../../types/purchaseInvoice'
 import { translateApiError } from '../../../utils/errors'
-import { formatDate, formatMoney } from '../../../utils/format'
+import { formatDate, formatMoney, todayLocalDate } from '../../../utils/format'
 import {
   canManagePurchaseInvoices,
   canUnpostPurchaseInvoices,
@@ -78,17 +78,13 @@ function toDateInputValue(value?: string | null): string {
   return value.slice(0, 10)
 }
 
-function todayDateInput(): string {
-  return new Date().toISOString().slice(0, 10)
-}
-
 function emptyHeader(): HeaderFormState {
   return {
     supplierId: '',
     warehouseId: '',
     invoiceNumber: '',
-    invoiceDate: todayDateInput(),
-    receiptDate: todayDateInput(),
+    invoiceDate: todayLocalDate(),
+    receiptDate: todayLocalDate(),
     discountAmount: '0',
     taxAmount: '0',
     notes: '',
@@ -113,7 +109,7 @@ function mapInvoiceToHeader(invoice: PurchaseInvoiceResponse): HeaderFormState {
     warehouseId: String(invoice.warehouseId),
     invoiceNumber: invoice.invoiceNumber ?? '',
     invoiceDate: toDateInputValue(invoice.invoiceDate),
-    receiptDate: toDateInputValue(invoice.receiptDate) || todayDateInput(),
+    receiptDate: toDateInputValue(invoice.receiptDate) || todayLocalDate(),
     discountAmount: String(invoice.discountAmount ?? 0),
     taxAmount: String(invoice.taxAmount ?? 0),
     notes: invoice.notes ?? '',

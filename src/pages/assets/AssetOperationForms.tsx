@@ -18,7 +18,7 @@ import {
   getAssetDisposalReasonLabel,
 } from '../../utils/assetDisplay'
 import { translateApiError } from '../../utils/errors'
-import { formatDate } from '../../utils/format'
+import { formatDate, todayLocalDate } from '../../utils/format'
 import { getInventoryLocalizedName } from '../../utils/inventoryDisplay'
 
 const disposalReasons: AssetDisposalReason[] = ['DAMAGED', 'LOST', 'OBSOLETE', 'SOLD']
@@ -33,9 +33,6 @@ interface SharedOperationProps {
   onSaved?: () => void
 }
 
-function today(): string {
-  return new Date().toISOString().slice(0, 10)
-}
 
 function initialStep(initialAssetId?: number | null, initialLineId?: number | null): OperationStep {
   if (initialAssetId && initialLineId) return 'fields'
@@ -287,7 +284,7 @@ export function AssetDisposalForm({
   const [step, setStep] = useState<OperationStep>(initialStep(initialAssetId, initialLineId))
   const [quantityDisposed, setQuantityDisposed] = useState('')
   const [reason, setReason] = useState<AssetDisposalReason>('DAMAGED')
-  const [disposalDate, setDisposalDate] = useState(today())
+  const [disposalDate, setDisposalDate] = useState(todayLocalDate())
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -297,7 +294,7 @@ export function AssetDisposalForm({
     setStep(initialStep(initialAssetId, initialLineId))
     setQuantityDisposed('')
     setReason('DAMAGED')
-    setDisposalDate(today())
+    setDisposalDate(todayLocalDate())
     setNotes('')
     setError('')
   }, [initialAssetId, initialLineId, open])
@@ -468,7 +465,7 @@ export function AssetMaintenanceForm({
   const selection = useAssetLineSelection(open, initialAssetId, initialLineId)
   const [step, setStep] = useState<OperationStep>(initialStep(initialAssetId, initialLineId))
   const [cost, setCost] = useState('')
-  const [maintenanceDate, setMaintenanceDate] = useState(today())
+  const [maintenanceDate, setMaintenanceDate] = useState(todayLocalDate())
   const [description, setDescription] = useState('')
   const [vendor, setVendor] = useState('')
   const [saving, setSaving] = useState(false)
@@ -478,7 +475,7 @@ export function AssetMaintenanceForm({
     if (!open) return
     setStep(initialStep(initialAssetId, initialLineId))
     setCost('')
-    setMaintenanceDate(today())
+    setMaintenanceDate(todayLocalDate())
     setDescription('')
     setVendor('')
     setError('')

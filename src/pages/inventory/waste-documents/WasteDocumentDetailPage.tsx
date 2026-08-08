@@ -35,7 +35,7 @@ import {
   type WasteReasonCode,
 } from '../../../types/wasteDocument'
 import { translateApiError } from '../../../utils/errors'
-import { formatDate } from '../../../utils/format'
+import { formatDate, todayLocalDate } from '../../../utils/format'
 import { canManageInventoryStock, canUncompleteWasteDocuments, canViewInventoryStock } from '../../../utils/inventoryAccess'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { notifyStockBalancesRefresh } from '../../../utils/inventoryStockRefresh'
@@ -67,10 +67,6 @@ type FieldErrors = {
 
 type FormMode = 'create' | 'detail'
 
-function todayDateInput(): string {
-  return new Date().toISOString().slice(0, 10)
-}
-
 function toDateInputValue(value?: string | null): string {
   if (!value) return ''
   return value.slice(0, 10)
@@ -79,7 +75,7 @@ function toDateInputValue(value?: string | null): string {
 function emptyHeader(): HeaderFormState {
   return {
     warehouseId: '',
-    wasteDate: todayDateInput(),
+    wasteDate: todayLocalDate(),
     reasonCode: 'SPOILED',
     notes: '',
   }

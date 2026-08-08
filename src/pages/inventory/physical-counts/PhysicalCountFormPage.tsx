@@ -31,8 +31,10 @@ import {
   canViewInventoryStock,
 } from '../../../utils/inventoryAccess'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
+import { toLocalDateTimeInputValue } from '../../../utils/inventoryStockDisplay'
 import { notifyStockBalancesRefresh } from '../../../utils/inventoryStockRefresh'
 import { translateApiError } from '../../../utils/errors'
+import { todayLocalDate } from '../../../utils/format'
 import { StockAccessDenied } from '../StockAccessDenied'
 import { PhysicalCountMaterialPicker } from './PhysicalCountMaterialPicker'
 import {
@@ -46,10 +48,6 @@ import {
 import { PhysicalCountDocumentHeader } from './PhysicalCountDocumentHeader'
 import { getMaterialDisplayName, getPhysicalCountUomDisplay } from './physicalCountDisplay'
 
-function todayDateInput(): string {
-  return new Date().toISOString().slice(0, 10)
-}
-
 export function PhysicalCountCreatePage() {
   const canView = canViewInventoryStock()
   const canManage = canManageInventoryStock()
@@ -61,7 +59,7 @@ export function PhysicalCountCreatePage() {
   const [materials, setMaterials] = useState<MaterialResponse[]>([])
   const [lookupLoading, setLookupLoading] = useState(true)
   const [warehouseId, setWarehouseId] = useState('')
-  const [scheduledDate, setScheduledDate] = useState(todayDateInput())
+  const [scheduledDate, setScheduledDate] = useState(todayLocalDate())
   const [notes, setNotes] = useState('')
   const [selectedMaterialIds, setSelectedMaterialIds] = useState<number[]>([])
   const [pickerOpen, setPickerOpen] = useState(false)
@@ -396,7 +394,7 @@ export function PhysicalCountViewPage() {
       await physicalCountService.updateCountedQuantities(count.id, { lines })
       const refreshed = await loadCount()
       if (!refreshed) return
-      setCountSavedAt(refreshed?.updatedAt ?? new Date().toISOString())
+      setCountSavedAt(refreshed?.updatedAt ?? toLocalDateTimeInputValue())
       notify.success(t('inventory.physicalCounts.toast.saveCountedSuccess'))
     } catch {
       // API errors are translated and toasted by the global axios interceptor.
