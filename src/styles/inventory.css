@@ -716,13 +716,23 @@
 .pi-form-topbar__actions-bar button {
   min-height: 42px;
   height: 42px;
-  padding-inline: 20px;
   font-size: 14.5px;
   font-weight: 600;
   border-radius: 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+.pi-form-topbar__actions-bar button:not(.action-btn--icon):not(.action-btn--delete-danger) {
+  padding-inline: 20px;
+}
+
+.pi-form-topbar__actions-bar button.action-btn--icon,
+.pi-form-topbar__actions-bar button.action-btn--delete-danger {
+  width: 42px;
+  min-width: 42px;
+  padding: 0 !important;
 }
 
 .pi-form-topbar__actions-divider {
