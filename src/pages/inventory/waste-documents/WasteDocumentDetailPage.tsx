@@ -172,6 +172,7 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
   const [postConfirmOpen, setPostConfirmOpen] = useState(false)
   const [discardModalOpen, setDiscardModalOpen] = useState(false)
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
+  const [cancelReason, setCancelReason] = useState('')
   const persistedId = document != null ? String(document.id) : id
   const displayStatus: DocumentStatus = document?.status ?? 'DRAFT'
   const isDraft = displayStatus === 'DRAFT'
