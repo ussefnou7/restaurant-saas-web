@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Plus, Trash2 } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
 import { ConfirmModal } from '../../../components/ui/ConfirmModal'
+import { DocumentBackButton } from '../../../components/layout/DocumentLayout'
 import { ListPage } from '../../../components/ui/ListPage'
 import { Modal } from '../../../components/ui/Modal'
 import { PageHeader } from '../../../components/ui/PageHeader'
@@ -561,11 +562,7 @@ export function PhysicalCountViewPage() {
       <PageHeader
         title={t('inventory.physicalCounts.form.viewTitle')}
         description={t('inventory.physicalCounts.form.viewSubtitle')}
-        action={
-          <Link to="/inventory/physical-counts">
-            <Button variant="secondary" type="button">{t('inventory.physicalCounts.form.backToList')}</Button>
-          </Link>
-        }
+        action={<DocumentBackButton to="/inventory/physical-counts" />}
       />
 
       {renderDetailView(count)}

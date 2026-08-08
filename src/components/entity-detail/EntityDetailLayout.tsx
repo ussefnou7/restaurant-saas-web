@@ -1,10 +1,8 @@
-import { ArrowLeft } from 'lucide-react'
-import type { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { DocumentBackButton } from '../layout/DocumentLayout/DocumentBackButton'
 
 interface EntityDetailLayoutProps {
   backTo: string
-  backLabel: string
+  backLabel?: string
   title?: string
   subtitle?: ReactNode
   headerExtra?: ReactNode
@@ -16,7 +14,6 @@ interface EntityDetailLayoutProps {
 
 export function EntityDetailLayout({
   backTo,
-  backLabel,
   title,
   subtitle,
   headerExtra,
@@ -26,11 +23,10 @@ export function EntityDetailLayout({
   hideHeader = false,
 }: EntityDetailLayoutProps) {
   return (
-    <div className={`entity-detail-page${className ? ` ${className}` : ''}`}>
-      <Link to={backTo} className="entity-detail-page__back">
-        <ArrowLeft size={16} aria-hidden />
-        <span>{backLabel}</span>
-      </Link>
+    <div className={`entity-detail-page${className ? ` ${className}` : ''}`} dir="rtl">
+      <div className="mb-3 flex justify-start">
+        <DocumentBackButton to={backTo} />
+      </div>
 
       {hideHeader ? null : (
         <header className="entity-detail-page__header entity-detail-page__header--compact">
