@@ -22,7 +22,7 @@ import { MaterialSelect } from '../../../components/ui/MaterialSelect'
 import { Modal } from '../../../components/ui/Modal'
 import { IconActionButton } from '../../../components/ui/RowActions'
 import { useNotify } from '../../../components/ui/NotificationContext'
-import { DetailField, FormField, FormTextarea } from '../../../components/fields'
+import { FormField, FormTextarea } from '../../../components/fields'
 import { useTranslation } from '../../../i18n/useTranslation'
 import * as inventoryService from '../../../services/inventoryService'
 import * as wasteDocumentService from '../../../services/wasteDocumentService'
@@ -856,109 +856,90 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
               ) : null}
 
               <div className="pi-form-header-grid">
-                {headerInputsDisabled ? (
-                  <>
-                    <DetailField
-                      label={t('inventory.waste.fields.warehouse')}
-                      value={
-                        warehouseOptions.find((opt) => opt.value === header.warehouseId)?.label ??
-                        document?.warehouseName ??
-                        '—'
-                      }
-                    />
-                    <DetailField
-                      label={t('inventory.waste.fields.wasteDate')}
-                      value={header.wasteDate}
+                <PiFormField
+                  label={t('inventory.waste.fields.warehouse')}
+                  required
+                  error={fieldErrors.warehouseId}
+                >
+                  {lookupsLoading ? (
+                    <div className="pi-form-field__skeleton" />
+                  ) : (
+                    <select
+                      className="pi-form-field__select"
+                      value={header.warehouseId}
+                      onChange={(e) => setHeader((prev) => ({ ...prev, warehouseId: e.target.value }))}
+                      disabled={headerInputsDisabled}
+                    >
+                      <option value="">{t('inventory.common.selectWarehouse')}</option>
+                      {warehouseOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </PiFormField>
+
+                <PiFormField
+                  label={t('inventory.waste.fields.wasteDate')}
+                  htmlFor="waste-date"
+                  required
+                  error={fieldErrors.wasteDate}
+                >
+                  <input
+                    id="waste-date"
+                    type="date"
+                    className="pi-form-field__input"
+                    dir="ltr"
+                    value={header.wasteDate}
+                    onChange={(e) => setHeader((prev) => ({ ...prev, wasteDate: e.target.value }))}
+                    disabled={headerInputsDisabled}
+                  />
+                </PiFormField>
+
+                <PiFormField label={t('inventory.waste.fields.reasonCode')} required>
+                  <select
+                    className="pi-form-field__select"
+                    value={header.reasonCode}
+                    onChange={(e) =>
+                      setHeader((prev) => ({
+                        ...prev,
+                        reasonCode: e.target.value as WasteReasonCode,
+                      }))
+                    }
+                    disabled={headerInputsDisabled}
+                  >
+                    {WASTE_REASON_CODES.map((code) => (
+                      <option key={code} value={code}>
+                        {t(`inventory.waste.reasonCode.${code}`)}
+                      </option>
+                    ))}
+                  </select>
+                </PiFormField>
+
+                <PiFormField label={t('inventory.waste.fields.notes')} htmlFor="waste-notes">
+                  <textarea
+                    id="waste-notes"
+                    className="pi-form-field__textarea"
+                    value={header.notes}
+                    onChange={(e) => setHeader((prev) => ({ ...prev, notes: e.target.value }))}
+                    disabled={headerInputsDisabled}
+                    rows={2}
+                  />
+                </PiFormField>
+
+                {document?.completedAt ? (
+                  <PiFormField label={t('inventory.waste.fields.completedAt')}>
+                    <input
+                      type="text"
+                      className="pi-form-field__input"
                       dir="ltr"
+                      value={formatDate(document.completedAt)}
+                      disabled
+                      readOnly
                     />
-                    <DetailField
-                      label={t('inventory.waste.fields.reasonCode')}
-                      value={header.reasonCode ? t(`inventory.waste.reasonCode.${header.reasonCode}`) : '—'}
-                    />
-                    <DetailField
-                      label={t('inventory.waste.fields.notes')}
-                      value={header.notes?.trim() || '—'}
-                      fullWidth
-                    />
-                    {document?.completedAt ? (
-                      <DetailField
-                        label={t('inventory.waste.fields.completedAt')}
-                        value={formatDate(document.completedAt)}
-                        dir="ltr"
-                      />
-                    ) : null}
-                  </>
-                ) : (
-                  <>
-                    <PiFormField
-                      label={t('inventory.waste.fields.warehouse')}
-                      required
-                      error={fieldErrors.warehouseId}
-                    >
-                      {lookupsLoading ? (
-                        <div className="pi-form-field__skeleton" />
-                      ) : (
-                        <select
-                          className="pi-form-field__select"
-                          value={header.warehouseId}
-                          onChange={(e) => setHeader((prev) => ({ ...prev, warehouseId: e.target.value }))}
-                        >
-                          <option value="">{t('inventory.common.selectWarehouse')}</option>
-                          {warehouseOptions.map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                    </PiFormField>
-
-                    <PiFormField
-                      label={t('inventory.waste.fields.wasteDate')}
-                      htmlFor="waste-date"
-                      required
-                      error={fieldErrors.wasteDate}
-                    >
-                      <input
-                        id="waste-date"
-                        type="date"
-                        className="pi-form-field__input"
-                        dir="ltr"
-                        value={header.wasteDate}
-                        onChange={(e) => setHeader((prev) => ({ ...prev, wasteDate: e.target.value }))}
-                      />
-                    </PiFormField>
-
-                    <PiFormField label={t('inventory.waste.fields.reasonCode')} required>
-                      <select
-                        className="pi-form-field__select"
-                        value={header.reasonCode}
-                        onChange={(e) =>
-                          setHeader((prev) => ({
-                            ...prev,
-                            reasonCode: e.target.value as WasteReasonCode,
-                          }))
-                        }
-                      >
-                        {WASTE_REASON_CODES.map((code) => (
-                          <option key={code} value={code}>
-                            {t(`inventory.waste.reasonCode.${code}`)}
-                          </option>
-                        ))}
-                      </select>
-                    </PiFormField>
-
-                    <PiFormField label={t('inventory.waste.fields.notes')} htmlFor="waste-notes">
-                      <textarea
-                        id="waste-notes"
-                        className="pi-form-field__textarea"
-                        value={header.notes}
-                        onChange={(e) => setHeader((prev) => ({ ...prev, notes: e.target.value }))}
-                        rows={2}
-                      />
-                    </PiFormField>
-                  </>
-                )}
+                  </PiFormField>
+                ) : null}
               </div>
             </section>
 

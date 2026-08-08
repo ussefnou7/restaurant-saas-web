@@ -21,7 +21,6 @@ import { PurchaseDocumentReasonModal } from '../../../components/inventory/Purch
 import { ListPage } from '../../../components/ui/ListPage'
 import { IconActionButton } from '../../../components/ui/RowActions'
 import { useNotify } from '../../../components/ui/NotificationContext'
-import { DetailField } from '../../../components/fields'
 import { PurchaseInvoiceFormStatusPill } from '../purchase-invoices/PurchaseInvoiceFormStatusPill'
 import { useTranslation } from '../../../i18n/useTranslation'
 import type { Locale } from '../../../i18n/types'
@@ -1079,131 +1078,92 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
               ) : null}
 
               <div className="pi-form-header-grid">
-                {headerInputsDisabled ? (
-                  <>
-                    <DetailField
-                      label={t('inventory.purchaseReturn.fields.originalInvoice')}
-                      value={
-                        header.originalInvoiceId ? (
-                          <Link
-                            to={`/purchase/purchase-invoices/${header.originalInvoiceId}`}
-                            className="purchase-return-detail__invoice-link"
-                          >
-                            {purchaseReturn?.originalInvoiceNumber?.trim() ||
-                              `#${header.originalInvoiceId}`}
-                          </Link>
-                        ) : (
-                          '—'
-                        )
+                <PrFormField
+                  label={t('inventory.purchaseReturn.fields.originalInvoice')}
+                  required={!persistedId}
+                  error={fieldErrors.originalInvoiceId}
+                >
+                  {originalInvoiceLocked ? (
+                    <Link
+                      to={`/purchase/purchase-invoices/${header.originalInvoiceId}`}
+                      className="purchase-return-detail__invoice-link"
+                    >
+                      {purchaseReturn?.originalInvoiceNumber?.trim() ||
+                        `#${header.originalInvoiceId}`}
+                    </Link>
+                  ) : lookupsLoading ? (
+                    <div className="pi-form-field__skeleton" />
+                  ) : (
+                    <select
+                      className="pi-form-field__select"
+                      value={header.originalInvoiceId}
+                      onChange={(e) =>
+                        setHeader((prev) => ({ ...prev, originalInvoiceId: e.target.value }))
                       }
-                    />
-                    <DetailField
-                      label={t('inventory.purchaseReturn.fields.returnDate')}
-                      value={header.returnDate}
-                      dir="ltr"
-                    />
-                    <DetailField
-                      label={t('inventory.purchaseReturn.fields.reason')}
-                      value={
-                        header.reason ? getPurchaseReturnReasonLabel(header.reason, t) : '—'
-                      }
-                    />
-                    <DetailField
-                      label={t('inventory.purchaseReturn.fields.notes')}
-                      value={header.notes?.trim() || '—'}
-                      fullWidth
-                    />
-                  </>
-                ) : (
-                  <>
-                    <PrFormField
-                      label={t('inventory.purchaseReturn.fields.originalInvoice')}
-                      required={!persistedId}
-                      error={fieldErrors.originalInvoiceId}
+                      disabled={headerInputsDisabled}
                     >
-                      {originalInvoiceLocked ? (
-                        <Link
-                          to={`/purchase/purchase-invoices/${header.originalInvoiceId}`}
-                          className="purchase-return-detail__invoice-link"
-                        >
-                          {purchaseReturn?.originalInvoiceNumber?.trim() ||
-                            `#${header.originalInvoiceId}`}
-                        </Link>
-                      ) : lookupsLoading ? (
-                        <div className="pi-form-field__skeleton" />
-                      ) : (
-                        <select
-                          className="pi-form-field__select"
-                          value={header.originalInvoiceId}
-                          onChange={(e) =>
-                            setHeader((prev) => ({ ...prev, originalInvoiceId: e.target.value }))
-                          }
-                          disabled={headerInputsDisabled}
-                        >
-                          <option value="">{t('inventory.purchaseReturn.fields.selectOriginalInvoice')}</option>
-                          {postedInvoices.map((invoice) => (
-                            <option key={invoice.id} value={String(invoice.id)}>
-                              {formatInvoiceOption(invoice)}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                    </PrFormField>
+                      <option value="">{t('inventory.purchaseReturn.fields.selectOriginalInvoice')}</option>
+                      {postedInvoices.map((invoice) => (
+                        <option key={invoice.id} value={String(invoice.id)}>
+                          {formatInvoiceOption(invoice)}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </PrFormField>
 
-                    <PrFormField
-                      label={t('inventory.purchaseReturn.fields.returnDate')}
-                      htmlFor="pr-return-date"
-                      required
-                      error={fieldErrors.returnDate}
-                    >
-                      <input
-                        id="pr-return-date"
-                        type="date"
-                        className="pi-form-field__input"
-                        dir="ltr"
-                        value={header.returnDate}
-                        onChange={(e) => setHeader((prev) => ({ ...prev, returnDate: e.target.value }))}
-                        disabled={headerInputsDisabled}
-                      />
-                    </PrFormField>
+                <PrFormField
+                  label={t('inventory.purchaseReturn.fields.returnDate')}
+                  htmlFor="pr-return-date"
+                  required
+                  error={fieldErrors.returnDate}
+                >
+                  <input
+                    id="pr-return-date"
+                    type="date"
+                    className="pi-form-field__input"
+                    dir="ltr"
+                    value={header.returnDate}
+                    onChange={(e) => setHeader((prev) => ({ ...prev, returnDate: e.target.value }))}
+                    disabled={headerInputsDisabled}
+                  />
+                </PrFormField>
 
-                    <PrFormField
-                      label={t('inventory.purchaseReturn.fields.reason')}
-                      required
-                      error={fieldErrors.reason}
-                    >
-                      <select
-                        className="pi-form-field__select"
-                        value={header.reason}
-                        onChange={(e) =>
-                          setHeader((prev) => ({
-                            ...prev,
-                            reason: e.target.value as PurchaseReturnReason,
-                          }))
-                        }
-                        disabled={headerInputsDisabled}
-                      >
-                        <option value="">{t('inventory.purchaseReturn.fields.selectReason')}</option>
-                        {RETURN_REASONS.map((value) => (
-                          <option key={value} value={value}>
-                            {getPurchaseReturnReasonLabel(value, t)}
-                          </option>
-                        ))}
-                      </select>
-                    </PrFormField>
+                <PrFormField
+                  label={t('inventory.purchaseReturn.fields.reason')}
+                  required
+                  error={fieldErrors.reason}
+                >
+                  <select
+                    className="pi-form-field__select"
+                    value={header.reason}
+                    onChange={(e) =>
+                      setHeader((prev) => ({
+                        ...prev,
+                        reason: e.target.value as PurchaseReturnReason,
+                      }))
+                    }
+                    disabled={headerInputsDisabled}
+                  >
+                    <option value="">{t('inventory.purchaseReturn.fields.selectReason')}</option>
+                    {RETURN_REASONS.map((value) => (
+                      <option key={value} value={value}>
+                        {getPurchaseReturnReasonLabel(value, t)}
+                      </option>
+                    ))}
+                  </select>
+                </PrFormField>
 
-                    <PrFormField label={t('inventory.purchaseReturn.fields.notes')} htmlFor="pr-notes">
-                      <textarea
-                        id="pr-notes"
-                        className="pi-form-field__textarea"
-                        rows={3}
-                        value={header.notes}
-                        onChange={(e) => setHeader((prev) => ({ ...prev, notes: e.target.value }))}
-                        disabled={headerInputsDisabled}
-                      />
-                    </PrFormField>
-                  </>
-                )}
+                <PrFormField label={t('inventory.purchaseReturn.fields.notes')} htmlFor="pr-notes">
+                  <textarea
+                    id="pr-notes"
+                    className="pi-form-field__textarea"
+                    rows={3}
+                    value={header.notes}
+                    onChange={(e) => setHeader((prev) => ({ ...prev, notes: e.target.value }))}
+                    disabled={headerInputsDisabled}
+                  />
+                </PrFormField>
 
                 {purchaseReturn ? (
                   <div className="pi-form-header-totals">

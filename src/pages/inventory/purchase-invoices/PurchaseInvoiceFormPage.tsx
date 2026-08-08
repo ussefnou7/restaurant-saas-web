@@ -8,7 +8,7 @@ import { MaterialSelect } from '../../../components/ui/MaterialSelect'
 import { Modal } from '../../../components/ui/Modal'
 import { IconActionButton } from '../../../components/ui/RowActions'
 import { useNotify } from '../../../components/ui/NotificationContext'
-import { DetailField } from '../../../components/fields'
+import { PurchaseDocumentReasonModal } from '../../../components/inventory/PurchaseDocumentReasonModal'
 import { PurchaseInvoiceFormStatusPill } from './PurchaseInvoiceFormStatusPill'
 import { useTranslation } from '../../../i18n/useTranslation'
 import * as inventoryService from '../../../services/inventoryService'
@@ -1072,169 +1072,128 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
               ) : null}
 
               <div className="pi-form-header-grid">
-                {headerInputsDisabled ? (
-                  <>
-                    <DetailField
-                      label={t('inventory.purchase.fields.supplier')}
-                      value={
-                        supplierOptions.find((opt) => opt.value === header.supplierId)?.label ??
-                        invoice?.supplierName ??
-                        '—'
-                      }
-                    />
-                    <DetailField
-                      label={t('inventory.purchase.fields.warehouse')}
-                      value={
-                        warehouseOptions.find((opt) => opt.value === header.warehouseId)?.label ??
-                        invoice?.warehouseName ??
-                        '—'
-                      }
-                    />
-                    <DetailField
-                      label={t('inventory.purchase.fields.invoiceDate')}
-                      value={header.invoiceDate}
-                      dir="ltr"
-                    />
-                    <DetailField
-                      label={t('inventory.purchase.fields.receiptDate')}
-                      value={header.receiptDate}
-                      dir="ltr"
-                    />
-                    <DetailField
-                      label={t('inventory.purchase.fields.discountAmount')}
-                      value={`${header.discountAmount || '0.00'} ج.م`}
-                      dir="ltr"
-                    />
-                    <DetailField
-                      label={t('inventory.purchase.fields.taxAmount')}
-                      value={`${header.taxAmount || '0.00'} ج.م`}
-                      dir="ltr"
-                    />
-                    <DetailField
-                      label={t('inventory.purchase.fields.notes')}
-                      value={header.notes?.trim() || '—'}
-                      fullWidth
-                    />
-                  </>
-                ) : (
-                  <>
-                    <PiFormField label={t('inventory.purchase.fields.supplier')}>
-                      {lookupsLoading ? (
-                        <div className="pi-form-field__skeleton" />
-                      ) : (
-                        <select
-                          className="pi-form-field__select"
-                          value={header.supplierId}
-                          onChange={(e) => setHeader((prev) => ({ ...prev, supplierId: e.target.value }))}
-                        >
-                          <option value="">{t('inventory.purchase.fields.supplierOptional')}</option>
-                          {supplierOptions.map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                    </PiFormField>
-
-                    <PiFormField
-                      label={t('inventory.purchase.fields.warehouse')}
-                      required
-                      error={fieldErrors.warehouseId}
+                <PiFormField label={t('inventory.purchase.fields.supplier')}>
+                  {lookupsLoading ? (
+                    <div className="pi-form-field__skeleton" />
+                  ) : (
+                    <select
+                      className="pi-form-field__select"
+                      value={header.supplierId}
+                      onChange={(e) => setHeader((prev) => ({ ...prev, supplierId: e.target.value }))}
+                      disabled={headerInputsDisabled}
                     >
-                      {lookupsLoading ? (
-                        <div className="pi-form-field__skeleton" />
-                      ) : (
-                        <select
-                          className="pi-form-field__select"
-                          value={header.warehouseId}
-                          onChange={(e) => setHeader((prev) => ({ ...prev, warehouseId: e.target.value }))}
-                        >
-                          <option value="">{t('inventory.common.selectWarehouse')}</option>
-                          {warehouseOptions.map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                    </PiFormField>
+                      <option value="">{t('inventory.purchase.fields.supplierOptional')}</option>
+                      {supplierOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </PiFormField>
 
-                    <PiFormField
-                      label={t('inventory.purchase.fields.invoiceDate')}
-                      htmlFor="pi-invoice-date"
-                      required
-                      error={fieldErrors.invoiceDate}
+                <PiFormField
+                  label={t('inventory.purchase.fields.warehouse')}
+                  required
+                  error={fieldErrors.warehouseId}
+                >
+                  {lookupsLoading ? (
+                    <div className="pi-form-field__skeleton" />
+                  ) : (
+                    <select
+                      className="pi-form-field__select"
+                      value={header.warehouseId}
+                      onChange={(e) => setHeader((prev) => ({ ...prev, warehouseId: e.target.value }))}
+                      disabled={headerInputsDisabled}
                     >
-                      <input
-                        id="pi-invoice-date"
-                        type="date"
-                        className="pi-form-field__input"
-                        dir="ltr"
-                        value={header.invoiceDate}
-                        onChange={(e) => setHeader((prev) => ({ ...prev, invoiceDate: e.target.value }))}
-                      />
-                    </PiFormField>
+                      <option value="">{t('inventory.common.selectWarehouse')}</option>
+                      {warehouseOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </PiFormField>
 
-                    <PiFormField
-                      label={t('inventory.purchase.fields.receiptDate')}
-                      htmlFor="pi-receipt-date"
-                      required
-                      error={fieldErrors.receiptDate}
-                    >
-                      <input
-                        id="pi-receipt-date"
-                        type="date"
-                        className="pi-form-field__input"
-                        dir="ltr"
-                        value={header.receiptDate}
-                        onChange={(e) => setHeader((prev) => ({ ...prev, receiptDate: e.target.value }))}
-                      />
-                    </PiFormField>
+                <PiFormField
+                  label={t('inventory.purchase.fields.invoiceDate')}
+                  htmlFor="pi-invoice-date"
+                  required
+                  error={fieldErrors.invoiceDate}
+                >
+                  <input
+                    id="pi-invoice-date"
+                    type="date"
+                    className="pi-form-field__input"
+                    dir="ltr"
+                    value={header.invoiceDate}
+                    onChange={(e) => setHeader((prev) => ({ ...prev, invoiceDate: e.target.value }))}
+                    disabled={headerInputsDisabled}
+                  />
+                </PiFormField>
 
-                    <PiFormField label={t('inventory.purchase.fields.discountAmount')} htmlFor="pi-discount">
-                      <div className="pi-form-field__input-wrap">
-                        <input
-                          id="pi-discount"
-                          type="number"
-                          min={0}
-                          step="any"
-                          className="pi-form-field__input pi-form-field__input--ltr"
-                          value={header.discountAmount}
-                          onChange={(e) => setHeader((prev) => ({ ...prev, discountAmount: e.target.value }))}
-                          placeholder="0.00"
-                        />
-                        <span className="pi-form-field__suffix">ج.م</span>
-                      </div>
-                    </PiFormField>
+                <PiFormField
+                  label={t('inventory.purchase.fields.receiptDate')}
+                  htmlFor="pi-receipt-date"
+                  required
+                  error={fieldErrors.receiptDate}
+                >
+                  <input
+                    id="pi-receipt-date"
+                    type="date"
+                    className="pi-form-field__input"
+                    dir="ltr"
+                    value={header.receiptDate}
+                    onChange={(e) => setHeader((prev) => ({ ...prev, receiptDate: e.target.value }))}
+                    disabled={headerInputsDisabled}
+                  />
+                </PiFormField>
 
-                    <PiFormField label={t('inventory.purchase.fields.taxAmount')} htmlFor="pi-tax">
-                      <div className="pi-form-field__input-wrap">
-                        <input
-                          id="pi-tax"
-                          type="number"
-                          min={0}
-                          step="any"
-                          className="pi-form-field__input pi-form-field__input--ltr"
-                          value={header.taxAmount}
-                          onChange={(e) => setHeader((prev) => ({ ...prev, taxAmount: e.target.value }))}
-                          placeholder="0.00"
-                        />
-                        <span className="pi-form-field__suffix">ج.م</span>
-                      </div>
-                    </PiFormField>
+                <PiFormField label={t('inventory.purchase.fields.discountAmount')} htmlFor="pi-discount">
+                  <div className="pi-form-field__input-wrap">
+                    <input
+                      id="pi-discount"
+                      type="number"
+                      min={0}
+                      step="any"
+                      className="pi-form-field__input pi-form-field__input--ltr"
+                      value={header.discountAmount}
+                      onChange={(e) => setHeader((prev) => ({ ...prev, discountAmount: e.target.value }))}
+                      disabled={headerInputsDisabled}
+                      placeholder="0.00"
+                    />
+                    <span className="pi-form-field__suffix">ج.م</span>
+                  </div>
+                </PiFormField>
 
-                    <PiFormField label={t('inventory.purchase.fields.notes')} htmlFor="pi-notes">
-                      <textarea
-                        id="pi-notes"
-                        className="pi-form-field__textarea"
-                        value={header.notes}
-                        onChange={(e) => setHeader((prev) => ({ ...prev, notes: e.target.value }))}
-                        rows={2}
-                      />
-                    </PiFormField>
-                  </>
-                )}
+                <PiFormField label={t('inventory.purchase.fields.taxAmount')} htmlFor="pi-tax">
+                  <div className="pi-form-field__input-wrap">
+                    <input
+                      id="pi-tax"
+                      type="number"
+                      min={0}
+                      step="any"
+                      className="pi-form-field__input pi-form-field__input--ltr"
+                      value={header.taxAmount}
+                      onChange={(e) => setHeader((prev) => ({ ...prev, taxAmount: e.target.value }))}
+                      disabled={headerInputsDisabled}
+                      placeholder="0.00"
+                    />
+                    <span className="pi-form-field__suffix">ج.م</span>
+                  </div>
+                </PiFormField>
+
+                <PiFormField label={t('inventory.purchase.fields.notes')} htmlFor="pi-notes">
+                  <textarea
+                    id="pi-notes"
+                    className="pi-form-field__textarea"
+                    value={header.notes}
+                    onChange={(e) => setHeader((prev) => ({ ...prev, notes: e.target.value }))}
+                    rows={2}
+                    disabled={headerInputsDisabled}
+                  />
+                </PiFormField>
 
                 {viewTotals ? (
                   <div className="pi-form-header-totals">
