@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { FieldGrid, FormField, FormInput, FormSelect } from '../../../../components/fields'
+import { FieldGrid, FormField, FormInput, FormSelect, StatusSwitch } from '../../../../components/fields'
 import { Button } from '../../../../components/ui/Button'
 import { Modal } from '../../../../components/ui/Modal'
 import { TenantCodeInput } from '../../../../components/ui/TenantCodeInput'
-import { TENANT_ENTITY_PREFIXES } from '../../../../utils/tenantCode'
+import { useTranslation } from '../../../../i18n/useTranslation'
 import * as uomService from '../../../../services/uomService'
 import type { UomResponse, UomType } from '../../../../types/inventory'
+import { translateApiError } from '../../../../utils/errors'
+import { TENANT_ENTITY_PREFIXES } from '../../../../utils/tenantCode'
 import { getTenantUomTypeLabel, TENANT_UOM_TYPES } from './tenantUomDisplay'
 
 type FormState = {
@@ -16,6 +18,7 @@ type FormState = {
   type: UomType
   baseUom: string
   factorToBase: string
+  active: boolean
 }
 
 type FieldErrors = Partial<Record<keyof FormState, string>>
@@ -28,92 +31,217 @@ const emptyForm: FormState = {
   type: 'COUNT',
   baseUom: '',
   factorToBase: '1',
+  active: true,
 }
 
 interface TenantUomFormModalProps {
   open: boolean
+  mode?: 'create' | 'edit'
+  uom?: UomResponse | null
   uoms: UomResponse[]
   onClose: () => void
-  onSuccess: (created: UomResponse) => void
+  onSuccess: (uom: UomResponse) => void
 }
 
-function validateForm(form: FormState): FieldErrors {
+function validateForm(
+  form: FormState,
+  isCreate: boolean,
+  t: (key: string, values?: Record<string, string | number>) => string,
+): FieldErrors {
   const errors: FieldErrors = {}
   const code = form.code.trim()
 
-  if (!code) {
-    errors.code = 'الكود مطلوب'
-  } else if (/\s/.test(code)) {
-    errors.code = 'الكود لا يجب أن يحتوي على مسافات'
+  if (isCreate) {
+    if (!code) {
+      errors.code = t('inventory.uom.validation.codeRequired')
+    } else if (/\s/.test(code)) {
+      errors.code = t('inventory.uom.validation.codeNoSpaces')
+    }
   }
 
   if (!form.name.trim()) {
-    errors.name = 'الاسم مطلوب'
+    errors.name = t('inventory.uom.validation.nameRequired')
   }
 
   if (!form.symbol.trim()) {
-    errors.symbol = 'الرمز مطلوب'
+    errors.symbol = t('inventory.uom.validation.symbolRequired')
   }
 
   if (!form.type) {
-    errors.type = 'النوع مطلوب'
+    errors.type = t('inventory.uom.validation.typeRequired')
   }
 
   if (!form.baseUom) {
-    errors.baseUom = 'الوحدة الأساسية مطلوبة'
+    errors.baseUom = t('inventory.uom.validation.baseUomRequired')
   }
 
   const factor = Number(form.factorToBase)
   if (!form.factorToBase.trim()) {
-    errors.factorToBase = 'معامل التحويل مطلوب'
+    errors.factorToBase = t('inventory.uom.validation.factorRequired')
   } else if (!Number.isFinite(factor) || factor <= 0) {
-    errors.factorToBase = 'معامل التحويل يجب أن يكون رقماً أكبر من صفر'
+    errors.factorToBase = t('inventory.uom.validation.factorPositive')
   }
 
   return errors
 }
 
-export function TenantUomFormModal({ open, uoms, onClose, onSuccess }: TenantUomFormModalProps) {
+export function TenantUomFormModal({
+  open,
+  mode = 'create',
+  uom,
+  uoms,
+  onClose,
+  onSuccess,
+}: TenantUomFormModalProps) {
+  const { t } = useTranslation()
   const [form, setForm] = useState<FormState>(emptyForm)
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
+  const [submitError, setSubmitError] = useState('')
   const [saving, setSaving] = useState(false)
 
-  const activeBaseUomOptions = useMemo(
-    () =>
-      uoms.filter((uom) => uom.active).map((uom) => ({
-        id: uom.id,
-        label: `${uom.nameAr?.trim() || uom.name} (${uom.code})`,
-      })),
-    [uoms],
-  )
+  const isCreate = mode === 'create'
 
   useEffect(() => {
     if (!open) return
-    setForm(emptyForm)
+    setSubmitError('')
     setFieldErrors({})
-  }, [open])
+
+    if (isCreate || !uom) {
+      setForm(emptyForm)
+      return
+    }
+
+    const baseUomIdVal = uom.enteredAgainstUomId ?? uom.baseUomId
+    const factorVal =
+      uom.enteredFactor != null
+        ? String(uom.enteredFactor)
+        : uom.factorToBase != null
+          ? String(uom.factorToBase)
+          : '1'
+
+    setForm({
+      code: uom.code,
+      name: uom.name,
+      nameAr: uom.nameAr ?? '',
+      symbol: uom.symbol ?? '',
+      type: uom.type ?? 'COUNT',
+      baseUom: baseUomIdVal != null ? String(baseUomIdVal) : '',
+      factorToBase: factorVal,
+      active: uom.active,
+    })
+  }, [open, isCreate, uom])
+
+  const baseUomOptions = useMemo(() => {
+    const candidates = uoms.filter(
+      (item) => (isCreate || item.id !== uom?.id) && item.type === form.type,
+    )
+
+    const activeOptions = candidates
+      .filter((item) => item.active)
+      .map((item) => ({
+        id: item.id,
+        label: `${item.nameAr?.trim() || item.name} (${item.symbol || item.code})`,
+        symbol: item.symbol || item.code,
+        active: true,
+      }))
+
+    const selectedBaseId = form.baseUom ? Number(form.baseUom) : null
+    const alreadyIncluded = activeOptions.some((opt) => opt.id === selectedBaseId)
+
+    if (selectedBaseId && !alreadyIncluded) {
+      const inactiveParentInList = uoms.find((item) => item.id === selectedBaseId)
+      const labelName =
+        inactiveParentInList
+          ? (inactiveParentInList.nameAr?.trim() || inactiveParentInList.name)
+          : (uom?.enteredAgainstUomSymbol || String(selectedBaseId))
+      const symbol = inactiveParentInList?.symbol || uom?.enteredAgainstUomSymbol || ''
+
+      const inactiveOption = {
+        id: selectedBaseId,
+        label: `${labelName} ${t('inventory.uom.inactiveSuffix')}`,
+        symbol: symbol,
+        active: false,
+      }
+      return [inactiveOption, ...activeOptions]
+    }
+
+    return activeOptions
+  }, [uoms, form.type, form.baseUom, isCreate, uom, t])
+
+  const selectedBaseOption = useMemo(() => {
+    if (!form.baseUom) return null
+    return baseUomOptions.find((opt) => String(opt.id) === form.baseUom) || null
+  }, [baseUomOptions, form.baseUom])
+
+  const factorLabel = useMemo(() => {
+    if (!selectedBaseOption) return t('inventory.uom.fields.factorToBase')
+    const unitSymbol = form.symbol.trim() || t('inventory.uom.unit')
+    const baseSymbol = selectedBaseOption.symbol || ''
+    return t('inventory.uom.fields.factorLabel', { symbol: unitSymbol, baseSymbol })
+  }, [selectedBaseOption, form.symbol, t])
+
+  function handleBaseUomChange(baseUomIdStr: string) {
+    const selectedUnit = uoms.find((item) => String(item.id) === baseUomIdStr)
+    setForm((prev) => ({
+      ...prev,
+      baseUom: baseUomIdStr,
+      type: selectedUnit?.type ?? prev.type,
+    }))
+  }
+
+  function handleTypeChange(newType: UomType) {
+    setForm((prev) => {
+      const currentBaseUnit = uoms.find((item) => String(item.id) === prev.baseUom)
+      const baseStillValid = currentBaseUnit?.type === newType
+      return {
+        ...prev,
+        type: newType,
+        baseUom: baseStillValid ? prev.baseUom : '',
+      }
+    })
+  }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    const errors = validateForm(form)
+    setSubmitError('')
+    const errors = validateForm(form, isCreate, t)
     setFieldErrors(errors)
     if (Object.keys(errors).length > 0) return
 
     setSaving(true)
     try {
-      const created = await uomService.createTenantUom({
-        code: form.code.trim(),
-        name: form.name.trim(),
-        nameAr: form.nameAr.trim() || null,
-        symbol: form.symbol.trim(),
-        type: form.type,
-        baseUom: Number(form.baseUom),
-        factorToBase: Number(form.factorToBase),
-      })
-      onSuccess(created)
+      let result: UomResponse
+      if (isCreate) {
+        result = await uomService.createTenantUom({
+          code: form.code.trim(),
+          name: form.name.trim(),
+          nameAr: form.nameAr.trim() || null,
+          symbol: form.symbol.trim(),
+          type: form.type,
+          baseUom: Number(form.baseUom),
+          factorToBase: Number(form.factorToBase),
+        })
+      } else if (uom) {
+        result = await uomService.updateTenantUom(uom.id, {
+          name: form.name.trim(),
+          nameAr: form.nameAr.trim() || null,
+          symbol: form.symbol.trim(),
+          type: form.type,
+          baseUom: Number(form.baseUom),
+          factorToBase: Number(form.factorToBase),
+          active: form.active,
+        })
+      } else {
+        return
+      }
+      onSuccess(result)
       onClose()
-    } catch {
-      // API errors are translated and toasted by the global axios interceptor.
+    } catch (err) {
+      const translated = translateApiError(err, t)
+      setSubmitError(translated.message)
+      if (translated.fieldErrors) {
+        setFieldErrors((prev) => ({ ...prev, ...translated.fieldErrors }))
+      }
     } finally {
       setSaving(false)
     }
@@ -123,42 +251,55 @@ export function TenantUomFormModal({ open, uoms, onClose, onSuccess }: TenantUom
     <Modal
       open={open}
       size="medium"
-      title="إضافة وحدة مخصصة"
+      title={isCreate ? t('inventory.uom.modal.addTitle') : t('inventory.uom.modal.editTitle')}
       onClose={onClose}
       footer={
         <>
           <Button variant="secondary" onClick={onClose} disabled={saving}>
-            إلغاء
+            {t('common.cancel')}
           </Button>
           <Button type="submit" form="tenant-uom-form" variant="primary" disabled={saving}>
             {saving ? (
               <>
                 <span className="list-state__spinner" aria-hidden="true" />
-                {' جاري الحفظ…'}
+                {' ' + t('branches.actions.saving')}
               </>
             ) : (
-              'حفظ'
+              t('common.save')
             )}
           </Button>
         </>
       }
     >
       <form id="tenant-uom-form" className="form form-card" dir="rtl" onSubmit={handleSubmit}>
+        {submitError ? <div className="alert-error">{submitError}</div> : null}
         <FieldGrid columns={2}>
-          <TenantCodeInput
-            id="tenant-uom-code"
-            label="كود الوحدة"
-            entityPrefix={TENANT_ENTITY_PREFIXES.UOM}
-            value={form.code}
-            onChange={(code) => setForm((prev) => ({ ...prev, code }))}
-            disabled={saving}
-            required
-            placeholder="0001"
-            helperText="أدخل اللاحقة فقط بعد البادئة. يتم إنشاء الكود الكامل تلقائياً."
-            tenantUnavailableText="رمز المستأجر غير متاح. سجّل الدخول مرة أخرى لتعيين البادئة."
-            error={fieldErrors.code}
-          />
-          <FormField label="الاسم" htmlFor="tenant-uom-name" error={fieldErrors.name}>
+          {isCreate ? (
+            <TenantCodeInput
+              id="tenant-uom-code"
+              label={t('inventory.uom.fields.code')}
+              entityPrefix={TENANT_ENTITY_PREFIXES.UOM}
+              value={form.code}
+              onChange={(code) => setForm((prev) => ({ ...prev, code }))}
+              disabled={saving}
+              required
+              placeholder="0001"
+              helperText="أدخل اللاحقة فقط بعد البادئة. يتم إنشاء الكود الكامل تلقائياً."
+              tenantUnavailableText="رمز المستأجر غير متاح. سجّل الدخول مرة أخرى لتعيين البادئة."
+              error={fieldErrors.code}
+            />
+          ) : (
+            <FormField label={t('inventory.uom.fields.code')}>
+              <FormInput
+                id="tenant-uom-code-readonly"
+                value={form.code}
+                disabled
+                readOnly
+                ltr
+              />
+            </FormField>
+          )}
+          <FormField label={t('inventory.uom.fields.name')} htmlFor="tenant-uom-name" error={fieldErrors.name}>
             <FormInput
               id="tenant-uom-name"
               value={form.name}
@@ -167,7 +308,7 @@ export function TenantUomFormModal({ open, uoms, onClose, onSuccess }: TenantUom
               required
             />
           </FormField>
-          <FormField label="الاسم بالعربية" htmlFor="tenant-uom-name-ar">
+          <FormField label={t('inventory.uom.fields.nameAr')} htmlFor="tenant-uom-name-ar">
             <FormInput
               id="tenant-uom-name-ar"
               dir="rtl"
@@ -176,7 +317,7 @@ export function TenantUomFormModal({ open, uoms, onClose, onSuccess }: TenantUom
               disabled={saving}
             />
           </FormField>
-          <FormField label="الرمز" htmlFor="tenant-uom-symbol" error={fieldErrors.symbol}>
+          <FormField label={t('inventory.uom.fields.symbol')} htmlFor="tenant-uom-symbol" error={fieldErrors.symbol}>
             <FormInput
               id="tenant-uom-symbol"
               ltr
@@ -186,13 +327,11 @@ export function TenantUomFormModal({ open, uoms, onClose, onSuccess }: TenantUom
               required
             />
           </FormField>
-          <FormField label="النوع" htmlFor="tenant-uom-type" error={fieldErrors.type}>
+          <FormField label={t('inventory.uom.fields.type')} htmlFor="tenant-uom-type" error={fieldErrors.type}>
             <FormSelect
               id="tenant-uom-type"
               value={form.type}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, type: e.target.value as UomType }))
-              }
+              onChange={(e) => handleTypeChange(e.target.value as UomType)}
               disabled={saving}
             >
               {TENANT_UOM_TYPES.map((type) => (
@@ -202,15 +341,15 @@ export function TenantUomFormModal({ open, uoms, onClose, onSuccess }: TenantUom
               ))}
             </FormSelect>
           </FormField>
-          <FormField label="الوحدة الأساسية" htmlFor="tenant-uom-base" error={fieldErrors.baseUom}>
+          <FormField label={t('inventory.uom.fields.baseUom')} htmlFor="tenant-uom-base" error={fieldErrors.baseUom}>
             <FormSelect
               id="tenant-uom-base"
               value={form.baseUom}
-              onChange={(e) => setForm((prev) => ({ ...prev, baseUom: e.target.value }))}
+              onChange={(e) => handleBaseUomChange(e.target.value)}
               disabled={saving}
             >
-              <option value="">اختر الوحدة الأساسية</option>
-              {activeBaseUomOptions.map((opt) => (
+              <option value="">{t('inventory.uom.fields.baseUomSelect')}</option>
+              {baseUomOptions.map((opt) => (
                 <option key={opt.id} value={String(opt.id)}>
                   {opt.label}
                 </option>
@@ -218,7 +357,7 @@ export function TenantUomFormModal({ open, uoms, onClose, onSuccess }: TenantUom
             </FormSelect>
           </FormField>
           <FormField
-            label="معامل التحويل"
+            label={factorLabel}
             htmlFor="tenant-uom-factor"
             error={fieldErrors.factorToBase}
           >
@@ -234,6 +373,15 @@ export function TenantUomFormModal({ open, uoms, onClose, onSuccess }: TenantUom
               required
             />
           </FormField>
+          {!isCreate ? (
+            <FormField label={t('common.status')}>
+              <StatusSwitch
+                active={form.active}
+                disabled={saving}
+                onChange={(active) => setForm((prev) => ({ ...prev, active }))}
+              />
+            </FormField>
+          ) : null}
         </FieldGrid>
       </form>
     </Modal>
