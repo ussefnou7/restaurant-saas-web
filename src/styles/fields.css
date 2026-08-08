@@ -90,8 +90,8 @@
 }
 
 .field-box {
-  --field-bg: var(--color-surface-soft);
-  --field-border: var(--border-color);
+  --field-bg: #f8fafc;
+  --field-border: #cbd5e1;
   position: relative;
   box-sizing: border-box;
   display: flex;
@@ -108,10 +108,21 @@
     box-shadow 0.15s ease;
 }
 
-.field-box:focus-within {
-  --field-bg: #fff;
-  border-color: #b8ebd4;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.08);
+.field-box--detail {
+  --field-bg: #f8fafc;
+  --field-border: #cbd5e1;
+}
+
+.field-box--form {
+  --field-bg: #ffffff;
+  --field-border: #cbd5e1;
+}
+
+.field-box:focus-within,
+.field-box--form:focus-within {
+  --field-bg: #ffffff;
+  border-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
 }
 
 .field-box--error {
