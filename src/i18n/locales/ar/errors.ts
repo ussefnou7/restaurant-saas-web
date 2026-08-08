@@ -37,8 +37,6 @@ export const errorsAr: TranslationDictionary = {
   'errors.DUPLICATE_CODE': "يوجد بالفعل {{entityType}} بالرمز '{{code}}'",
   'errors.CODE_IMMUTABLE': 'لا يمكن تغيير الرمز بعد إنشاء {{entityType}}',
   'errors.UOM_IN_USE': 'وحدة القياس مستخدمة ولا يمكن حذفها',
-  'errors.UOM_IMMUTABLE_IN_USE':
-    'وحدة القياس مستخدمة في عمليات أو مواد أو وحدات أخرى، لا يمكن تعديل معامل التحويل أو الوحدة الأساسية. يمكنك إلغاء تفعيلها وإعادة إنشائها.',
   'errors.GLOBAL_UOM_NOT_DELETABLE': 'لا يمكن حذف وحدات القياس العامة، يمكن إلغاء تفعيلها فقط',
   'errors.BRANCH_WAREHOUSE_REQUIRES_BRANCH': 'يجب ربط مستودع الفرع بفرع',
   'errors.UNPOST_BLOCKED_HAS_RETURN':

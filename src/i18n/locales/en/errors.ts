@@ -38,8 +38,6 @@ export const errorsEn: TranslationDictionary = {
   'errors.DUPLICATE_CODE': "A {{entityType}} with code '{{code}}' already exists",
   'errors.CODE_IMMUTABLE': 'The code cannot be changed after the {{entityType}} is created',
   'errors.UOM_IN_USE': 'This unit of measure is in use and cannot be deleted',
-  'errors.UOM_IMMUTABLE_IN_USE':
-    'This unit of measure is in use by transactions, materials, or other units. Its factor and base unit cannot be modified. Deactivate it and create a new unit instead.',
   'errors.GLOBAL_UOM_NOT_DELETABLE':
     'Global units of measure cannot be deleted, only deactivated',
   'errors.BRANCH_WAREHOUSE_REQUIRES_BRANCH': 'Branch warehouses must be linked to a branch',
