@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { FieldGrid, FormField, FormInput, FormSelect, StatusSwitch } from '../../../../components/fields'
+import { FieldGrid, FormField, FormInput, FormSelect } from '../../../../components/fields'
 import { Button } from '../../../../components/ui/Button'
 import { Modal } from '../../../../components/ui/Modal'
 import { TenantCodeInput } from '../../../../components/ui/TenantCodeInput'
@@ -15,10 +15,9 @@ type FormState = {
   name: string
   nameAr: string
   symbol: string
-  type: UomType
+  typeFilter: UomType
   baseUom: string
   factorToBase: string
-  active: boolean
 }
 
 type FieldErrors = Partial<Record<keyof FormState, string>>
@@ -28,16 +27,13 @@ const emptyForm: FormState = {
   name: '',
   nameAr: '',
   symbol: '',
-  type: 'COUNT',
+  typeFilter: 'COUNT',
   baseUom: '',
   factorToBase: '1',
-  active: true,
 }
 
 interface TenantUomFormModalProps {
   open: boolean
-  mode?: 'create' | 'edit'
-  uom?: UomResponse | null
   uoms: UomResponse[]
   onClose: () => void
   onSuccess: (uom: UomResponse) => void
@@ -45,18 +41,15 @@ interface TenantUomFormModalProps {
 
 function validateForm(
   form: FormState,
-  isCreate: boolean,
   t: (key: string, values?: Record<string, string | number>) => string,
 ): FieldErrors {
   const errors: FieldErrors = {}
   const code = form.code.trim()
 
-  if (isCreate) {
-    if (!code) {
-      errors.code = t('inventory.uom.validation.codeRequired')
-    } else if (/\s/.test(code)) {
-      errors.code = t('inventory.uom.validation.codeNoSpaces')
-    }
+  if (!code) {
+    errors.code = t('inventory.uom.validation.codeRequired')
+  } else if (/\s/.test(code)) {
+    errors.code = t('inventory.uom.validation.codeNoSpaces')
   }
 
   if (!form.name.trim()) {
@@ -65,10 +58,6 @@ function validateForm(
 
   if (!form.symbol.trim()) {
     errors.symbol = t('inventory.uom.validation.symbolRequired')
-  }
-
-  if (!form.type) {
-    errors.type = t('inventory.uom.validation.typeRequired')
   }
 
   if (!form.baseUom) {
@@ -87,8 +76,6 @@ function validateForm(
 
 export function TenantUomFormModal({
   open,
-  mode = 'create',
-  uom,
   uoms,
   onClose,
   onSuccess,
@@ -99,42 +86,15 @@ export function TenantUomFormModal({
   const [submitError, setSubmitError] = useState('')
   const [saving, setSaving] = useState(false)
 
-  const isCreate = mode === 'create'
-
   useEffect(() => {
     if (!open) return
     setSubmitError('')
     setFieldErrors({})
-
-    if (isCreate || !uom) {
-      setForm(emptyForm)
-      return
-    }
-
-    const baseUomIdVal = uom.enteredAgainstUomId ?? uom.baseUomId
-    const factorVal =
-      uom.enteredFactor != null
-        ? String(uom.enteredFactor)
-        : uom.factorToBase != null
-          ? String(uom.factorToBase)
-          : '1'
-
-    setForm({
-      code: uom.code,
-      name: uom.name,
-      nameAr: uom.nameAr ?? '',
-      symbol: uom.symbol ?? '',
-      type: uom.type ?? 'COUNT',
-      baseUom: baseUomIdVal != null ? String(baseUomIdVal) : '',
-      factorToBase: factorVal,
-      active: uom.active,
-    })
-  }, [open, isCreate, uom])
+    setForm(emptyForm)
+  }, [open])
 
   const baseUomOptions = useMemo(() => {
-    const candidates = uoms.filter(
-      (item) => (isCreate || item.id !== uom?.id) && item.type === form.type,
-    )
+    const candidates = uoms.filter((item) => item.type === form.typeFilter)
 
     const activeOptions = candidates
       .filter((item) => item.active)
@@ -150,11 +110,10 @@ export function TenantUomFormModal({
 
     if (selectedBaseId && !alreadyIncluded) {
       const inactiveParentInList = uoms.find((item) => item.id === selectedBaseId)
-      const labelName =
-        inactiveParentInList
-          ? (inactiveParentInList.nameAr?.trim() || inactiveParentInList.name)
-          : (uom?.enteredAgainstUomSymbol || String(selectedBaseId))
-      const symbol = inactiveParentInList?.symbol || uom?.enteredAgainstUomSymbol || ''
+      const labelName = inactiveParentInList
+        ? inactiveParentInList.nameAr?.trim() || inactiveParentInList.name
+        : String(selectedBaseId)
+      const symbol = inactiveParentInList?.symbol || ''
 
       const inactiveOption = {
         id: selectedBaseId,
@@ -166,7 +125,7 @@ export function TenantUomFormModal({
     }
 
     return activeOptions
-  }, [uoms, form.type, form.baseUom, isCreate, uom, t])
+  }, [uoms, form.typeFilter, form.baseUom, t])
 
   const selectedBaseOption = useMemo(() => {
     if (!form.baseUom) return null
@@ -185,17 +144,17 @@ export function TenantUomFormModal({
     setForm((prev) => ({
       ...prev,
       baseUom: baseUomIdStr,
-      type: selectedUnit?.type ?? prev.type,
+      typeFilter: selectedUnit?.type ?? prev.typeFilter,
     }))
   }
 
-  function handleTypeChange(newType: UomType) {
+  function handleTypeFilterChange(newType: UomType) {
     setForm((prev) => {
       const currentBaseUnit = uoms.find((item) => String(item.id) === prev.baseUom)
       const baseStillValid = currentBaseUnit?.type === newType
       return {
         ...prev,
-        type: newType,
+        typeFilter: newType,
         baseUom: baseStillValid ? prev.baseUom : '',
       }
     })
@@ -204,37 +163,21 @@ export function TenantUomFormModal({
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setSubmitError('')
-    const errors = validateForm(form, isCreate, t)
+    const errors = validateForm(form, t)
     setFieldErrors(errors)
     if (Object.keys(errors).length > 0) return
 
     setSaving(true)
     try {
-      let result: UomResponse
-      if (isCreate) {
-        result = await uomService.createTenantUom({
-          code: form.code.trim(),
-          name: form.name.trim(),
-          nameAr: form.nameAr.trim() || null,
-          symbol: form.symbol.trim(),
-          type: form.type,
-          baseUom: Number(form.baseUom),
-          factorToBase: Number(form.factorToBase),
-        })
-      } else if (uom) {
-        result = await uomService.updateTenantUom(uom.id, {
-          name: form.name.trim(),
-          nameAr: form.nameAr.trim() || null,
-          symbol: form.symbol.trim(),
-          type: form.type,
-          baseUom: Number(form.baseUom),
-          factorToBase: Number(form.factorToBase),
-          active: form.active,
-        })
-      } else {
-        return
-      }
-      onSuccess(result)
+      const created = await uomService.createTenantUom({
+        code: form.code.trim(),
+        name: form.name.trim(),
+        nameAr: form.nameAr.trim() || null,
+        symbol: form.symbol.trim(),
+        baseUom: Number(form.baseUom),
+        factorToBase: Number(form.factorToBase),
+      })
+      onSuccess(created)
       onClose()
     } catch (err) {
       const translated = translateApiError(err, t)
@@ -251,7 +194,7 @@ export function TenantUomFormModal({
     <Modal
       open={open}
       size="medium"
-      title={isCreate ? t('inventory.uom.modal.addTitle') : t('inventory.uom.modal.editTitle')}
+      title={t('inventory.uom.modal.addTitle')}
       onClose={onClose}
       footer={
         <>
@@ -274,31 +217,19 @@ export function TenantUomFormModal({
       <form id="tenant-uom-form" className="form form-card" dir="rtl" onSubmit={handleSubmit}>
         {submitError ? <div className="alert-error">{submitError}</div> : null}
         <FieldGrid columns={2}>
-          {isCreate ? (
-            <TenantCodeInput
-              id="tenant-uom-code"
-              label={t('inventory.uom.fields.code')}
-              entityPrefix={TENANT_ENTITY_PREFIXES.UOM}
-              value={form.code}
-              onChange={(code) => setForm((prev) => ({ ...prev, code }))}
-              disabled={saving}
-              required
-              placeholder="0001"
-              helperText="أدخل اللاحقة فقط بعد البادئة. يتم إنشاء الكود الكامل تلقائياً."
-              tenantUnavailableText="رمز المستأجر غير متاح. سجّل الدخول مرة أخرى لتعيين البادئة."
-              error={fieldErrors.code}
-            />
-          ) : (
-            <FormField label={t('inventory.uom.fields.code')}>
-              <FormInput
-                id="tenant-uom-code-readonly"
-                value={form.code}
-                disabled
-                readOnly
-                ltr
-              />
-            </FormField>
-          )}
+          <TenantCodeInput
+            id="tenant-uom-code"
+            label={t('inventory.uom.fields.code')}
+            entityPrefix={TENANT_ENTITY_PREFIXES.UOM}
+            value={form.code}
+            onChange={(code) => setForm((prev) => ({ ...prev, code }))}
+            disabled={saving}
+            required
+            placeholder="0001"
+            helperText="أدخل اللاحقة فقط بعد البادئة. يتم إنشاء الكود الكامل تلقائياً."
+            tenantUnavailableText="رمز المستأجر غير متاح. سجّل الدخول مرة أخرى لتعيين البادئة."
+            error={fieldErrors.code}
+          />
           <FormField label={t('inventory.uom.fields.name')} htmlFor="tenant-uom-name" error={fieldErrors.name}>
             <FormInput
               id="tenant-uom-name"
@@ -327,11 +258,11 @@ export function TenantUomFormModal({
               required
             />
           </FormField>
-          <FormField label={t('inventory.uom.fields.type')} htmlFor="tenant-uom-type" error={fieldErrors.type}>
+          <FormField label={t('inventory.uom.fields.typeFilter')} htmlFor="tenant-uom-type-filter">
             <FormSelect
-              id="tenant-uom-type"
-              value={form.type}
-              onChange={(e) => handleTypeChange(e.target.value as UomType)}
+              id="tenant-uom-type-filter"
+              value={form.typeFilter}
+              onChange={(e) => handleTypeFilterChange(e.target.value as UomType)}
               disabled={saving}
             >
               {TENANT_UOM_TYPES.map((type) => (
@@ -373,15 +304,6 @@ export function TenantUomFormModal({
               required
             />
           </FormField>
-          {!isCreate ? (
-            <FormField label={t('common.status')}>
-              <StatusSwitch
-                active={form.active}
-                disabled={saving}
-                onChange={(active) => setForm((prev) => ({ ...prev, active }))}
-              />
-            </FormField>
-          ) : null}
         </FieldGrid>
       </form>
     </Modal>
