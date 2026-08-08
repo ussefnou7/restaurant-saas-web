@@ -87,11 +87,14 @@ export function getStockUomLabel(
   )
 }
 
+export const rootOf = (u: UomResponse): number => u.baseUomId ?? u.id
+
 export function getCompatibleUoms(uoms: UomResponse[], anchorUomId: number | string): UomResponse[] {
   const active = uoms.filter((u) => u.active)
   const anchor = active.find((u) => u.id === Number(anchorUomId))
-  if (!anchor?.type) return active
-  return active.filter((u) => u.type === anchor.type)
+  if (!anchor) return active
+  const anchorRoot = rootOf(anchor)
+  return active.filter((u) => rootOf(u) === anchorRoot)
 }
 
 export function convertUomQuantity(
@@ -99,7 +102,7 @@ export function convertUomQuantity(
   fromUom: UomResponse,
   toUom: UomResponse,
 ): number | null {
-  if (fromUom.type && toUom.type && fromUom.type !== toUom.type) return null
+  if (rootOf(fromUom) !== rootOf(toUom)) return null
   const fromFactor = fromUom.factorToBase ?? 0
   const toFactor = toUom.factorToBase ?? 0
   if (fromFactor <= 0 || toFactor <= 0) return null

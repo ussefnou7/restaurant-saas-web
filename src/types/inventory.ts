@@ -14,6 +14,10 @@ export type UomResponse = {
   active: boolean
   sortOrder?: number | null
   tenantId?: number | null
+  enteredFactor?: number | string | null
+  enteredAgainstUomId?: number | null
+  enteredAgainstUomSymbol?: string | null
+  enteredAgainstUomActive?: boolean | null
 }
 
 export type CreateTenantUomRequest = {
@@ -21,9 +25,19 @@ export type CreateTenantUomRequest = {
   name: string
   nameAr?: string | null
   symbol: string
-  type: UomType
+  type?: UomType
   baseUom: number
   factorToBase: number
+}
+
+export type UpdateTenantUomRequest = {
+  name: string
+  nameAr?: string | null
+  symbol: string
+  type?: UomType
+  baseUom: number
+  factorToBase: number
+  active?: boolean
 }
 
 export type MaterialCategoryResponse = {

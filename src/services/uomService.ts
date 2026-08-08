@@ -1,4 +1,4 @@
-import type { CreateTenantUomRequest, UomResponse } from '../types/inventory'
+import type { CreateTenantUomRequest, UpdateTenantUomRequest, UomResponse } from '../types/inventory'
 import { api } from './api'
 
 export async function getTenantUoms(): Promise<UomResponse[]> {
@@ -8,6 +8,14 @@ export async function getTenantUoms(): Promise<UomResponse[]> {
 
 export async function createTenantUom(payload: CreateTenantUomRequest): Promise<UomResponse> {
   const response = await api.post<UomResponse>('/api/uom', payload)
+  return response.data
+}
+
+export async function updateTenantUom(
+  id: number | string,
+  payload: UpdateTenantUomRequest,
+): Promise<UomResponse> {
+  const response = await api.put<UomResponse>(`/api/uom/${id}`, payload)
   return response.data
 }
 
