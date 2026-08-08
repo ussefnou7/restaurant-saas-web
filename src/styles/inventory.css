@@ -862,22 +862,6 @@
   max-width: 100%;
 }
 
-.pi-form-header-card .pi-form-field {
-  gap: 4px;
-}
-
-.pi-form-header-card .pi-form-field__label {
-  font-size: 0.75rem;
-}
-
-.pi-form-header-card .pi-form-field__input,
-.pi-form-header-card .pi-form-field__select,
-.pi-form-header-card .pi-form-field__textarea {
-  padding: 6px 10px;
-  font-size: 0.8125rem;
-  border-radius: 6px;
-}
-
 .pi-form-header-card .pi-form-field__textarea {
   min-height: 52px;
   resize: vertical;
@@ -895,17 +879,50 @@
 }
 
 .pi-form-field {
+  position: relative;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  min-width: 0;
+  justify-content: center;
+  min-height: 54px;
+  padding: 10px 12px 6px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.pi-form-field:focus-within {
+  border-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
 }
 
 .pi-form-field__label {
-  font-size: 0.8125rem;
+  position: absolute;
+  top: 0;
+  inset-inline-start: 12px;
+  transform: translateY(-50%);
+  padding-inline: 4px;
+  background: #ffffff;
+  font-size: 0.75rem;
   font-weight: 500;
-  color: var(--color-text-muted, #6b7280);
+  color: #64748b;
+  line-height: 1.2;
   text-align: start;
+  white-space: nowrap;
+  max-width: calc(100% - 20px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  z-index: 1;
+}
+
+.pi-form-field:has(.pi-form-field__input:disabled) .pi-form-field__label,
+.pi-form-field:has(.pi-form-field__select:disabled) .pi-form-field__label,
+.pi-form-field:has(.pi-form-field__textarea:disabled) .pi-form-field__label {
+  background: #f8fafc;
 }
 
 .pi-form-field__required {
@@ -917,24 +934,27 @@
 .pi-form-field__select,
 .pi-form-field__textarea {
   width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background: #fff;
+  padding: 2px 0;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
   font-size: 0.875rem;
-  color: var(--color-text, #111827);
-  transition:
-    border-color var(--transition-fast, 0.18s ease),
-    box-shadow var(--transition-fast, 0.18s ease);
+  font-weight: 600;
+  color: #0f172a;
+  box-shadow: none !important;
 }
 
 .pi-form-field__select {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: left 10px center;
-  padding-inline-start: 12px;
-  padding-inline-end: 32px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: left 0px center !important;
+  padding-inline-start: 0px;
+  padding-inline-end: 24px;
+}
+
+[dir='rtl'] .pi-form-field__select {
+  background-position: left 0px center !important;
 }
 
 .pi-form-field__select option[value=''] {
@@ -944,23 +964,27 @@
 .pi-form-field__input:focus,
 .pi-form-field__select:focus,
 .pi-form-field__textarea:focus {
-  outline: none;
-  border-color: var(--color-primary, #34d399);
-  box-shadow: 0 0 0 1px var(--color-primary, #34d399);
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .pi-form-field__input:disabled,
 .pi-form-field__select:disabled,
 .pi-form-field__textarea:disabled {
-  background: #f9fafb;
-  color: #9ca3af;
+  color: #334155;
+  opacity: 0.9;
   cursor: not-allowed;
 }
 
-.pi-form-field--error .pi-form-field__input,
-.pi-form-field--error .pi-form-field__select,
-.pi-form-field--error .pi-form-field__textarea {
-  border-color: #f87171;
+.pi-form-field:has(.pi-form-field__input:disabled),
+.pi-form-field:has(.pi-form-field__select:disabled),
+.pi-form-field:has(.pi-form-field__textarea:disabled) {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.pi-form-field--error {
+  border-color: #f87171 !important;
 }
 
 .pi-form-field__error {
