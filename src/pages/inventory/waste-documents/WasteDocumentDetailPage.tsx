@@ -845,13 +845,6 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                 </div>
               </div>
 
-              <div className="pi-form-header-card__nav">
-                <Link to="/inventory/waste-documents" className="pi-form-topbar__back">
-                  <ChevronRight size={18} aria-hidden="true" />
-                  {t('inventory.waste.form.backToList')}
-                </Link>
-              </div>
-
               <div className="pi-form-header-card__divider" />
 
               {persistedId && document?.code ? (
