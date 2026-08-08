@@ -134,17 +134,16 @@ export function TenantUomFormModal({
 
   const factorLabel = useMemo(() => {
     if (!selectedBaseOption) return t('inventory.uom.fields.factorToBase')
-    const unitSymbol = form.symbol.trim() || t('inventory.uom.unit')
+    const unitSymbol = form.symbol.trim() || form.name.trim()
+    if (!unitSymbol) return t('inventory.uom.fields.factorToBase')
     const baseSymbol = selectedBaseOption.symbol || ''
     return t('inventory.uom.fields.factorLabel', { symbol: unitSymbol, baseSymbol })
-  }, [selectedBaseOption, form.symbol, t])
+  }, [selectedBaseOption, form.symbol, form.name, t])
 
   function handleBaseUomChange(baseUomIdStr: string) {
-    const selectedUnit = uoms.find((item) => String(item.id) === baseUomIdStr)
     setForm((prev) => ({
       ...prev,
       baseUom: baseUomIdStr,
-      typeFilter: selectedUnit?.type ?? prev.typeFilter,
     }))
   }
 

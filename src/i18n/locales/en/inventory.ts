@@ -52,7 +52,6 @@ export const inventoryEn: TranslationDictionary = {
   'inventory.uom.fields.baseUomSelect': 'Select base unit',
   'inventory.uom.fields.factorToBase': 'Conversion Factor',
   'inventory.uom.fields.factorLabel': 'Conversion factor (1 {{symbol}} = ... {{baseSymbol}})',
-  'inventory.uom.unit': 'unit',
   'inventory.uom.inactiveSuffix': '(Inactive)',
   'inventory.uom.validation.codeRequired': 'Code is required',
   'inventory.uom.validation.codeNoSpaces': 'Code must not contain spaces',

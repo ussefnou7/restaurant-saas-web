@@ -52,7 +52,6 @@ export const inventoryAr: TranslationDictionary = {
   'inventory.uom.fields.baseUomSelect': 'اختر الوحدة الأساسية',
   'inventory.uom.fields.factorToBase': 'معامل التحويل',
   'inventory.uom.fields.factorLabel': 'معامل التحويل (1 {{symbol}} = ... {{baseSymbol}})',
-  'inventory.uom.unit': 'وحدة',
   'inventory.uom.inactiveSuffix': '(غير نشط)',
   'inventory.uom.validation.codeRequired': 'الكود مطلوب',
   'inventory.uom.validation.codeNoSpaces': 'الكود لا يجب أن يحتوي على مسافات',
