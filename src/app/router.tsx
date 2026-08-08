@@ -71,6 +71,11 @@ import { ReportsHub } from '../pages/inventory/reports/ReportsHub'
 import { ShrinkageReport } from '../pages/inventory/reports/ShrinkageReport'
 import { StockValuationReport } from '../pages/inventory/reports/StockValuationReport'
 import { WasteAnalysisReport } from '../pages/inventory/reports/WasteAnalysisReport'
+import { SalesByHourReport } from '../pages/sales/reports/SalesByHourReport'
+import { SalesByPaymentMethodReport } from '../pages/sales/reports/SalesByPaymentMethodReport'
+import { SalesByProductReport } from '../pages/sales/reports/SalesByProductReport'
+import { SalesOverTimeReport } from '../pages/sales/reports/SalesOverTimeReport'
+import { SalesReportsHub } from '../pages/sales/reports/SalesReportsHub'
 import { NotFoundPage } from '../pages/NotFoundPage'
 import { CustomersListSection } from '../pages/orders/CustomersListSection'
 import { OrderDetailPage } from '../pages/orders/OrderDetailPage'
@@ -115,7 +120,19 @@ export const router = createBrowserRouter([
           },
           {
             path: 'sales',
-            element: <SalesHubPage />,
+            children: [
+              { index: true, element: <SalesHubPage /> },
+              {
+                path: 'reports',
+                children: [
+                  { index: true, element: <SalesReportsHub /> },
+                  { path: 'sales-over-time', element: <SalesOverTimeReport /> },
+                  { path: 'sales-by-hour', element: <SalesByHourReport /> },
+                  { path: 'sales-by-product', element: <SalesByProductReport /> },
+                  { path: 'sales-by-payment-method', element: <SalesByPaymentMethodReport /> },
+                ],
+              },
+            ],
           },
           {
             path: 'pos',

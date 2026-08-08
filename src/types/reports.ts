@@ -115,4 +115,47 @@ export type PurchasePriceDriftRow = {
   materialActive?: boolean
 }
 
+export type OrderTypeFilter = 'DINE_IN' | 'TAKEAWAY' | 'DELIVERY'
+
+export type SalesFilterParams = {
+  dateFrom: string
+  dateTo: string
+  branchId?: string
+  cashierUserId?: string
+  orderType?: OrderTypeFilter
+}
+
+export type SalesOverTimeRow = {
+  salesDate: string
+  orderCount: number
+  subtotal: string
+  taxAmount: string
+  totalAmount: string
+  averageOrderValue: string
+}
+
+export type SalesByHourRow = SalesOverTimeRow & {
+  hourOfDay: number
+}
+
+export type SalesByProductRow = {
+  productId: number
+  productName: string
+  quantitySold: string
+  revenue: string
+  revenueSharePercent: string
+}
+
+export type PaymentMethodCode = 'CASH' | 'CARD' | 'WALLET' | 'AGGREGATOR'
+
+export type SalesByPaymentMethodRow = {
+  paymentMethod: PaymentMethodCode
+  orderCount: number
+  subtotal: string
+  taxAmount: string
+  totalAmount: string
+  totalSharePercent: string
+}
+
+
 

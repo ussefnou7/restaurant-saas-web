@@ -1,4 +1,4 @@
-import { ClipboardList, UtensilsCrossed } from 'lucide-react'
+import { BarChart3, ClipboardList, UtensilsCrossed } from 'lucide-react'
 import { ModuleHubPage } from '../../components/hub/ModuleHubPage'
 import { useTranslation } from '../../i18n/useTranslation'
 
@@ -22,6 +22,12 @@ export function SalesHubPage() {
           icon: ClipboardList,
           title: t('hubs.sales.operations.title'),
           to: '/orders',
+        },
+        {
+          id: 'reports',
+          icon: BarChart3,
+          title: t('reports.salesHub.title'),
+          to: '/sales/reports',
         },
       ]}
     />
