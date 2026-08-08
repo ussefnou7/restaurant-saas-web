@@ -11,7 +11,7 @@ import {
   ListPrimaryAction,
 } from '../../../../components/ui/ListPage'
 import { PageHeader } from '../../../../components/ui/PageHeader'
-import { EditActionButton, RowActionGroup } from '../../../../components/ui/RowActions'
+import { RowActionGroup } from '../../../../components/ui/RowActions'
 import { useNotify } from '../../../../components/ui/NotificationContext'
 import {
   DataTable,
@@ -56,8 +56,6 @@ export function TenantUomPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
-  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create')
-  const [editingUom, setEditingUom] = useState<UomResponse | null>(null)
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null)
   const [rowActionId, setRowActionId] = useState<number | null>(null)
   const [confirmLoading, setConfirmLoading] = useState(false)
@@ -81,29 +79,9 @@ export function TenantUomPage() {
     void loadUoms()
   }, [canView, loadUoms])
 
-  function handleOpenCreate() {
-    setEditingUom(null)
-    setModalMode('create')
-    setModalOpen(true)
-  }
-
-  function handleOpenEdit(uom: UomResponse) {
-    setEditingUom(uom)
-    setModalMode('edit')
-    setModalOpen(true)
-  }
-
-  function handleModalSuccess(saved: UomResponse) {
-    setUoms((prev) => {
-      const exists = prev.some((item) => item.id === saved.id)
-      if (exists) {
-        return prev.map((item) => (item.id === saved.id ? { ...item, ...saved } : item))
-      }
-      return [...prev, saved]
-    })
-    notify.success(
-      modalMode === 'create' ? 'تمت إضافة وحدة القياس بنجاح' : 'تم تحديث وحدة القياس بنجاح',
-    )
+  function handleAddSuccess(created: UomResponse) {
+    setUoms((prev) => [...prev, created])
+    notify.success('تمت إضافة وحدة القياس بنجاح')
   }
 
   async function handleConfirmAction() {
@@ -161,7 +139,7 @@ export function TenantUomPage() {
         title="وحدات القياس"
         description="تشمل الوحدات العامة المتاحة لك ووحداتك المخصصة"
         action={
-          <ListPrimaryAction label="+ إضافة وحدة مخصصة" onClick={handleOpenCreate} />
+          <ListPrimaryAction label="+ إضافة وحدة مخصصة" onClick={() => setModalOpen(true)} />
         }
       />
 
@@ -178,7 +156,7 @@ export function TenantUomPage() {
           emptyTitle="لا توجد وحدات قياس"
           emptyDescription="أضف وحدة مخصصة لتوسيع وحدات القياس المتاحة."
           emptyActionLabel="+ إضافة وحدة مخصصة"
-          onEmptyAction={handleOpenCreate}
+          onEmptyAction={() => setModalOpen(true)}
           showFilterEmpty={false}
           filterEmptyTitle="لا توجد نتائج"
           filterEmptyDescription="جرّب تعديل عوامل التصفية"
@@ -220,10 +198,6 @@ export function TenantUomPage() {
                       <StopPropagationCell>
                         {global ? null : (
                           <RowActionGroup>
-                            <EditActionButton
-                              onClick={() => handleOpenEdit(uom)}
-                              disabled={busy}
-                            />
                             {uom.active ? (
                               <button
                                 type="button"
@@ -264,11 +238,9 @@ export function TenantUomPage() {
 
       <TenantUomFormModal
         open={modalOpen}
-        mode={modalMode}
-        uom={editingUom}
         uoms={uoms}
         onClose={() => setModalOpen(false)}
-        onSuccess={handleModalSuccess}
+        onSuccess={handleAddSuccess}
       />
 
       <ConfirmModal
