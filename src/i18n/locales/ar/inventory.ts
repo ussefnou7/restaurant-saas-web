@@ -43,12 +43,11 @@ export const inventoryAr: TranslationDictionary = {
   'inventory.setup.cards.uoms.manage': 'إدارة وحدات القياس',
 
   'inventory.uom.modal.addTitle': 'إضافة وحدة مخصصة',
-  'inventory.uom.modal.editTitle': 'تعديل وحدة القياس',
   'inventory.uom.fields.code': 'كود الوحدة',
   'inventory.uom.fields.name': 'الاسم',
   'inventory.uom.fields.nameAr': 'الاسم بالعربية',
   'inventory.uom.fields.symbol': 'الرمز',
-  'inventory.uom.fields.type': 'النوع',
+  'inventory.uom.fields.typeFilter': 'تصفية الوحدة حسب النوع',
   'inventory.uom.fields.baseUom': 'الوحدة الأساسية',
   'inventory.uom.fields.baseUomSelect': 'اختر الوحدة الأساسية',
   'inventory.uom.fields.factorToBase': 'معامل التحويل',

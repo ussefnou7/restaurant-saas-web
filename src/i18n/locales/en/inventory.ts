@@ -43,12 +43,11 @@ export const inventoryEn: TranslationDictionary = {
   'inventory.setup.cards.uoms.manage': 'Manage Units',
 
   'inventory.uom.modal.addTitle': 'Add Custom Unit',
-  'inventory.uom.modal.editTitle': 'Edit Unit of Measure',
   'inventory.uom.fields.code': 'Unit Code',
   'inventory.uom.fields.name': 'Name',
   'inventory.uom.fields.nameAr': 'Arabic Name',
   'inventory.uom.fields.symbol': 'Symbol',
-  'inventory.uom.fields.type': 'Type',
+  'inventory.uom.fields.typeFilter': 'Filter base units by type',
   'inventory.uom.fields.baseUom': 'Base Unit',
   'inventory.uom.fields.baseUomSelect': 'Select base unit',
   'inventory.uom.fields.factorToBase': 'Conversion Factor',

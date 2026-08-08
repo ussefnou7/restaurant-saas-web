@@ -25,19 +25,8 @@ export type CreateTenantUomRequest = {
   name: string
   nameAr?: string | null
   symbol: string
-  type?: UomType
   baseUom: number
   factorToBase: number
-}
-
-export type UpdateTenantUomRequest = {
-  name: string
-  nameAr?: string | null
-  symbol: string
-  type?: UomType
-  baseUom: number
-  factorToBase: number
-  active?: boolean
 }
 
 export type MaterialCategoryResponse = {
