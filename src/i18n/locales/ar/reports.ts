@@ -121,12 +121,6 @@ export const reportsAr: TranslationDictionary = {
   'reports.salesByPaymentMethod': 'المبيعات حسب طريقة الدفع',
   'reports.salesByPaymentMethod.subtitle': 'التفصيل المالي وتوزيع الطلبات حسب طريقة الدفع لمطابقة الحسابات والرسوم.',
 
-  'reports.code.stockValuation': 'تقرير · INV-01',
-  'reports.code.lowStock': 'تقرير · INV-02',
-  'reports.code.shrinkage': 'تقرير · INV-03',
-  'reports.code.wasteAnalysis': 'تقرير · INV-04',
-  'reports.code.lossComparison': 'تقرير · INV-05',
-  'reports.code.purchasePriceDrift': 'تقرير · INV-06',
   'reports.code.salesOverTime': 'تقرير · SLS-01',
   'reports.code.salesByHour': 'تقرير · SLS-02',
   'reports.code.salesByProduct': 'تقرير · SLS-03',
@@ -181,5 +175,4 @@ export const reportsAr: TranslationDictionary = {
   'reports.empty.noDataTitle': 'لا توجد بيانات',
   'reports.empty.noDataSubtitle': 'لم يتم العثور على سجلات تطابق المحددات والأنماط المحددة.',
 }
-
 

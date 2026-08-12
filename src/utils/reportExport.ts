@@ -1,6 +1,11 @@
 import autoTable from 'jspdf-autotable'
 import { jsPDF } from 'jspdf'
-import type { ColumnMeta, ReportCellValue, ReportRow } from '../types/reports'
+import type { ReportCellValue, ReportRow } from '../types/reports'
+
+type ExportColumn = {
+  key: PropertyKey
+  labelKey: string
+}
 
 function serializeValue(value: ReportCellValue): string {
   if (value === null || value === undefined) return ''
@@ -22,7 +27,7 @@ function downloadBlob(blob: Blob, filename: string) {
 }
 
 export function exportCsv<T extends ReportRow>(
-  columns: ColumnMeta<T>[],
+  columns: ExportColumn[],
   rows: T[],
   filename: string,
 ): void {
@@ -37,7 +42,7 @@ export function exportCsv<T extends ReportRow>(
 }
 
 export function exportPdf<T extends ReportRow>(
-  columns: ColumnMeta<T>[],
+  columns: ExportColumn[],
   rows: T[],
   filename: string,
   title: string,

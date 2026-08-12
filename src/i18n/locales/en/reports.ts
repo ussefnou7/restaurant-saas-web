@@ -121,12 +121,6 @@ export const reportsEn: TranslationDictionary = {
   'reports.salesByPaymentMethod': 'Sales By Payment Method',
   'reports.salesByPaymentMethod.subtitle': 'Financial breakdown and order count distribution by payment method.',
 
-  'reports.code.stockValuation': 'REPORT · INV-01',
-  'reports.code.lowStock': 'REPORT · INV-02',
-  'reports.code.shrinkage': 'REPORT · INV-03',
-  'reports.code.wasteAnalysis': 'REPORT · INV-04',
-  'reports.code.lossComparison': 'REPORT · INV-05',
-  'reports.code.purchasePriceDrift': 'REPORT · INV-06',
   'reports.code.salesOverTime': 'REPORT · SLS-01',
   'reports.code.salesByHour': 'REPORT · SLS-02',
   'reports.code.salesByProduct': 'REPORT · SLS-03',
@@ -181,5 +175,4 @@ export const reportsEn: TranslationDictionary = {
   'reports.empty.noDataTitle': 'No report data',
   'reports.empty.noDataSubtitle': 'No records found matching the specified parameters.',
 }
-
 

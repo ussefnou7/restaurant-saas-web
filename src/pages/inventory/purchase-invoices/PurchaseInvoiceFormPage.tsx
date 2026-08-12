@@ -1541,7 +1541,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
         }
         confirmLabel={locale === 'ar' ? 'تجاهل التغييرات' : 'Discard Changes'}
         cancelLabel={locale === 'ar' ? 'متابعة التعديل' : 'Keep Editing'}
-        confirmVariant="danger"
+        confirmVariant="dangerConfirm"
         onClose={() => {
           setDiscardModalOpen(false)
           setPendingNavigation(null)

@@ -32,7 +32,7 @@ export function ReportFilterBar({
         return (
           <SelectFilter
             key={filter}
-            value={values.branchId}
+            value={values.branchId ?? ''}
             onChange={(branchId) =>
               onChange({
                 ...values,
@@ -56,7 +56,7 @@ export function ReportFilterBar({
         return (
           <SelectFilter
             key={filter}
-            value={values.warehouseId}
+            value={values.warehouseId ?? ''}
             onChange={(warehouseId) => onChange({ ...values, warehouseId })}
             options={
               values.branchId
@@ -78,7 +78,7 @@ export function ReportFilterBar({
         return (
           <SelectFilter
             key={filter}
-            value={values.categoryId}
+            value={values.categoryId ?? ''}
             onChange={(categoryId) => onChange({ ...values, categoryId })}
             options={[
               { value: '', label: t('reports.filters.allCategories') },

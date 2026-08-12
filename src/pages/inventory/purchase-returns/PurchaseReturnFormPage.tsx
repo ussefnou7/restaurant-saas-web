@@ -286,7 +286,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
     if (!purchaseReturn) return false
     const initial = mapReturnToHeader(purchaseReturn)
     return (
-      header.purchaseInvoiceId !== initial.purchaseInvoiceId ||
+      header.originalInvoiceId !== initial.originalInvoiceId ||
       header.returnDate !== initial.returnDate ||
       header.reason !== initial.reason ||
       header.notes !== initial.notes
@@ -1467,7 +1467,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
         }
         confirmLabel={locale === 'ar' ? 'تجاهل التغييرات' : 'Discard Changes'}
         cancelLabel={locale === 'ar' ? 'متابعة التعديل' : 'Keep Editing'}
-        confirmVariant="danger"
+        confirmVariant="dangerConfirm"
         onClose={() => {
           setDiscardModalOpen(false)
           setPendingNavigation(null)
