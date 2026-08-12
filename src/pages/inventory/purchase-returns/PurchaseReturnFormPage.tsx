@@ -22,6 +22,7 @@ import { ListPage } from '../../../components/ui/ListPage'
 import { IconActionButton } from '../../../components/ui/RowActions'
 import { useNotify } from '../../../components/ui/NotificationContext'
 import { DetailField } from '../../../components/fields'
+import { DocumentHeader, DocumentLinesCard } from '../../../components/layout/DocumentLayout'
 import { PurchaseInvoiceFormStatusPill } from '../purchase-invoices/PurchaseInvoiceFormStatusPill'
 import { useTranslation } from '../../../i18n/useTranslation'
 import type { Locale } from '../../../i18n/types'
@@ -889,15 +890,12 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
             dir="rtl"
             noValidate
           >
-            <section className="pi-form-header-card" dir="rtl">
-              <div className="pi-form-header-card__topbar">
-                <div className="pi-form-header-card__topbar-start">
-                  <h1 className="pi-form-topbar__title">{pageTitle}</h1>
-                  <PurchaseInvoiceFormStatusPill status={displayStatus} />
-                </div>
-                <div className="pi-form-header-card__topbar-end">
-                  {!loading && showFormActions ? (
-                    <div className="pi-form-topbar__actions-bar">
+            <DocumentHeader
+              title={pageTitle}
+              statusBadge={<PurchaseInvoiceFormStatusPill status={displayStatus} />}
+              actions={
+                !loading && showFormActions ? (
+                  <>
                       {canManage && persistedId && displayStatus === 'DRAFT' ? (
                         <Button
                           variant="primary"
@@ -1059,21 +1057,17 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                           )}
                         </Button>
                       ) : null}
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-
-              <div className="pi-form-header-card__divider" />
-
-              {persistedId && purchaseReturn?.returnNumber ? (
-            <div className="pi-form-header-card__invoice-line">
+                  </>
+                ) : null
+              }
+              reference={
+                persistedId && purchaseReturn?.returnNumber ? (
                   <span className="pi-form-header-card__invoice-number" dir="ltr">
                     {purchaseReturn.returnNumber}
                   </span>
-                </div>
-              ) : null}
-
+                ) : null
+              }
+            >
               <div className="pi-form-header-grid">
                 {headerInputsDisabled ? (
                   <>
@@ -1211,13 +1205,9 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                   </div>
                 ) : null}
               </div>
-            </section>
+            </DocumentHeader>
 
-            <section className="pi-form-lines-card">
-                <div className="pi-form-lines__header">
-                  <h2 className="pi-form-lines__title">{t('inventory.purchaseReturn.lines.title')}</h2>
-                </div>
-
+            <DocumentLinesCard title={t('inventory.purchaseReturn.lines.title')}>
                 {(purchaseReturn?.lines.length ?? 0) === 0 && !addingLine ? (
                   <div className="pi-form-lines__empty">
                     <p className="pi-form-lines__empty-title">
@@ -1420,7 +1410,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                     </button>
                   </div>
                 ) : null}
-              </section>
+            </DocumentLinesCard>
           </form>
         </>
       ) : null}

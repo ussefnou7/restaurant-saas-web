@@ -23,6 +23,7 @@ import { Modal } from '../../../components/ui/Modal'
 import { IconActionButton } from '../../../components/ui/RowActions'
 import { useNotify } from '../../../components/ui/NotificationContext'
 import { DetailField, FormField, FormTextarea } from '../../../components/fields'
+import { DocumentHeader, DocumentLinesCard } from '../../../components/layout/DocumentLayout'
 import { useTranslation } from '../../../i18n/useTranslation'
 import * as inventoryService from '../../../services/inventoryService'
 import * as wasteDocumentService from '../../../services/wasteDocumentService'
@@ -699,17 +700,14 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
             dir="rtl"
             noValidate
           >
-            <section className="pi-form-header-card" dir="rtl">
-              <div className="pi-form-header-card__topbar">
-                <div className="pi-form-header-card__topbar-start">
-                  <h1 className="pi-form-topbar__title">
-                    {isCreate ? t('inventory.waste.form.createTitle') : t('inventory.waste.form.viewTitle')}
-                  </h1>
-                  <WasteDocumentStatusPill status={displayStatus} />
-                </div>
-                <div className="pi-form-header-card__topbar-end">
-                  {showFormActions ? (
-                    <div className="pi-form-topbar__actions-bar">
+            <DocumentHeader
+              title={
+                isCreate ? t('inventory.waste.form.createTitle') : t('inventory.waste.form.viewTitle')
+              }
+              statusBadge={<WasteDocumentStatusPill status={displayStatus} />}
+              actions={
+                showFormActions ? (
+                  <>
                       {canManage && persistedId && isDraft ? (
                         <Button
                           variant="primary"
@@ -836,21 +834,17 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                           )}
                         </Button>
                       ) : null}
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-
-              <div className="pi-form-header-card__divider" />
-
-              {persistedId && document?.code ? (
-                <div className="pi-form-header-card__invoice-line">
+                  </>
+                ) : null
+              }
+              reference={
+                persistedId && document?.code ? (
                   <span className="pi-form-header-card__invoice-number" dir="ltr">
                     {document.code}
                   </span>
-                </div>
-              ) : null}
-
+                ) : null
+              }
+            >
               <div className="pi-form-header-grid">
                 {headerInputsDisabled ? (
                   <>
@@ -956,12 +950,13 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                   </>
                 )}
               </div>
-            </section>
+            </DocumentHeader>
 
-            <section className="pi-form-lines-card" dir="rtl">
-              <div className="pi-form-lines__header">
-                <h2 className="pi-form-lines__title">{t('inventory.waste.lines.title')}</h2>
-                {showDraftLineActions && !addingLine && editingLineId == null ? (
+            <DocumentLinesCard
+              title={t('inventory.waste.lines.title')}
+              dir="rtl"
+              actions={
+                showDraftLineActions && !addingLine && editingLineId == null ? (
                   <button
                     type="button"
                     className="pi-form-lines__add-btn"
@@ -971,9 +966,9 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                     <Plus size={16} aria-hidden="true" />
                     {t('inventory.waste.lines.add')}
                   </button>
-                ) : null}
-              </div>
-
+                ) : null
+              }
+            >
               {fieldErrors.lineError ? (
                 <p className="pi-form-lines__inline-error">{fieldErrors.lineError}</p>
               ) : null}
@@ -1100,7 +1095,7 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
               {isComplete && !showStockWarnings ? (
                 <p className="waste-document-post-note">{t('inventory.waste.postNote')}</p>
               ) : null}
-            </section>
+            </DocumentLinesCard>
           </form>
         </>
       ) : null}

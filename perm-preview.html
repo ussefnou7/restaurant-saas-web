@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>perm preview</title>
+    <link rel="stylesheet" href="/src/App.css" />
+    <link rel="stylesheet" href="/src/styles/list-system.css" />
+    <link rel="stylesheet" href="/src/styles/entity-detail-page.css" />
+    <style>
+      body { margin: 0; padding: 24px; background: #f8faf9; font-family: system-ui, sans-serif; }
+      .stage { max-width: 1000px; margin: 0 auto; padding: 18px; background: #fff; border: 1px solid #e2e5e9; border-radius: 12px; }
+    </style>
+  </head>
+  <body>
+    <div class="stage">
+      <div class="user-permissions">
+        <section class="perm-summary">
+          <div class="perm-summary__meter">
+            <span class="perm-summary__count">11 صلاحية مُفعّلة</span>
+            <span class="perm-summary__scope">من 30 · 5 وحدات</span>
+            <span class="perm-summary__bar"><span class="perm-summary__bar-fill" style="inline-size:37%"></span></span>
+            <button type="button" class="perm-summary__clear">مسح الكل</button>
+          </div>
+          <ul class="perm-summary__groups">
+            <li class="perm-summary__group">
+              <button type="button" class="perm-summary__group-label"><span>الورديات</span><span class="perm-summary__group-count">4/4</span></button>
+              <ul class="perm-summary__chips">
+                <li><span class="perm-chip"><span class="perm-chip__name">عرض الورديات</span><button class="perm-chip__remove">✕</button></span></li>
+                <li><span class="perm-chip"><span class="perm-chip__name">فتح الورديات</span><button class="perm-chip__remove">✕</button></span></li>
+                <li><span class="perm-chip"><span class="perm-chip__name">إغلاق الورديات</span><button class="perm-chip__remove">✕</button></span></li>
+                <li><span class="perm-chip"><span class="perm-chip__name">الوصول للورديات</span><button class="perm-chip__remove">✕</button></span></li>
+              </ul>
+            </li>
+            <li class="perm-summary__group">
+              <button type="button" class="perm-summary__group-label"><span>الطلبات</span><span class="perm-summary__group-count">2/6</span></button>
+              <ul class="perm-summary__chips">
+                <li><span class="perm-chip"><span class="perm-chip__name">الوصول للطلبات</span><button class="perm-chip__remove">✕</button></span></li>
+                <li><span class="perm-chip"><span class="perm-chip__name">إنشاء الطلبات</span><button class="perm-chip__remove">✕</button></span></li>
+              </ul>
+            </li>
+          </ul>
+          <button type="button" class="perm-summary__more">عرض 5 صلاحيات أخرى في 3 وحدات
+            <svg class="perm-summary__more-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+        </section>
+
+        <div class="perm-workspace">
+          <nav class="perm-modules">
+            <button type="button" class="perm-module-nav perm-module-nav--active">
+              <span class="perm-module-nav__icon perm-module-nav__icon--on"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h6"/></svg></span>
+              <span class="perm-module-nav__label">الطلبات</span>
+              <span class="perm-module-nav__count perm-module-nav__count--on">2/6</span>
+            </button>
+            <button type="button" class="perm-module-nav">
+              <span class="perm-module-nav__icon perm-module-nav__icon--on"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+              <span class="perm-module-nav__label">الورديات</span>
+              <span class="perm-module-nav__count perm-module-nav__count--on">4/4</span>
+            </button>
+            <button type="button" class="perm-module-nav">
+              <span class="perm-module-nav__icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 12h16M12 4v16"/></svg></span>
+              <span class="perm-module-nav__label">الطاولات</span>
+              <span class="perm-module-nav__count">0/2</span>
+            </button>
+            <button type="button" class="perm-module-nav">
+              <span class="perm-module-nav__icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/></svg></span>
+              <span class="perm-module-nav__label">التقارير</span>
+              <span class="perm-module-nav__count">0/4</span>
+            </button>
+            <button type="button" class="perm-module-nav">
+              <span class="perm-module-nav__icon perm-module-nav__icon--on"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7l-8-4-8 4 8 4 8-4zM4 7v10l8 4 8-4V7"/></svg></span>
+              <span class="perm-module-nav__label">المنتجات</span>
+              <span class="perm-module-nav__count perm-module-nav__count--on">2/3</span>
+            </button>
+            <button type="button" class="perm-module-nav">
+              <span class="perm-module-nav__icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 8a4 4 0 10-4 4l-6 6v3h3l1-1v-2h2v-2h2l1-1a4 4 0 001-4z"/></svg></span>
+              <span class="perm-module-nav__label">الموارد البشرية</span>
+              <span class="perm-module-nav__count">0/6</span>
+            </button>
+          </nav>
+
+          <div class="perm-detail">
+            <div class="perm-detail__search">
+              <div class="search-input">
+                <svg class="search-input__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+                <input type="search" class="search-input__field" placeholder="ابحث باسم الصلاحية أو الوصف…" />
+              </div>
+            </div>
+
+            <section class="perm-group">
+              <header class="perm-group__head">
+                <h4 class="perm-group__title">الطلبات</h4>
+                <span class="perm-group__hint">2/6</span>
+                <button type="button" class="perm-group__select-all">تحديد الكل</button>
+              </header>
+              <ul class="perm-group__list">
+                <li>
+                  <label class="perm-row perm-row--on">
+                    <input type="checkbox" class="perm-row__switch" checked />
+                    <span class="perm-row__body">
+                      <span class="perm-row__head"><span class="perm-row__name">الوصول للطلبات</span><span class="perm-row__level perm-row__level--access">وصول</span></span>
+                      <span class="perm-row__description">الدخول إلى وحدة الطلبات</span>
+                    </span>
+                  </label>
+                </li>
+                <li>
+                  <label class="perm-row perm-row--on">
+                    <input type="checkbox" class="perm-row__switch" checked />
+                    <span class="perm-row__body">
+                      <span class="perm-row__head"><span class="perm-row__name">إنشاء الطلبات</span><span class="perm-row__level perm-row__level--manage">إدارة</span></span>
+                      <span class="perm-row__description">إنشاء طلبات جديدة</span>
+                    </span>
+                  </label>
+                </li>
+                <li>
+                  <label class="perm-row">
+                    <input type="checkbox" class="perm-row__switch" />
+                    <span class="perm-row__body">
+                      <span class="perm-row__head"><span class="perm-row__name">عرض الطلبات</span><span class="perm-row__level perm-row__level--view">عرض</span></span>
+                      <span class="perm-row__description">عرض الطلبات</span>
+                    </span>
+                  </label>
+                </li>
+                <li>
+                  <label class="perm-row">
+                    <input type="checkbox" class="perm-row__switch" />
+                    <span class="perm-row__body">
+                      <span class="perm-row__head"><span class="perm-row__name">إلغاء الطلبات</span><span class="perm-row__level perm-row__level--manage">إدارة</span></span>
+                      <span class="perm-row__description">إلغاء الطلبات</span>
+                    </span>
+                  </label>
+                </li>
+              </ul>
+            </section>
+          </div>
+        </div>
+
+        <footer class="user-permissions__footer">
+          <div class="user-permissions__footer-actions">
+            <button class="btn btn-secondary">إعادة تعيين</button>
+            <button class="btn btn-primary">حفظ التغييرات</button>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

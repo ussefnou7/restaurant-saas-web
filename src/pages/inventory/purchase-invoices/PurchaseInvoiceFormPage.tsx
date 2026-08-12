@@ -10,6 +10,7 @@ import { IconActionButton } from '../../../components/ui/RowActions'
 import { useNotify } from '../../../components/ui/NotificationContext'
 import { PurchaseDocumentReasonModal } from '../../../components/inventory/PurchaseDocumentReasonModal'
 import { DetailField } from '../../../components/fields'
+import { DocumentHeader, DocumentLinesCard } from '../../../components/layout/DocumentLayout'
 import { PurchaseInvoiceFormStatusPill } from './PurchaseInvoiceFormStatusPill'
 import { useTranslation } from '../../../i18n/useTranslation'
 import * as inventoryService from '../../../services/inventoryService'
@@ -883,15 +884,12 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
             dir="rtl"
             noValidate
           >
-            <section className="pi-form-header-card" dir="rtl">
-              <div className="pi-form-header-card__topbar">
-                <div className="pi-form-header-card__topbar-start">
-                  <h1 className="pi-form-topbar__title">{pageTitle}</h1>
-                  <PurchaseInvoiceFormStatusPill status={displayStatus} />
-                </div>
-                <div className="pi-form-header-card__topbar-end">
-                  {!loading && showFormActions ? (
-                    <div className="pi-form-topbar__actions-bar">
+            <DocumentHeader
+              title={pageTitle}
+              statusBadge={<PurchaseInvoiceFormStatusPill status={displayStatus} />}
+              actions={
+                !loading && showFormActions ? (
+                  <>
                       {canManage && persistedId && displayStatus === 'DRAFT' ? (
                         <Button
                           variant="primary"
@@ -1053,21 +1051,17 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                           )}
                         </Button>
                       ) : null}
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-
-              <div className="pi-form-header-card__divider" />
-
-              {persistedId && header.invoiceNumber ? (
-                <div className="pi-form-header-card__invoice-line">
+                  </>
+                ) : null
+              }
+              reference={
+                persistedId && header.invoiceNumber ? (
                   <span className="pi-form-header-card__invoice-number" dir="ltr">
                     {header.invoiceNumber}
                   </span>
-                </div>
-              ) : null}
-
+                ) : null
+              }
+            >
               <div className="pi-form-header-grid">
                 {headerInputsDisabled ? (
                   <>
@@ -1278,13 +1272,9 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                     </div>
                   </div>
                 ) : null}
-            </section>
+            </DocumentHeader>
 
-            <section className="pi-form-lines-card">
-                <div className="pi-form-lines__header">
-                  <h2 className="pi-form-lines__title">{t('inventory.purchase.lines.title')}</h2>
-                </div>
-
+            <DocumentLinesCard title={t('inventory.purchase.lines.title')}>
                 {(invoice?.lines.length ?? 0) === 0 && !addingLine ? (
                   <div className="pi-form-lines__empty">
                     <Receipt className="pi-form-lines__empty-icon" size={40} strokeWidth={1.25} aria-hidden="true" />
@@ -1442,7 +1432,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                     </button>
                   </div>
                 ) : null}
-              </section>
+            </DocumentLinesCard>
           </form>
         </>
       ) : null}
