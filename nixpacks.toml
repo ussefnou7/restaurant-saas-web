@@ -1,11 +1,11 @@
 [phases.setup]
-nixPkgs = ["nodejs_20"]
+nixPkgs = ["nodejs_22"]
 
 [phases.install]
 cmds = ["npm ci --ignore-scripts"]
 
-[phases.build]
-cmds = ["npm run build"]
+[phases.install]
+cmds = ["npm ci --ignore-scripts --include=optional"]
 
 [start]
 cmd = "npm run start"
