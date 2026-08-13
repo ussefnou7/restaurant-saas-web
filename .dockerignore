@@ -1,0 +1,38 @@
+# Load-bearing, not hygiene: without this, `COPY . .` would overlay the host's
+# node_modules onto the ones npm ci installed inside the image, reintroducing
+# the native-binding mismatch this Dockerfile exists to avoid.
+node_modules
+
+# Stale host build output must not shadow the one produced in the image.
+dist
+dist-ssr
+
+.git
+.gitignore
+.githooks
+
+# Env files are excluded so the only source of VITE_API_BASE_URL is the
+# --build-arg. A copied .env would be picked up by Vite and could silently win.
+.env
+.env.*
+
+# Docker's own files are not build inputs.
+Dockerfile
+.dockerignore
+
+# Editor / local tooling
+.vscode
+.idea
+.claude
+.codex
+.agents
+.DS_Store
+
+# Logs
+*.log
+logs
+npm-debug.log*
+
+# Docs and scratch files the build does not read.
+README.md
+perm-preview.html
