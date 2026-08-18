@@ -10,29 +10,34 @@ export function HrHubPage() {
       className="hr-hub-page"
       title={t('hubs.hr.title')}
       subtitle={t('hubs.hr.subtitle')}
+      cardsLabel={t('hubs.section.sections')}
       cards={[
         {
           id: 'employees',
           icon: UserRound,
           title: t('hubs.hr.employees.title'),
+          description: t('hubs.hr.employees.description'),
           to: '/hr/employees',
         },
         {
           id: 'jobs',
           icon: Briefcase,
           title: t('hubs.hr.jobs.title'),
+          description: t('hubs.hr.jobs.description'),
           to: '/hr/jobs',
         },
         {
           id: 'payroll',
           icon: Banknote,
           title: t('hubs.hr.payroll.title'),
+          description: t('hubs.hr.payroll.description'),
           to: '/hr/employees',
         },
         {
           id: 'leaves',
           icon: CalendarDays,
           title: t('hubs.hr.leaves.title'),
+          description: t('hubs.hr.leaves.description'),
           to: '/hr/leave-requests',
         },
       ]}

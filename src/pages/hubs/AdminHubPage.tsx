@@ -14,17 +14,20 @@ export function AdminHubPage() {
       className="admin-hub-page"
       title={t('hubs.admin.title')}
       subtitle={t('hubs.admin.subtitle')}
+      cardsLabel={t('hubs.section.sections')}
       cards={[
         {
           id: 'branches',
           icon: Store,
           title: t('hubs.admin.branches.title'),
+          description: t('hubs.admin.branches.description'),
           to: '/branches',
         },
         {
           id: 'users',
           icon: Users,
           title: t('hubs.admin.users.title'),
+          description: t('hubs.admin.users.description'),
           to: '/users',
         },
         ...(showDevices
@@ -33,6 +36,7 @@ export function AdminHubPage() {
                 id: 'devices',
                 icon: MonitorSmartphone,
                 title: t('hubs.admin.devices.title'),
+                description: t('hubs.admin.devices.description'),
                 to: '/devices',
               },
             ]
@@ -43,6 +47,7 @@ export function AdminHubPage() {
                 id: 'tables',
                 icon: MapPinned,
                 title: t('hubs.admin.tables.title'),
+                description: t('hubs.admin.tables.description'),
                 to: '/tables',
               },
             ]
@@ -51,6 +56,7 @@ export function AdminHubPage() {
           id: 'settings',
           icon: Settings,
           title: t('hubs.admin.settings.title'),
+          description: t('hubs.admin.settings.description'),
           to: '/settings',
         },
       ]}
