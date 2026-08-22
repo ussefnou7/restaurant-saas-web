@@ -7,6 +7,7 @@ import {
   Th,
 } from '../../components/ui/Table'
 import { useTranslation } from '../../i18n/useTranslation'
+import { useUomLookup } from '../../hooks/useUomLookup'
 import type { RecipeItemView } from '../../types/menu'
 
 interface RecipeIngredientsReadOnlyProps {
@@ -16,6 +17,7 @@ interface RecipeIngredientsReadOnlyProps {
 
 export function RecipeIngredientsReadOnly({ items, emptyMessage }: RecipeIngredientsReadOnlyProps) {
   const { t } = useTranslation()
+  const { uomLabel, uomSymbol } = useUomLookup()
 
   if (items.length === 0) {
     return <p className="recipe-manage-modal__ingredients-empty">{emptyMessage}</p>
@@ -36,7 +38,13 @@ export function RecipeIngredientsReadOnly({ items, emptyMessage }: RecipeIngredi
             <TableRow key={`${item.materialId}-${item.uomId}`}>
               <Td>{item.materialName}</Td>
               <Td dir="ltr" className="table-cell--numeric">{item.quantity}</Td>
-              <Td>{item.uomName}</Td>
+              <Td>
+                {uomSymbol(item.uomId) !== '—'
+                  ? uomSymbol(item.uomId)
+                  : uomLabel(item.uomId) !== '—'
+                    ? uomLabel(item.uomId)
+                    : item.uomName || t('common.empty.dash')}
+              </Td>
             </TableRow>
           ))}
         </TableBody>

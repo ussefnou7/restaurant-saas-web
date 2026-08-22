@@ -17,6 +17,7 @@ import {
   Th,
 } from '../../../components/ui/Table'
 import { useTranslation } from '../../../i18n/useTranslation'
+import { useUomLookup } from '../../../hooks/useUomLookup'
 import * as orderConsumptionService from '../../../services/orderConsumptionService'
 import * as userService from '../../../services/userService'
 import type {
@@ -56,6 +57,7 @@ export function OrderConsumptionDetailPage() {
   const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const notify = useNotify()
+  const { uomLabel, uomSymbol } = useUomLookup()
   const canManage = canManageInventoryStock()
   const [doc, setDoc] = useState<OrderConsumptionDocDetailResponse | null>(null)
   const [users, setUsers] = useState<UserResponse[]>([])
@@ -80,6 +82,26 @@ export function OrderConsumptionDetailPage() {
   const userNameById = useMemo(() => {
     return new Map(users.map((user) => [user.id, user.fullName]))
   }, [users])
+
+  function getMaterialUom(item: OrderConsumptionDocDetailResponse['materials'][number]): string | null {
+    const symbol = uomSymbol(item.uomId)
+    if (symbol !== '—') return symbol
+
+    const label = uomLabel(item.uomId)
+    if (label !== '—') return label
+
+    return item.uomSymbol?.trim() || null
+  }
+
+  function getSummaryUom(summary: OrderConsumptionMaterialsSummaryResponse['materials'][number]): string {
+    const symbol = uomSymbol(summary.uomId)
+    if (symbol !== '—') return symbol
+
+    const label = uomLabel(summary.uomId)
+    if (label !== '—') return label
+
+    return summary.uom
+  }
 
   const loadDoc = useCallback(async () => {
     if (!id) return
@@ -280,17 +302,20 @@ export function OrderConsumptionDetailPage() {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {blockedMaterials.map((item) => (
-                        <TableRow key={item.materialId}>
-                          <Td column="entity">{item.materialName}</Td>
-                          <Td dir="ltr">
-                            {formatQuantityWithUnit(item.requiredQuantity, item.uomSymbol)}
-                          </Td>
-                          <Td dir="ltr">
-                            {formatQuantityWithUnit(item.availableQuantity, item.uomSymbol)}
-                          </Td>
-                        </TableRow>
-                      ))}
+                      {blockedMaterials.map((item) => {
+                        const materialUom = getMaterialUom(item)
+                        return (
+                          <TableRow key={item.materialId}>
+                            <Td column="entity">{item.materialName}</Td>
+                            <Td dir="ltr">
+                              {formatQuantityWithUnit(item.requiredQuantity, materialUom)}
+                            </Td>
+                            <Td dir="ltr">
+                              {formatQuantityWithUnit(item.availableQuantity, materialUom)}
+                            </Td>
+                          </TableRow>
+                        )
+                      })}
                     </TableBody>
                   </DataTable>
                 </div>
@@ -355,7 +380,7 @@ export function OrderConsumptionDetailPage() {
                       <TableRow key={`${summary.materialId}-${summary.uom}`}>
                         <Td column="entity">{summary.materialName}</Td>
                         <Td dir="ltr">{formatDecimalString(summary.totalQtyConsumed)}</Td>
-                        <Td>{summary.uom}</Td>
+                        <Td>{getSummaryUom(summary)}</Td>
                         <Td dir="ltr">{summary.orderCount}</Td>
                       </TableRow>
                     ))}

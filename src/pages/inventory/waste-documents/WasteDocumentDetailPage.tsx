@@ -25,6 +25,7 @@ import { useNotify } from '../../../components/ui/NotificationContext'
 import { DetailField, FormField, FormTextarea } from '../../../components/fields'
 import { DocumentHeader, DocumentLinesCard } from '../../../components/layout/DocumentLayout'
 import { useTranslation } from '../../../i18n/useTranslation'
+import { useUomLookup } from '../../../hooks/useUomLookup'
 import * as inventoryService from '../../../services/inventoryService'
 import * as wasteDocumentService from '../../../services/wasteDocumentService'
 import type { MaterialResponse, UomResponse, WarehouseResponse } from '../../../types/inventory'
@@ -136,6 +137,7 @@ function PiFormField({ label, htmlFor, required, error, children }: PiFormFieldP
 function WasteDocumentForm({ mode }: { mode: FormMode }) {
   const { id } = useParams<{ id: string }>()
   const { t, locale } = useTranslation()
+  const { uomLabel, uomSymbol } = useUomLookup()
   const navigate = useNavigate()
   const notify = useNotify()
   const canView = canViewInventoryStock()
@@ -1061,7 +1063,13 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                           <td className="pi-form-lines-table__td pi-form-lines-table__td--num" dir="ltr">
                             {line.quantity}
                           </td>
-                          <td className="pi-form-lines-table__td">{line.uomSymbol}</td>
+                          <td className="pi-form-lines-table__td">
+                            {uomSymbol(line.uomId) !== '—'
+                              ? uomSymbol(line.uomId)
+                              : uomLabel(line.uomId) !== '—'
+                                ? uomLabel(line.uomId)
+                                : line.uomSymbol || t('common.empty.dash')}
+                          </td>
                           <td className="pi-form-lines-table__td">{line.notes?.trim() || '—'}</td>
                           {showDraftLineActions ? (
                             <td className="pi-form-lines-table__td pi-form-lines-table__td--actions">

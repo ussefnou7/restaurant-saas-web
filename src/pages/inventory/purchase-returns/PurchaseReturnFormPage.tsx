@@ -25,9 +25,9 @@ import { DetailField } from '../../../components/fields'
 import { DocumentHeader, DocumentLinesCard } from '../../../components/layout/DocumentLayout'
 import { PurchaseInvoiceFormStatusPill } from '../purchase-invoices/PurchaseInvoiceFormStatusPill'
 import { useTranslation } from '../../../i18n/useTranslation'
+import { useUomLookup } from '../../../hooks/useUomLookup'
 import type { Locale } from '../../../i18n/types'
 import * as purchaseInvoiceService from '../../../services/purchaseInvoiceService'
-import * as inventoryService from '../../../services/inventoryService'
 import * as purchaseReturnService from '../../../services/purchaseReturnService'
 import type { PurchaseInvoiceResponse } from '../../../types/purchaseInvoice'
 import type { UomResponse } from '../../../types/inventory'
@@ -239,6 +239,7 @@ function PrFormField({ label, htmlFor, required, error, children }: PrFormFieldP
 
 function PurchaseReturnForm({ mode }: { mode: FormMode }) {
   const { t, locale } = useTranslation()
+  const { uoms: cachedUoms } = useUomLookup()
   const navigate = useNavigate()
   const notify = useNotify()
   const { id } = useParams<{ id: string }>()
@@ -250,7 +251,9 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
   const [purchaseReturn, setPurchaseReturn] = useState<PurchaseReturnResponse | null>(null)
   const [header, setHeader] = useState<HeaderFormState>(emptyHeader)
   const [postedInvoices, setPostedInvoices] = useState<PurchaseInvoiceResponse[]>([])
-  const [uoms, setUoms] = useState<UomResponse[]>([])
+  // Display resolution uses the full cached set (D111): a line referencing a
+  // since-deactivated unit still has to render its name.
+  const uoms = cachedUoms as unknown as UomResponse[]
   const [returnableLines, setReturnableLines] = useState<ReturnableLineResponse[]>([])
   const [lookupsLoading, setLookupsLoading] = useState(false)
   const [returnableLoading, setReturnableLoading] = useState(false)
@@ -333,15 +336,10 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
   const loadPostedInvoices = useCallback(async () => {
     setLookupsLoading(true)
     try {
-      const [invoiceData, uomData] = await Promise.all([
-        purchaseInvoiceService.getPurchaseInvoices({ status: 'POSTED' }),
-        inventoryService.getUoms(true),
-      ])
+      const invoiceData = await purchaseInvoiceService.getPurchaseInvoices({ status: 'POSTED' })
       setPostedInvoices(invoiceData)
-      setUoms(uomData)
     } catch {
       setPostedInvoices([])
-      setUoms([])
     } finally {
       setLookupsLoading(false)
     }

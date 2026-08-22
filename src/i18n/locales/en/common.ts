@@ -32,6 +32,7 @@ export const commonEn: TranslationDictionary = {
   'common.create': 'Create',
   'common.update': 'Update',
   'common.search': 'Search',
+  'common.select': 'Select…',
   'common.loading': 'Loading…',
   'common.deleting': 'Deleting…',
   'common.confirm': 'Confirm',

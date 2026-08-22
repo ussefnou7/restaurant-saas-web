@@ -14,14 +14,16 @@ export type OrderConsumptionFailureReason = 'INSUFFICIENT_STOCK' | 'TECHNICAL_FA
 
 /**
  * One (doc, material) outcome row. requiredQuantity and availableQuantity are both in
- * uomId/uomSymbol — the material's display unit.
+ * uomId — the material's display unit. uomSymbol is a temporary backend
+ * compatibility fallback while the frontend resolves display labels from
+ * the app-level UOM cache.
  */
 export interface OrderConsumptionDocMaterialResponse {
   materialId: number
   materialName: string
   requiredQuantity: string
   uomId: number
-  uomSymbol: string
+  uomSymbol?: string | null
   consumed: boolean
   availableQuantity: string | null
   failureReason: OrderConsumptionFailureReason | null
@@ -55,6 +57,7 @@ export interface OrderConsumptionMaterialsSummaryResponse {
 export interface OrderConsumptionMaterialSummaryResponse {
   materialId: number
   materialName: string
+  uomId?: number | null
   uom: string
   totalQtyConsumed: string
   orderCount: number

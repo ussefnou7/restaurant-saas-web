@@ -19,6 +19,7 @@ import {
 } from '../../../components/ui/Table'
 import { FieldGrid, FormField, FormInput, FormSelect, FormTextarea } from '../../../components/fields'
 import { useTranslation } from '../../../i18n/useTranslation'
+import { useUomLookup } from '../../../hooks/useUomLookup'
 import type { Locale } from '../../../i18n/types'
 import * as inventoryService from '../../../services/inventoryService'
 import * as physicalCountService from '../../../services/physicalCountService'
@@ -54,6 +55,7 @@ export function PhysicalCountCreatePage() {
   const { t, locale } = useTranslation()
   const navigate = useNavigate()
   const notify = useNotify()
+  const { uomLabel, uomSymbol } = useUomLookup()
 
   const [warehouses, setWarehouses] = useState<WarehouseResponse[]>([])
   const [materials, setMaterials] = useState<MaterialResponse[]>([])
@@ -86,6 +88,21 @@ export function PhysicalCountCreatePage() {
     () => materials.filter((material) => selectedMaterialIds.includes(material.id)),
     [materials, selectedMaterialIds],
   )
+
+  function getSelectedMaterialUomDisplay(material: MaterialResponse) {
+    const uomId = material.stockUomId ?? material.displayUomId ?? material.defaultUomId
+    if (uomId) {
+      const symbol = uomSymbol(uomId)
+      if (symbol !== '—') return getPhysicalCountUomDisplay(symbol, locale, t)
+
+      const label = uomLabel(uomId)
+      if (label !== '—') {
+        return { label, dir: locale === 'ar' ? undefined : ('ltr' as const) }
+      }
+    }
+
+    return getPhysicalCountUomDisplay(material.stockUomSymbol ?? material.stockUomCode ?? '', locale, t)
+  }
 
   function handleMaterialsSelected(ids: number[]) {
     setSelectedMaterialIds((current) => Array.from(new Set([...current, ...ids])))
@@ -207,30 +224,33 @@ export function PhysicalCountCreatePage() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {selectedMaterials.map((material) => (
-                  <TableRow key={material.id}>
-                    <Td column="entity">
-                      <span>{getInventoryLocalizedName(material, locale)}</span>
-                      <span className="entity-cell__code">{material.code}</span>
-                    </Td>
-                    <Td dir="ltr">{material.stockUomSymbol ?? material.stockUomCode}</Td>
-                    {canManage ? (
-                      <StopPropagationCell>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="action"
-                          className="action-btn action-btn--icon action-btn--cancel"
-                          aria-label={t('inventory.physicalCounts.actions.removeMaterial')}
-                          onClick={() => removeMaterial(material.id)}
-                          disabled={saving}
-                        >
-                          <Trash2 size={16} aria-hidden />
-                        </Button>
-                      </StopPropagationCell>
-                    ) : null}
-                  </TableRow>
-                ))}
+                {selectedMaterials.map((material) => {
+                  const uomDisplay = getSelectedMaterialUomDisplay(material)
+
+                  return (
+                    <TableRow key={material.id}>
+                      <Td column="entity">
+                        <span>{getInventoryLocalizedName(material, locale)}</span>
+                      </Td>
+                      <Td dir={uomDisplay.dir}>{uomDisplay.label}</Td>
+                      {canManage ? (
+                        <StopPropagationCell>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="action"
+                            className="action-btn action-btn--icon action-btn--cancel"
+                            aria-label={t('inventory.physicalCounts.actions.removeMaterial')}
+                            onClick={() => removeMaterial(material.id)}
+                            disabled={saving}
+                          >
+                            <Trash2 size={16} aria-hidden />
+                          </Button>
+                        </StopPropagationCell>
+                      ) : null}
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </DataTable>
           )}
@@ -687,6 +707,7 @@ function PhysicalCountDraftView({
   onDelete,
   t,
 }: PhysicalCountDraftViewProps) {
+  const { uomSymbol } = useUomLookup()
   return (
     <>
       <div className="physical-count-detail">
@@ -752,7 +773,7 @@ function PhysicalCountDraftView({
               </TableHead>
               <TableBody>
                 {count.lines.map((line) => {
-                  const uomDisplay = getPhysicalCountUomDisplay(line.uomSymbol, locale, t)
+                  const uomDisplay = getPhysicalCountUomDisplay(uomSymbol(line.uomId), locale, t)
                   return (
                     <TableRow key={line.id}>
                       <Td column="entity">

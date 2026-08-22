@@ -32,6 +32,7 @@ export const commonAr: TranslationDictionary = {
   'common.create': 'إنشاء',
   'common.update': 'تحديث',
   'common.search': 'بحث',
+  'common.select': 'اختر…',
   'common.loading': 'جاري التحميل…',
   'common.deleting': 'جاري الحذف…',
   'common.confirm': 'تأكيد',
