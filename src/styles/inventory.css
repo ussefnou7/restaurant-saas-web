@@ -1408,10 +1408,48 @@
 }
 
 .pi-form-lines-table__row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.pi-form-lines-table__row-actions button {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border, #e5e7eb);
+  background: var(--color-surface, #ffffff);
+  transition: all 0.15s ease;
+}
+
+.pi-form-lines-table__row-actions button.action-btn--confirm {
+  color: #10b981;
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+
+.pi-form-lines-table__row-actions button.action-btn--confirm:hover:not(:disabled) {
+  background: #d1fae5;
+  border-color: #6ee7b7;
+}
+
+.pi-form-lines-table__row-actions button.action-btn--cancel {
+  color: #6b7280;
+  background: #f9fafb;
+  border-color: #e5e7eb;
+}
+
+.pi-form-lines-table__row-actions button.action-btn--cancel:hover:not(:disabled) {
+  color: #ef4444;
+  background: #fef2f2;
+  border-color: #fca5a5;
 }
 
 .pi-form-lines-table__row--edit .pi-form-line-row__input {
@@ -1420,13 +1458,17 @@
   max-width: 100%;
   box-sizing: border-box;
   min-inline-size: 0;
-  padding: 2px 4px;
-  font-size: 0.8125rem;
+  min-height: 38px;
+  height: 38px;
+  padding: 6px 10px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  border-radius: 6px;
 }
 
 .pi-form-lines-table__row--edit .pi-form-line-row__input--uom {
   text-align: center;
-  padding-inline: 2px;
+  padding-inline: 4px;
 }
 
 .pi-form-lines-card .pi-form-lines-table .pi-material-select {
@@ -1435,16 +1477,21 @@
 }
 
 .pi-form-lines-card .pi-form-lines-table .pi-material-select__trigger {
-  min-height: 28px;
+  min-height: 38px;
+  height: 38px;
   width: 100%;
   max-width: 100%;
-  padding: 2px 4px;
+  padding: 6px 10px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  border-radius: 6px;
   box-sizing: border-box;
 }
 
 .pi-form-lines-card .pi-form-lines-table .pi-material-select__name,
 .pi-form-lines-card .pi-form-lines-table .pi-material-select__placeholder {
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
 }
 
 .pi-form-lines__footer {
@@ -1606,17 +1653,29 @@
 }
 
 .pi-form-lines-table__row--edit .pi-form-lines-table__td {
-  padding: 4px 6px;
+  padding: 8px;
+  vertical-align: middle;
 }
 
 .pi-form-line-row__input {
   width: 100%;
-  padding: 4px 6px;
-  font-size: 0.8125rem;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
+  min-height: 38px;
+  height: 38px;
+  padding: 6px 10px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  border: 1px solid var(--color-border, #d1d5db);
+  border-radius: 6px;
   background: var(--color-surface, #fff);
   box-sizing: border-box;
+  color: var(--color-text, #111827);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.pi-form-line-row__input::placeholder {
+  font-size: 0.9375rem;
+  font-weight: 400;
+  color: #9ca3af;
 }
 
 .pi-form-line-row__input--ltr {
@@ -1710,9 +1769,11 @@
 
 .pi-form-lines-table__td--material .pi-material-select__trigger {
   width: 100%;
-  font-size: 0.8125rem;
-  padding: 4px 6px;
-  min-height: 28px;
+  font-size: 0.875rem;
+  padding: 6px 10px;
+  min-height: 38px;
+  height: 38px;
+  border-radius: 6px;
 }
 
 .pi-form-line-row__input--narrow {

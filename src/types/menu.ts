@@ -2,7 +2,7 @@ export type MenuCategory = {
   id: number
   name: string
   sortOrder: number
-  active: boolean
+  isActive: boolean
 }
 
 export type CreateMenuCategoryRequest = {
@@ -19,7 +19,7 @@ export type Product = {
   description?: string | null
   descriptionAr?: string | null
   sellingPrice: number
-  active: boolean
+  isActive: boolean
   menuCategoryId: number
   menuCategoryName?: string | null
   parentProductId?: number | null
@@ -27,9 +27,7 @@ export type Product = {
   variantLabelAr?: string | null
   isMenu: boolean
   /** Derived server-side: true iff another product references this one via parentProductId. */
-  parent: boolean
-  /** Older DTO name retained as optional compatibility for local fixtures/docs. */
-  isParent?: boolean
+  isParent: boolean
   variantCount?: number | null
 }
 
@@ -85,4 +83,6 @@ export type RecipeItemWrite = RecipeItemRequest
 
 export type ProductListParams = {
   menuCategoryId?: number
+  parentEligible?: boolean
+  excludeProductId?: number
 }

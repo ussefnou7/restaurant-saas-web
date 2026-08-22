@@ -86,7 +86,7 @@ export function MenuProductsSection() {
         embedded.set(candidate.parentProductId, siblings)
       })
 
-      const parents = data.filter((candidate) => candidate.parentProductId == null && candidate.parent)
+      const parents = data.filter((candidate) => candidate.parentProductId == null && candidate.isParent)
       const results = await Promise.allSettled(
         parents.map(async (parent) => {
           const embeddedVariants = embedded.get(parent.id)
@@ -242,7 +242,7 @@ export function MenuProductsSection() {
       >
         <Td column="entity">
           <div className={`menu-products__name${nested ? ' menu-products__name--variant' : ''}`}>
-            {product.parent && !nested ? (
+            {product.isParent && !nested ? (
               <button
                 type="button"
                 className={`menu-products__expand${isExpanded ? ' menu-products__expand--open' : ''}`}
@@ -265,7 +265,7 @@ export function MenuProductsSection() {
               ) : null}
               <strong>{product.name}</strong>
             </span>
-            {product.parent && !nested ? (
+            {product.isParent && !nested ? (
               <>
                 <Badge variant="primary">{t('menu.products.badge.parent')}</Badge>
                 <Badge variant="muted">{t('menu.products.badge.variantCount', { count: product.variantCount ?? variants.length })}</Badge>
@@ -277,16 +277,16 @@ export function MenuProductsSection() {
           </div>
         </Td>
         <Td>{product.menuCategoryName ?? t('common.empty.dash')}</Td>
-        <Td dir="ltr" className={`table-cell--numeric${product.parent && !nested ? ' menu-products__price-range' : ''}`}>
-          {product.parent && !nested
+        <Td dir="ltr" className={`table-cell--numeric${product.isParent && !nested ? ' menu-products__price-range' : ''}`}>
+          {product.isParent && !nested
             ? getParentPrice(product)
             : formatProductsTablePrice(product.sellingPrice)}
         </Td>
         <Td column="status">
-          <Badge variant={nested || product.parentProductId != null || !product.isMenu ? 'muted' : product.active ? 'success' : 'inactive'}>
+          <Badge variant={nested || product.parentProductId != null || !product.isMenu ? 'muted' : product.isActive ? 'success' : 'inactive'}>
             {nested || product.parentProductId != null || !product.isMenu
               ? t('menu.products.status.hidden')
-              : product.active
+              : product.isActive
                 ? t('common.active')
                 : t('common.inactive')}
           </Badge>
@@ -418,7 +418,7 @@ export function MenuProductsSection() {
                 {visibleProducts.map((product) => (
                   <Fragment key={product.id}>
                     {renderProductRow(product)}
-                    {product.parent && expandedParents.has(product.id)
+                    {product.isParent && expandedParents.has(product.id)
                       ? (variantsByParent[product.id] ?? []).map((variant) => (
                           <Fragment key={variant.id}>{renderProductRow(variant, true)}</Fragment>
                         ))

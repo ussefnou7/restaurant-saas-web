@@ -211,9 +211,10 @@ export function PhysicalCountCreatePage() {
                   <TableRow key={material.id}>
                     <Td column="entity">
                       <span>{getInventoryLocalizedName(material, locale)}</span>
-                      <span className="entity-cell__code">{material.code}</span>
                     </Td>
-                    <Td dir="ltr">{material.stockUomSymbol ?? material.stockUomCode}</Td>
+                    <Td dir={getPhysicalCountUomDisplay(material.stockUomSymbol ?? material.stockUomCode ?? '', locale, t).dir}>
+                      {getPhysicalCountUomDisplay(material.stockUomSymbol ?? material.stockUomCode ?? '', locale, t).label}
+                    </Td>
                     {canManage ? (
                       <StopPropagationCell>
                         <Button

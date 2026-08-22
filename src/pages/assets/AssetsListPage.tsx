@@ -27,8 +27,6 @@ import { formatDecimalString, getAssetCategoryLabel } from '../../utils/assetDis
 import { translateApiError } from '../../utils/errors'
 import { getInventoryLocalizedName } from '../../utils/inventoryDisplay'
 import { AssetStatusBadge } from './AssetBadges'
-import { AssetFormModal } from './AssetFormModal'
-
 export function AssetsListPage() {
   const { t, locale } = useTranslation()
   const navigate = useNavigate()
@@ -36,7 +34,6 @@ export function AssetsListPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
-  const [createOpen, setCreateOpen] = useState(false)
 
   const loadAssets = useCallback(async () => {
     setLoading(true)
@@ -88,7 +85,7 @@ export function AssetsListPage() {
               <BarChart3 size={16} aria-hidden />
               {t('assets.list.reports')}
             </Button>
-            <Button onClick={() => setCreateOpen(true)}>
+            <Button onClick={() => navigate('/assets/new')}>
               <Plus size={16} aria-hidden />
               {t('assets.list.newAsset')}
             </Button>
@@ -118,7 +115,7 @@ export function AssetsListPage() {
           emptyTitle={t('assets.list.empty.title')}
           emptyDescription={t('assets.list.empty.description')}
           emptyActionLabel={t('assets.list.newAsset')}
-          onEmptyAction={() => setCreateOpen(true)}
+          onEmptyAction={() => navigate('/assets/new')}
           showFilterEmpty={showFilterEmpty}
           filterEmptyTitle={t('common.noResults')}
           filterEmptyDescription={t('common.tryAdjustFilters')}
@@ -157,12 +154,6 @@ export function AssetsListPage() {
           }
         />
       </ListCard>
-
-      <AssetFormModal
-        open={createOpen}
-        onClose={() => setCreateOpen(false)}
-        onSaved={() => void loadAssets()}
-      />
     </ListPage>
   )
 }

@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react'
+import { DetailField } from '../../../components/fields'
+import { DocumentHeader } from '../../../components/layout/DocumentLayout'
 import { Badge } from '../../../components/ui/Badge'
 import type { Locale } from '../../../i18n/types'
 import type { PhysicalCountResponse } from '../../../types/inventoryOperations'
@@ -26,46 +28,53 @@ export function PhysicalCountDocumentHeader({
   const warehouseName = getInventoryLocalizedName({ name: count.warehouseName }, locale)
 
   return (
-    <div className="physical-count-detail__header">
-      <div className="physical-count-detail__topbar">
+    <DocumentHeader
+      title={t('inventory.physicalCounts.form.viewTitle')}
+      statusBadge={
         <Badge variant={getHeaderStatusVariant(count.status)}>
           {t(`inventory.physicalCounts.status.${count.status}`)}
         </Badge>
-        {actions ? <div className="physical-count-detail__header-actions">{actions}</div> : null}
-      </div>
-
-      <h2 className="physical-count-detail__code" dir="ltr">{count.code}</h2>
-
-      <div className="physical-count-detail__divider" />
-
-      <div className="physical-count-detail__info">
-        <div className="physical-count-detail__warehouse physical-count-detail__info-item--warehouse">
-          <span className="physical-count-detail__meta-label">{t('inventory.purchase.fields.warehouse')}</span>
-          <span className="physical-count-detail__meta-value">{warehouseName}</span>
-        </div>
-        <div className="physical-count-detail__meta-inline physical-count-detail__info-item--scheduled">
-          <span className="physical-count-detail__meta-label">{t('inventory.physicalCounts.col.scheduledDate')}</span>
-          <span className="physical-count-detail__meta-value" dir="ltr">{formatPhysicalCountDate(count.scheduledDate)}</span>
-        </div>
+      }
+      actions={actions}
+      reference={
+        <span className="pi-form-header-card__invoice-number" dir="ltr">
+          {count.code}
+        </span>
+      }
+    >
+      <div className="pi-form-header-grid">
+        <DetailField
+          label={t('inventory.purchase.fields.warehouse')}
+          value={warehouseName}
+        />
+        <DetailField
+          label={t('inventory.physicalCounts.col.scheduledDate')}
+          value={formatPhysicalCountDate(count.scheduledDate)}
+          dir="ltr"
+        />
         {count.frozenAt ? (
-          <div className="physical-count-detail__meta-inline physical-count-detail__info-item--frozen">
-            <span className="physical-count-detail__meta-label">{t('inventory.physicalCounts.col.frozenAt')}</span>
-            <span className="physical-count-detail__meta-value" dir="ltr">{formatPhysicalCountDateTime(count.frozenAt)}</span>
-          </div>
+          <DetailField
+            label={t('inventory.physicalCounts.col.frozenAt')}
+            value={formatPhysicalCountDateTime(count.frozenAt)}
+            dir="ltr"
+          />
         ) : null}
         {count.reconciledAt ? (
-          <div className="physical-count-detail__meta-inline physical-count-detail__info-item--reconciled">
-            <span className="physical-count-detail__meta-label">{t('inventory.physicalCounts.col.reconciledAt')}</span>
-            <span className="physical-count-detail__meta-value" dir="ltr">{formatPhysicalCountDateTime(count.reconciledAt)}</span>
-          </div>
+          <DetailField
+            label={t('inventory.physicalCounts.col.reconciledAt')}
+            value={formatPhysicalCountDateTime(count.reconciledAt)}
+            dir="ltr"
+          />
         ) : null}
         {count.notes ? (
-          <div className="physical-count-detail__notes">
-            <span className="physical-count-detail__meta-label">{t('inventory.physicalCounts.fields.notes')}</span>
-            <span className="physical-count-detail__meta-value">{count.notes}</span>
-          </div>
+          <DetailField
+            label={t('inventory.physicalCounts.fields.notes')}
+            value={count.notes}
+            fullWidth
+          />
         ) : null}
       </div>
-    </div>
+    </DocumentHeader>
   )
 }
+

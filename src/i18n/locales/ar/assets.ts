@@ -37,7 +37,7 @@ export const assetsAr: TranslationDictionary = {
   'assets.lines.tableTitle': 'بنود الأصل',
   'assets.lines.add': 'إضافة بند',
   'assets.lines.addTitle': 'إضافة بند أصل',
-  'assets.lines.label': 'البيان',
+  'assets.lines.label': 'البند',
   'assets.lines.fallbackLabel': 'بند #{{id}}',
   'assets.lines.quantity': 'الكمية',
   'assets.lines.remainingQuantity': 'المتبقي',

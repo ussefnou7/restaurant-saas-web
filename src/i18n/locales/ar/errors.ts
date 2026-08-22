@@ -89,6 +89,10 @@ export const errorsAr: TranslationDictionary = {
     'المادة "{{materialName}}" موجودة بالفعل في هذه الوصفة',
   'errors.VARIANT_CANNOT_BE_MENU_ITEM':
     'لا يمكن عرض الصنف الفرعي على المنيو مباشرة. أزِله من المنيو ثم حاول مرة أخرى.',
+  'errors.VARIANT_LABEL_REQUIRED':
+    'أدخل تسمية الصنف بالعربية والإنجليزية قبل الحفظ.',
+  'errors.DUPLICATE_VARIANT_LABEL':
+    'يوجد صنف فرعي آخر تابع لهذا المنتج الرئيسي يستخدم إحدى هاتين التسميتين.',
   'errors.PARENT_PRODUCT_NOT_ORDERABLE':
     'هذه مجموعة أصناف ولا يمكن طلبها مباشرة. من فضلك اختر أحد أصنافها الفرعية.',
   'errors.PARENT_PRODUCT_HAS_NO_RECIPE':

@@ -326,6 +326,7 @@ export const router = createBrowserRouter([
             children: [
               { index: true, element: <AssetsHubPage /> },
               { path: 'list', element: <AssetsListPage /> },
+              { path: 'new', element: <AssetDetailPage /> },
               { path: 'reports', element: <AssetsReportPage /> },
               { path: 'disposals', element: <AssetDisposalsPage /> },
               { path: 'maintenance', element: <AssetMaintenanceListPage /> },

@@ -81,10 +81,10 @@ export function MenuCategoriesSection() {
       await menuService.updateMenuCategory(category.id, {
         name: category.name,
         sortOrder: category.sortOrder,
-        active: !category.active,
+        active: !category.isActive,
       })
       notify.success(
-        category.active ? t('menu.toast.deactivateSuccess') : t('menu.toast.activateSuccess'),
+        category.isActive ? t('menu.toast.deactivateSuccess') : t('menu.toast.activateSuccess'),
       )
       await refreshCategories()
     } catch {
@@ -140,7 +140,7 @@ export function MenuCategoriesSection() {
                       <Td dir="ltr" className="table-cell--numeric">{formatMenuNumber(category.sortOrder, locale)}</Td>
                       <StopPropagationCell column="status">
                         <StatusToggle
-                          active={category.active}
+                          active={category.isActive}
                           disabled={busy}
                           entityName={category.name}
                           onToggle={() => void handleToggleStatus(category)}

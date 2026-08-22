@@ -18,6 +18,7 @@ import * as inventoryService from '../../../services/inventoryService'
 import type { MaterialResponse } from '../../../types/inventory'
 import { translateApiError } from '../../../utils/errors'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
+import { getPhysicalCountUomDisplay } from './physicalCountDisplay'
 import { useInventoryLookups } from '../useInventoryLookups'
 
 interface PhysicalCountMaterialPickerProps {
@@ -38,7 +39,7 @@ export function PhysicalCountMaterialPicker({
   loading = false,
 }: PhysicalCountMaterialPickerProps) {
   const { t, locale } = useTranslation()
-  const { categories } = useInventoryLookups()
+  const { categories, uoms } = useInventoryLookups()
 
   const [materials, setMaterials] = useState<MaterialResponse[]>([])
   const [lookupLoading, setLookupLoading] = useState(false)
@@ -196,26 +197,34 @@ export function PhysicalCountMaterialPicker({
             </TableRow>
           </TableHead>
           <TableBody>
-            {visibleMaterials.map((material) => (
-              <TableRow key={material.id}>
-                <Td>
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.has(material.id)}
-                    onChange={() => toggleSelect(material.id)}
-                    aria-label={getInventoryLocalizedName(material, locale)}
-                  />
-                </Td>
-                <Td column="entity">
-                  <span>{getInventoryLocalizedName(material, locale)}</span>
-                  <span className="entity-cell__code">{material.code}</span>
-                </Td>
-                <Td>{material.stockUomSymbol ?? material.stockUomCode}</Td>
-              </TableRow>
-            ))}
+            {visibleMaterials.map((material) => {
+              const uomId = material.stockUomId ?? material.displayUomId ?? material.defaultUomId
+              const uomObject = uomId ? uoms.find((u) => u.id === uomId) : undefined
+              const uomDisplay = uomObject
+                ? { label: getInventoryLocalizedName(uomObject, locale), dir: locale === 'ar' ? undefined : ('ltr' as const) }
+                : getPhysicalCountUomDisplay(material.stockUomSymbol ?? material.stockUomCode ?? '', locale, t)
+
+              return (
+                <TableRow key={material.id}>
+                  <Td>
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(material.id)}
+                      onChange={() => toggleSelect(material.id)}
+                      aria-label={getInventoryLocalizedName(material, locale)}
+                    />
+                  </Td>
+                  <Td column="entity">
+                    <span>{getInventoryLocalizedName(material, locale)}</span>
+                  </Td>
+                  <Td dir={uomDisplay.dir}>{uomDisplay.label}</Td>
+                </TableRow>
+              )
+            })}
           </TableBody>
         </DataTable>
       ) : null}
     </Modal>
   )
 }
+

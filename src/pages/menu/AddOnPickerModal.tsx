@@ -36,7 +36,7 @@ export function AddOnPickerModal({
   const results = useMemo(() => {
     const query = search.trim().toLocaleLowerCase(locale)
     return candidates.filter((candidate) => {
-      if (candidate.id === product.id || candidate.parentProductId != null || candidate.parent) {
+      if (candidate.id === product.id || candidate.parentProductId != null || candidate.isParent) {
         return false
       }
       if (!query) return true

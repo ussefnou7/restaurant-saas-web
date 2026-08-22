@@ -1,7 +1,7 @@
 import type { Locale } from '../../i18n/types'
 
 export function formatMenuNumber(value: number, locale: Locale): string {
-  const intlLocale = locale === 'ar' ? 'ar-EG' : 'en-US'
+  const intlLocale = locale === 'ar' ? 'ar-EG-u-nu-latn' : 'en-US'
   return new Intl.NumberFormat(intlLocale, {
     minimumFractionDigits: 0,
     maximumFractionDigits: 4,
@@ -9,7 +9,7 @@ export function formatMenuNumber(value: number, locale: Locale): string {
 }
 
 export function formatMenuPrice(value: number, locale: Locale): string {
-  const intlLocale = locale === 'ar' ? 'ar-EG' : 'en-US'
+  const intlLocale = locale === 'ar' ? 'ar-EG-u-nu-latn' : 'en-US'
   return new Intl.NumberFormat(intlLocale, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,

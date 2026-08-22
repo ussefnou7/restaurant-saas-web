@@ -62,6 +62,8 @@ export const menuEn: TranslationDictionary = {
   'menu.products.validation.priceInvalid': 'Selling price must be a non-negative number',
   'menu.products.validation.categoryRequired': 'Please select a category',
   'menu.products.validation.parentRequired': 'Please select a parent product',
+  'menu.products.validation.variantLabelsRequired':
+    'Both English and Arabic variant labels are required',
   'menu.products.actions.manageRecipe': 'Recipe',
   'menu.products.deleteConfirm.title': 'Delete product?',
   'menu.products.deleteConfirm.message':
@@ -143,6 +145,10 @@ export const menuEn: TranslationDictionary = {
   'menu.editor.fields.isMenu': 'Show in Menu',
   'menu.editor.fields.isMenuHint': 'This product appears in the cashier menu',
   'menu.editor.fields.isMenuParentHint': 'Variants are not shown directly on the menu',
+  'menu.editor.fields.isMenuVariantHint':
+    'Variants are reachable through their parent and cannot appear directly in the menu',
+  'menu.editor.fields.variantLabelEn': 'Variant Label (English)',
+  'menu.editor.fields.variantLabelAr': 'Variant Label (Arabic)',
   'menu.editor.fields.image': 'Product Image',
   'menu.editor.tabs.recipe': 'Recipe',
   'menu.editor.tabs.variants': 'Variants',

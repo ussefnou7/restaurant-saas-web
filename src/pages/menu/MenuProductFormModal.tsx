@@ -72,12 +72,13 @@ export function MenuProductFormModal({
   const [parentsLoading, setParentsLoading] = useState(false)
   const [parentsError, setParentsError] = useState('')
   const isCreate = mode === 'create'
+  const editedProductId = product?.id
 
   const role: ProductEditorRole = isCreate
     ? initialRole
     : product?.parentProductId != null
       ? 'variant'
-      : product?.parent
+      : product?.isParent
         ? 'parent'
         : product && !product.isMenu
           ? 'addOn'
@@ -88,7 +89,7 @@ export function MenuProductFormModal({
   const locksMenuVisibility = isVariantChild || (isCreate && isAddOnOnly)
 
   const activeCategories = useMemo(
-    () => categories.filter((category) => category.active),
+    () => categories.filter((category) => category.isActive),
     [categories],
   )
 
@@ -135,22 +136,17 @@ export function MenuProductFormModal({
     setParentsLoading(true)
     setParentsError('')
     try {
-      const products = await menuService.getProducts()
-      setParentCandidates(
-        products.filter(
-          (candidate) =>
-            candidate.parentProductId == null &&
-            candidate.isMenu &&
-            candidate.id !== product?.id,
-        ),
-      )
+      setParentCandidates(await menuService.getProducts({
+        parentEligible: true,
+        excludeProductId: editedProductId,
+      }))
     } catch {
       setParentCandidates([])
       setParentsError(t('menu.roles.parentLoadError'))
     } finally {
       setParentsLoading(false)
     }
-  }, [product?.id, t])
+  }, [editedProductId, t])
 
   useEffect(() => {
     if (!open) return
@@ -162,7 +158,7 @@ export function MenuProductFormModal({
     // The form draft intentionally resets when a different product or create role opens.
     setError('')
     // Default to the first tab available for this product's role.
-    setActiveTab(product?.parent ? 'variants' : 'recipe')
+    setActiveTab(product?.isParent ? 'variants' : 'recipe')
     if (isCreate) {
       setForm({
         ...emptyForm,
@@ -181,7 +177,7 @@ export function MenuProductFormModal({
         sellingPrice: String(product.sellingPrice),
         menuCategoryId: String(product.menuCategoryId),
         parentProductId: product.parentProductId == null ? '' : String(product.parentProductId),
-        active: product.active,
+        active: product.isActive,
         isMenu: product.isMenu,
       })
     }
@@ -220,6 +216,9 @@ export function MenuProductFormModal({
     if (isVariantChild && !form.parentProductId) {
       return t('menu.products.validation.parentRequired')
     }
+    if (isVariantChild && (!form.variantLabel.trim() || !form.variantLabelAr.trim())) {
+      return t('menu.products.validation.variantLabelsRequired')
+    }
     return null
   }
 
@@ -253,7 +252,7 @@ export function MenuProductFormModal({
         await menuService.createProduct(payload)
       } else if (product) {
         await menuService.updateProduct(product.id, payload)
-        if (form.active !== product.active) {
+        if (form.active !== product.isActive) {
           await menuService.toggleProductActive(product.id)
         }
       }
