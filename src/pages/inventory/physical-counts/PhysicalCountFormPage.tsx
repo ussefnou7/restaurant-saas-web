@@ -231,6 +231,7 @@ export function PhysicalCountCreatePage() {
                     <TableRow key={material.id}>
                       <Td column="entity">
                         <span>{getInventoryLocalizedName(material, locale)}</span>
+                        <span className="entity-cell__code">{material.code}</span>
                       </Td>
                       <Td dir={uomDisplay.dir}>{uomDisplay.label}</Td>
                       {canManage ? (
