@@ -1,10 +1,12 @@
 import type { AuthUser, LoginRequest, LoginResponse } from '../types/auth'
 import api from './api'
+import { AUTH_SESSION_CHANGED_EVENT } from './authEvents'
 
 const ACCESS_TOKEN_KEY = 'accessToken'
 const AUTH_USER_KEY = 'authUser'
 const TENANT_CODE_KEY = 'tenantCode'
-export const AUTH_SESSION_CHANGED_EVENT = 'auth-session-changed'
+
+export { AUTH_SESSION_CHANGED_EVENT }
 
 export function notifyAuthSessionChanged(): void {
   window.dispatchEvent(new Event(AUTH_SESSION_CHANGED_EVENT))

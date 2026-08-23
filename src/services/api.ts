@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { notifyLookupVersionHeader } from '../contexts/uomLookupBridge'
+import { AUTH_SESSION_CHANGED_EVENT } from './authEvents'
 
 declare module 'axios' {
   export interface AxiosRequestConfig {
@@ -24,9 +25,6 @@ export function setApiErrorNotifier(notifier: ApiErrorNotifier | null): void {
 }
 
 const AUTH_USER_KEY = 'authUser'
-// Duplicated from authService rather than imported: authService imports this
-// module, so importing it back would close an import cycle.
-const AUTH_SESSION_CHANGED_EVENT = 'auth-session-changed'
 
 function getTenantIdHeader(): string | null {
   const raw = localStorage.getItem(AUTH_USER_KEY)

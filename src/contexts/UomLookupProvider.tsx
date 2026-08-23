@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from 'react'
 import { useTranslation } from '../i18n/useTranslation'
-import { AUTH_SESSION_CHANGED_EVENT } from '../services/authService'
+import { AUTH_SESSION_CHANGED_EVENT } from '../services/authEvents'
 import * as uomService from '../services/uomService'
 import type { UomLookupItemResponse } from '../types/inventory'
 import { getInventoryLocalizedName } from '../utils/inventoryDisplay'
@@ -141,6 +141,9 @@ export function UomLookupProvider({ children }: { children: ReactNode }) {
     const request = (async () => {
       try {
         const item = await uomService.getUomById(numId)
+        // The session can change while this is in flight. Without this check a unit
+        // fetched for tenant A lands in tenant B's cache — and therefore B's pickers.
+        if (tenantKeyRef.current !== currentTenantKey) return null
         if (item && item.id) {
           setItemsMap((prev) => {
             const next = new Map(prev)
