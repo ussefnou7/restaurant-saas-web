@@ -13,6 +13,7 @@ import {
   getTransactionTypeLabel,
   toLocalDateTimeInputValue,
 } from '../../utils/inventoryStockDisplay'
+import { useUomPickerProps } from '../../hooks/useUomPickerProps'
 import {
   getCompatibleUoms,
   getDisplayUomLabel,
@@ -55,6 +56,7 @@ export function ManualTransactionModal({
   onSuccess,
 }: ManualTransactionModalProps) {
   const { t, locale } = useTranslation()
+  const uomPickerProps = useUomPickerProps()
   const [form, setForm] = useState<FormState>(emptyForm)
   const [warehouses, setWarehouses] = useState<WarehouseResponse[]>([])
   const [materials, setMaterials] = useState<MaterialResponse[]>([])
@@ -311,6 +313,7 @@ export function ManualTransactionModal({
 
           <FormField label={t('inventory.stock.manual.fields.uom')}>
             <FormSelect
+              {...uomPickerProps.selectProps}
               value={form.uomId}
               onChange={(e) => setForm((prev) => ({ ...prev, uomId: e.target.value }))}
               disabled={saving || lookupsLoading || !form.materialId}

@@ -6,6 +6,7 @@ import { LoadingRows } from '../../components/ui/LoadingRows'
 import { Modal } from '../../components/ui/Modal'
 import { SearchInput } from '../../components/ui/SearchInput'
 import { SelectFilter } from '../../components/ui/SelectFilter'
+import { useUomPickerProps } from '../../hooks/useUomPickerProps'
 import { useNotify } from '../../components/ui/NotificationContext'
 import {
   DataTable,
@@ -44,6 +45,7 @@ export function MaterialCatalogImportModal({
   onImported,
 }: MaterialCatalogImportModalProps) {
   const { t, locale } = useTranslation()
+  const uomPicker = useUomPickerProps()
   const notify = useNotify()
   const canManage = canManageInventorySetup()
   const { categories, uoms } = useInventoryLookups({ forCatalog: true })
@@ -288,6 +290,7 @@ export function MaterialCatalogImportModal({
             onChange={setUomId}
             options={uomOptions}
             ariaLabel={t('inventory.catalog.filter.uom')}
+            onOpen={uomPicker.onOpen}
           />
         </div>
 

@@ -83,14 +83,16 @@ export function OrderConsumptionDetailPage() {
     return new Map(users.map((user) => [user.id, user.fullName]))
   }, [users])
 
-  function getMaterialUom(item: OrderConsumptionDocDetailResponse['materials'][number]): string | null {
+  function getMaterialUom(item: OrderConsumptionDocDetailResponse['materials'][number]): string {
     const symbol = uomSymbol(item.uomId)
     if (symbol !== '—') return symbol
 
     const label = uomLabel(item.uomId)
     if (label !== '—') return label
 
-    return item.uomSymbol?.trim() || null
+    // Terminates in the placeholder, never null: an unresolved unit must be
+    // visible as a placeholder rather than silently dropped from the quantity.
+    return item.uomSymbol?.trim() || t('common.empty.dash')
   }
 
   function getSummaryUom(summary: OrderConsumptionMaterialsSummaryResponse['materials'][number]): string {

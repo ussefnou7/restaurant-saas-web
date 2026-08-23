@@ -3,6 +3,7 @@ import { FormInput } from '../../components/fields'
 import { Button } from '../../components/ui/Button'
 import { MaterialSelect } from '../../components/ui/MaterialSelect'
 import { SelectFilter } from '../../components/ui/SelectFilter'
+import { useUomPickerProps } from '../../hooks/useUomPickerProps'
 import { useTranslation } from '../../i18n/useTranslation'
 import type { Locale } from '../../i18n/types'
 import type { MaterialResponse, UomResponse } from '../../types/inventory'
@@ -30,6 +31,7 @@ export function RecipeIngredientsEditor({
   onChange,
 }: RecipeIngredientsEditorProps) {
   const { t } = useTranslation()
+  const uomPicker = useUomPickerProps()
   const usedMaterialIds = rows
     .map((row) => row.materialId)
     .filter(Boolean)
@@ -98,6 +100,7 @@ export function RecipeIngredientsEditor({
                       options={uomOptions}
                       ariaLabel={t('menu.recipe.col.uom')}
                       disabled={disabled || uomOptions.length === 0}
+                      onOpen={uomPicker.onOpen}
                     />
                   </div>
                   <div role="cell" className="recipe-ingredients-editor__remove">

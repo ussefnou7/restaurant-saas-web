@@ -47,7 +47,7 @@ import {
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { notifyStockBalancesRefresh } from '../../../utils/inventoryStockRefresh'
 import { getPurchaseReturnReasonLabel } from '../../../utils/purchaseInvoiceDisplay'
-import { convertUomQuantity, getCompatibleUoms } from '../../../utils/inventoryUom'
+import { convertUomQuantity, getLocalizedUomSymbol } from '../../../utils/inventoryUom'
 import { PurchaseInvoiceAccessDenied } from '../purchase-invoices/PurchaseInvoiceAccessDenied'
 
 const RETURN_REASONS: PurchaseReturnReason[] = [
@@ -142,6 +142,7 @@ function formatReturnableLineLabel(
   line: ReturnableLineResponse,
   locale: Locale,
   uoms: UomResponse[],
+  placeholder: string,
 ): string {
   const material = getInventoryLocalizedName(
     {
@@ -150,24 +151,31 @@ function formatReturnableLineLabel(
     },
     locale,
   )
-  const uomLabel = resolveUomDisplayLabel(line.uomId, line.uomSymbol, locale, uoms)
+  const uomLabel = resolveUomDisplayLabel(line.uomId, line.uomSymbol, locale, uoms, placeholder)
   return `${material} · ${line.returnableQuantity}${uomLabel ? ` ${uomLabel}` : ''}`.trim()
 }
 
+/**
+ * Resolves a unit for display. The symbolAr → symbol → code chain is not
+ * re-implemented here: it lives in getLocalizedUomSymbol and is used by every
+ * call site (D111/D3). Terminates in the placeholder, never in an empty string.
+ */
 function resolveUomDisplayLabel(
   uomId: number | undefined,
   fallbackSymbol: string | null | undefined,
   locale: Locale,
   uoms: UomResponse[],
+  placeholder: string,
 ): string {
   const uom = uomId != null ? uoms.find((item) => item.id === uomId) : undefined
   if (uom) {
-    if (locale === 'ar') {
-      return getInventoryLocalizedName(uom, locale) || uom.symbol || uom.code
-    }
-    return uom.symbol ?? (getInventoryLocalizedName(uom, locale) || uom.code)
+    return (
+      getLocalizedUomSymbol(uom, locale) ||
+      getInventoryLocalizedName(uom, locale) ||
+      placeholder
+    )
   }
-  return fallbackSymbol ?? ''
+  return fallbackSymbol?.trim() || placeholder
 }
 
 function formatQuantityWithUomLabel(
@@ -179,15 +187,8 @@ function formatQuantityWithUomLabel(
   empty: string,
 ): string {
   if (quantity == null || quantity === '') return empty
-  const uomLabel = resolveUomDisplayLabel(uomId, fallbackSymbol, locale, uoms)
+  const uomLabel = resolveUomDisplayLabel(uomId, fallbackSymbol, locale, uoms, empty)
   return uomLabel ? `${quantity} ${uomLabel}` : String(quantity)
-}
-
-function formatUomOptionLabel(uom: UomResponse, locale: Locale): string {
-  if (locale === 'ar') {
-    return getInventoryLocalizedName(uom, locale) || uom.symbol || uom.code
-  }
-  return uom.symbol ?? (getInventoryLocalizedName(uom, locale) || uom.code)
 }
 
 function getMaxReturnQuantity(
@@ -239,7 +240,7 @@ function PrFormField({ label, htmlFor, required, error, children }: PrFormFieldP
 
 function PurchaseReturnForm({ mode }: { mode: FormMode }) {
   const { t, locale } = useTranslation()
-  const { uoms: cachedUoms } = useUomLookup()
+  const { uoms: cachedUoms, resolveMiss } = useUomLookup()
   const navigate = useNavigate()
   const notify = useNotify()
   const { id } = useParams<{ id: string }>()
@@ -255,6 +256,22 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
   // since-deactivated unit still has to render its name.
   const uoms = cachedUoms as unknown as UomResponse[]
   const [returnableLines, setReturnableLines] = useState<ReturnableLineResponse[]>([])
+  // Resolve-on-miss: a line may reference a unit the cache has never seen (D111).
+  // Each unknown id is fetched once; the cache dedupes concurrent requests.
+  useEffect(() => {
+    const known = new Set(uoms.map((u) => u.id))
+    const referenced = new Set<number>()
+    for (const line of purchaseReturn?.lines ?? []) {
+      if (line.uomId != null) referenced.add(Number(line.uomId))
+    }
+    for (const line of returnableLines) {
+      if (line.uomId != null) referenced.add(Number(line.uomId))
+    }
+    for (const uomId of referenced) {
+      if (uomId && !known.has(uomId)) void resolveMiss(uomId)
+    }
+  }, [purchaseReturn?.lines, returnableLines, uoms, resolveMiss])
+
   const [lookupsLoading, setLookupsLoading] = useState(false)
   const [returnableLoading, setReturnableLoading] = useState(false)
   const [loading, setLoading] = useState(mode !== 'create')
@@ -742,10 +759,6 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
       onCancel: () => void
     },
   ) {
-    const anchorUomId = form.uomId || options.returnableLine?.uomId
-    const compatibleUoms = anchorUomId
-      ? getCompatibleUoms(uoms, Number(anchorUomId))
-      : []
     const qtyUomDisabled = lineSaving || lookupsLoading || !options.returnableLine
 
     return (
@@ -773,7 +786,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
               <option value="">{t('inventory.purchaseReturn.lines.selectLine')}</option>
               {availableReturnableLines.map((line) => (
                 <option key={line.originalLineId} value={String(line.originalLineId)}>
-                  {formatReturnableLineLabel(line, locale, uoms)}
+                  {formatReturnableLineLabel(line, locale, uoms, t('common.empty.dash'))}
                 </option>
               ))}
             </select>
@@ -807,20 +820,21 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
           />
         </td>
         <td className="pi-form-lines-table__td pi-form-lines-table__td--uom">
-          <select
-            className="pi-form-line-row__input return-line__uom-select"
-            value={form.uomId}
-            onChange={(e) => options.onChange({ uomId: e.target.value })}
-            disabled={qtyUomDisabled}
-            aria-label={t('inventory.purchaseReturn.lines.uom')}
-          >
-            <option value="">{t('inventory.purchaseReturn.lines.uomPlaceholder')}</option>
-            {compatibleUoms.map((u) => (
-              <option key={u.id} value={String(u.id)}>
-                {formatUomOptionLabel(u, locale)}
-              </option>
-            ))}
-          </select>
+          {/*
+            D108: a return is entered in the original invoice line's UOM. The unit is
+            inherited from the selected line and is deliberately not selectable —
+            compatible alternates would pull in conversion and fractional-ledger paths
+            that nothing needs yet (D13).
+          */}
+          <span className="return-line__uom-locked" aria-label={t('inventory.purchaseReturn.lines.uom')}>
+            {resolveUomDisplayLabel(
+              form.uomId ? Number(form.uomId) : options.returnableLine?.uomId,
+              options.returnableLine?.uomSymbol,
+              locale,
+              uoms,
+              t('common.empty.dash'),
+            )}
+          </span>
         </td>
         <td className="pi-form-lines-table__td pi-form-lines-table__td--num" dir="ltr">
           {t('common.empty.dash')}
@@ -1309,8 +1323,13 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                                 {line.quantity}
                               </td>
                               <td className="pi-form-lines-table__td pi-form-lines-table__td--uom">
-                                {resolveUomDisplayLabel(line.uomId, line.uomSymbol, locale, uoms) ||
-                                  t('common.empty.dash')}
+                                {resolveUomDisplayLabel(
+                                  line.uomId,
+                                  line.uomSymbol,
+                                  locale,
+                                  uoms,
+                                  t('common.empty.dash'),
+                                )}
                               </td>
                               <td className="pi-form-lines-table__td pi-form-lines-table__td--num" dir="ltr">
                                 {formatDisplayAmount(line.unitCost)}

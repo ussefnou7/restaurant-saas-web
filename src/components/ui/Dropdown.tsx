@@ -16,6 +16,8 @@ interface DropdownProps {
   disabled?: boolean
   searchable?: boolean
   searchPlaceholder?: string
+  /** Fired when the list is opened, before it paints. Used for revalidate-on-open (D111). */
+  onOpen?: () => void
 }
 
 export function Dropdown({
@@ -28,6 +30,7 @@ export function Dropdown({
   disabled,
   searchable = false,
   searchPlaceholder,
+  onOpen,
 }: DropdownProps) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
@@ -79,7 +82,15 @@ export function Dropdown({
         aria-expanded={open}
         aria-haspopup="listbox"
         aria-controls={open ? listId : undefined}
-        onClick={() => (open ? closeDropdown() : setOpen(true))}
+        onClick={() => {
+          if (open) {
+            closeDropdown()
+            return
+          }
+          // Render from what we have and revalidate alongside — never block the list.
+          onOpen?.()
+          setOpen(true)
+        }}
       >
         <span className="dropdown__value">{selected?.label ?? '—'}</span>
         <ChevronDown

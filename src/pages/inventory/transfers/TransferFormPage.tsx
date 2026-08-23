@@ -16,6 +16,7 @@ import {
   Th,
 } from '../../../components/ui/Table'
 import { useTranslation } from '../../../i18n/useTranslation'
+import { useUomPickerProps } from '../../../hooks/useUomPickerProps'
 import * as inventoryService from '../../../services/inventoryService'
 import * as transferService from '../../../services/inventoryTransferService'
 import type { MaterialResponse, UomResponse, WarehouseResponse } from '../../../types/inventory'
@@ -61,6 +62,7 @@ function getStatusVariant(status: string): 'muted' | 'warning' | 'success' | 'da
 
 function TransferFormInner({ mode, transfer }: { mode: FormMode; transfer: InventoryTransferResponse | null }) {
   const { t, locale } = useTranslation()
+  const uomPicker = useUomPickerProps()
   const navigate = useNavigate()
   const notify = useNotify()
   const [warehouses, setWarehouses] = useState<WarehouseResponse[]>([])
@@ -421,6 +423,7 @@ function TransferFormInner({ mode, transfer }: { mode: FormMode; transfer: Inven
                       </Td>
                       <Td>
                         <FormSelect
+                          {...uomPicker.selectProps}
                           value={line.uomId}
                           onChange={(e) => updateLine(line.clientId, 'uomId', e.target.value)}
                           disabled={saving || lookupLoading}

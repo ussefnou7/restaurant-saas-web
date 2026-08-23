@@ -43,8 +43,10 @@ export function StockBalancesPage() {
   const canView = canViewInventoryStock()
   const canManage = canManageInventoryStock()
   const { warehouses, materials, categories } = useStockFilterLookups()
-  const { activeUoms } = useUomLookup()
-  const uoms = activeUoms as unknown as UomResponse[]
+  // Display resolves from the full cached set, never the active one (D111):
+  // stock held in a since-retired unit must still render that unit.
+  const { uoms: cachedUoms } = useUomLookup()
+  const uoms = cachedUoms as unknown as UomResponse[]
 
   const [balances, setBalances] = useState<StockBalanceResponse[]>([])
   const [loading, setLoading] = useState(true)

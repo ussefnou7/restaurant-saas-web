@@ -4,6 +4,7 @@ import { Button } from '../../../../components/ui/Button'
 import { Modal } from '../../../../components/ui/Modal'
 import { TenantCodeInput } from '../../../../components/ui/TenantCodeInput'
 import { useTranslation } from '../../../../i18n/useTranslation'
+import { useUomPickerProps } from '../../../../hooks/useUomPickerProps'
 import * as uomService from '../../../../services/uomService'
 import type { UomResponse, UomType } from '../../../../types/inventory'
 import { translateApiError } from '../../../../utils/errors'
@@ -81,6 +82,7 @@ export function TenantUomFormModal({
   onSuccess,
 }: TenantUomFormModalProps) {
   const { t } = useTranslation()
+  const uomPicker = useUomPickerProps()
   const [form, setForm] = useState<FormState>(emptyForm)
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [submitError, setSubmitError] = useState('')
@@ -273,6 +275,7 @@ export function TenantUomFormModal({
           </FormField>
           <FormField label={t('inventory.uom.fields.baseUom')} htmlFor="tenant-uom-base" error={fieldErrors.baseUom}>
             <FormSelect
+              {...uomPicker.selectProps}
               id="tenant-uom-base"
               value={form.baseUom}
               onChange={(e) => handleBaseUomChange(e.target.value)}

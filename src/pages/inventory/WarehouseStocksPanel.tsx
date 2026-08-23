@@ -80,8 +80,9 @@ function mergeStockRow(
 
 export function WarehouseStocksPanel({ warehouseId }: WarehouseStocksPanelProps) {
   const { t, locale } = useTranslation()
-  const { activeUoms, uomLabel, uomSymbol } = useUomLookup()
-  const uoms = activeUoms as unknown as UomResponse[]
+  // getDisplayUomLabel is a display path, so it reads the full cached set (D111).
+  const { uoms: cachedUoms, uomLabel, uomSymbol } = useUomLookup()
+  const uoms = cachedUoms as unknown as UomResponse[]
   const canManage = canManageInventoryStock()
 
   function displayUomName(stock: WarehouseStockResponse): string {

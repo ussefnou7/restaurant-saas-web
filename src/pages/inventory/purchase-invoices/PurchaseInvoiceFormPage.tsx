@@ -14,6 +14,7 @@ import { DocumentHeader, DocumentLinesCard } from '../../../components/layout/Do
 import { PurchaseInvoiceFormStatusPill } from './PurchaseInvoiceFormStatusPill'
 import { useTranslation } from '../../../i18n/useTranslation'
 import { useUomLookup } from '../../../hooks/useUomLookup'
+import { useUomPickerProps } from '../../../hooks/useUomPickerProps'
 import * as inventoryService from '../../../services/inventoryService'
 import * as purchaseInvoiceService from '../../../services/purchaseInvoiceService'
 import type { MaterialResponse, SupplierResponse, UomResponse, WarehouseResponse } from '../../../types/inventory'
@@ -187,6 +188,7 @@ function usePurchaseInvoiceFormMode(): FormMode {
 function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
   const { t, locale } = useTranslation()
   const { uomLabel, uomSymbol } = useUomLookup()
+  const uomPicker = useUomPickerProps()
   const navigate = useNavigate()
   const notify = useNotify()
   const { id } = useParams<{ id: string }>()
@@ -769,6 +771,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
         </td>
         <td className="pi-form-lines-table__td pi-form-lines-table__td--uom">
           <select
+            {...uomPicker.selectProps}
             className="pi-form-line-row__input pi-form-line-row__input--uom"
             value={form.uomId}
             onChange={(e) => options.onChange({ uomId: e.target.value })}

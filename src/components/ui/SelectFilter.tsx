@@ -8,6 +8,8 @@ interface SelectFilterProps {
   ariaLabel: string
   className?: string
   disabled?: boolean
+  /** Fired when the list opens. UOM pickers use this for revalidate-on-open (D111). */
+  onOpen?: () => void
 }
 
 export function SelectFilter({
@@ -17,6 +19,7 @@ export function SelectFilter({
   ariaLabel,
   className,
   disabled,
+  onOpen,
 }: SelectFilterProps) {
   return (
     <Dropdown
@@ -27,6 +30,7 @@ export function SelectFilter({
       size="toolbar"
       className={className}
       disabled={disabled}
+      onOpen={onOpen}
     />
   )
 }

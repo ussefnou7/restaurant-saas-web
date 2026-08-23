@@ -10,6 +10,7 @@ import {
 import { Button } from '../../components/ui/Button'
 import { Modal } from '../../components/ui/Modal'
 import { useTranslation } from '../../i18n/useTranslation'
+import { useUomPickerProps } from '../../hooks/useUomPickerProps'
 import * as inventoryService from '../../services/inventoryService'
 import type { MaterialCategoryResponse, MaterialResponse, UomResponse } from '../../types/inventory'
 import { translateApiError } from '../../utils/errors'
@@ -59,6 +60,7 @@ export function MaterialFormModal({
   onSuccess,
 }: MaterialFormModalProps) {
   const { t, locale } = useTranslation()
+  const uomPicker = useUomPickerProps()
   const [form, setForm] = useState(emptyForm)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -255,6 +257,7 @@ export function MaterialFormModal({
           </FormField>
           <FormField label={t('inventory.col.stockUom')}>
             <FormSelect
+              {...uomPicker.selectProps}
               value={form.stockUomId}
               onChange={(e) => setForm((prev) => ({ ...prev, stockUomId: e.target.value }))}
               disabled={saving || loadingUoms}
@@ -269,6 +272,7 @@ export function MaterialFormModal({
           </FormField>
           <FormField label={t('inventory.col.displayUom')}>
             <FormSelect
+              {...uomPicker.selectProps}
               value={form.displayUomId}
               onChange={(e) => setForm((prev) => ({ ...prev, displayUomId: e.target.value }))}
               disabled={saving || loadingUoms}
