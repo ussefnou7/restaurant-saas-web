@@ -1,11 +1,6 @@
-import { PagePlaceholder } from '../../components/PagePlaceholder'
+import { ReportsCataloguePage } from './ReportsCataloguePage'
 
 export function ReportsPage() {
-  return (
-    <PagePlaceholder
-      title="Reports"
-      subtitle="Sales, inventory, and operational insights"
-      message="Reports module will be implemented here."
-    />
-  )
+  return <ReportsCataloguePage />
 }
+

@@ -1,6 +1,6 @@
 import { ArrowLeft, Filter, RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Button } from '../../../components/ui/Button'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import {
@@ -9,6 +9,7 @@ import {
   ListPage,
 } from '../../../components/ui/ListPage'
 import { LoadingRows } from '../../../components/ui/LoadingRows'
+import { getReportCatalogEntry } from '../../../data/reportsCatalog'
 import { useTranslation } from '../../../i18n/useTranslation'
 import * as branchService from '../../../services/branchService'
 import * as salesReportService from '../../../services/salesReportService'
@@ -17,6 +18,8 @@ import type { BranchResponse } from '../../../types/branch'
 import type { OrderTypeFilter, SalesFilterParams, SalesOverTimeRow } from '../../../types/reports'
 import type { UserResponse } from '../../../types/user'
 import { translateApiError } from '../../../utils/errors'
+
+const reportMeta = getReportCatalogEntry('sales-over-time')!
 
 function formatMoneyNumber(value: number): string {
   return Math.abs(value).toLocaleString(undefined, {
@@ -221,11 +224,14 @@ export function SalesOverTimeReport() {
           <div className="report-header-block">
             <div className="report-header-block__top">
               <div className="report-header-block__title-group">
-                <h1 className="report-header-block__title">{t('reports.salesOverTime')}</h1>
-                <span className="report-header-block__code-badge">{t('reports.code.salesOverTime')}</span>
+                <h1 className="report-header-block__title">{t(reportMeta.titleKey)}</h1>
+                <span className="report-header-block__code-badge">{t(reportMeta.codeKey)}</span>
+                <Link to="/reports" className="report-header-block__catalog-link">
+                  {t('reports.catalog.backToCatalog')}
+                </Link>
               </div>
             </div>
-            <p className="report-header-block__method">{t('reports.salesOverTime.subtitle')}</p>
+            <p className="report-header-block__subtitle">{t(reportMeta.descriptionKey)}</p>
           </div>
 
           <form className="report-filter-form" onSubmit={handleApplyFilters}>
@@ -345,8 +351,11 @@ export function SalesOverTimeReport() {
       <div className="report-header-block">
         <div className="report-header-block__top">
           <div className="report-header-block__title-group">
-            <h1 className="report-header-block__title">{t('reports.salesOverTime')}</h1>
-            <span className="report-header-block__code-badge">{t('reports.code.salesOverTime')}</span>
+            <h1 className="report-header-block__title">{t(reportMeta.titleKey)}</h1>
+            <span className="report-header-block__code-badge">{t(reportMeta.codeKey)}</span>
+            <Link to="/reports" className="report-header-block__catalog-link">
+              {t('reports.catalog.backToCatalog')}
+            </Link>
           </div>
           <div className="reports-page__actions">
             <Button variant="secondary" onClick={handleEditFilters}>
@@ -360,6 +369,7 @@ export function SalesOverTimeReport() {
           </div>
         </div>
 
+        <p className="report-header-block__subtitle">{t(reportMeta.descriptionKey)}</p>
         <p className="report-header-block__method">
           {t('reports.method.period', { dateFrom: urlDateFrom, dateTo: urlDateTo })}. {t('reports.method.salesRoundingNote')}
         </p>
