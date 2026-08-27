@@ -69,4 +69,3 @@ export async function deleteTenantUom(id: number | string): Promise<void> {
   // The UOM page shows a tailored "in use" hint on failure; skip the global toast.
   await api.delete(uomEndpoints.delete(id), { notifyOnError: false })
 }
-
