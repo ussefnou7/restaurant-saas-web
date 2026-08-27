@@ -1,6 +1,7 @@
 import type { TranslationDictionary } from '../../types'
 
 export const assetsAr: TranslationDictionary = {
+  'assets.title': 'الأصول',
   'assets.actions.back': 'رجوع',
   'assets.actions.saving': 'جارٍ الحفظ...',
 
@@ -44,7 +45,11 @@ export const assetsAr: TranslationDictionary = {
   'assets.lines.unitCost': 'تكلفة الوحدة',
   'assets.lines.purchaseDate': 'تاريخ الشراء',
   'assets.lines.empty.title': 'لا توجد بنود بعد',
-  'assets.lines.empty.description': 'أضف بند شراء لبدء متابعة هذا الأصل.',
+  'assets.lines.empty.description': 'أضف بند شراء للبدء في تتبع هذا الأصل.',
+  'assets.lines.cannotDeleteWithOperations': 'لا يمكن حذف بند تم تكهينه أو صيانة جزء منه',
+  'assets.lines.validation.quantityRequired': 'الكمية مطلوبة ويجب أن تكون أكبر من صفر.',
+  'assets.lines.validation.unitCostRequired': 'تكلفة الوحدة مطلوبة ويجب أن تكون أكبر من صفر.',
+  'assets.lines.validation.purchaseDateRequired': 'تاريخ الشراء مطلوب.',
 
   'assets.operation.asset': 'الأصل',
   'assets.operation.line': 'البند',

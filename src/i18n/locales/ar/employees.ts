@@ -26,6 +26,7 @@ export const employeesAr: TranslationDictionary = {
   'employees.loadError': 'فشل تحميل الموظفين',
   'employees.statusError': 'فشل تحديث حالة الموظف',
 
+  'employees.details.title': 'تفاصيل الموظف',
   'employees.details.back': 'العودة إلى الموظفين',
   'employees.details.backToList': 'العودة إلى الموظفين',
   'employees.tabs.overview': 'نظرة عامة',

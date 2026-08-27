@@ -1,6 +1,10 @@
 import type { TranslationDictionary } from '../../types'
 
 export const menuAr: TranslationDictionary = {
+  'menu.categories.title': 'تصنيفات القائمة',
+  'menu.products.title': 'منتجات القائمة',
+  'menu.products.new': 'منتج جديد',
+  'menu.products.edit': 'تعديل المنتج',
   'menu.tabs.categories': 'التصنيفات',
   'menu.tabs.products': 'المنتجات',
 
@@ -10,6 +14,7 @@ export const menuAr: TranslationDictionary = {
   'menu.col.actions': 'الإجراءات',
 
   'menu.fields.name': 'الاسم',
+  'menu.fields.nameAr': 'الاسم بالعربية',
   'menu.fields.sortOrder': 'ترتيب العرض',
   'menu.fields.category': 'التصنيف',
   'menu.fields.sellingPrice': 'سعر البيع',

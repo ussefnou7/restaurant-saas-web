@@ -1,6 +1,7 @@
 import type { TranslationDictionary } from '../../types'
 
 export const userDetailsEn: TranslationDictionary = {
+  'userDetails.title': 'User Details',
   'userDetails.tabs.overview': 'Overview',
   'userDetails.tabs.permissions': 'Permissions',
 

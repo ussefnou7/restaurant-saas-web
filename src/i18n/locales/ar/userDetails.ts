@@ -1,6 +1,7 @@
 import type { TranslationDictionary } from '../../types'
 
 export const userDetailsAr: TranslationDictionary = {
+  'userDetails.title': 'تفاصيل المستخدم',
   'userDetails.tabs.overview': 'نظرة عامة',
   'userDetails.tabs.permissions': 'الصلاحيات',
 

@@ -26,6 +26,7 @@ export const employeesEn: TranslationDictionary = {
   'employees.loadError': 'Failed to load employees',
   'employees.statusError': 'Failed to update employee status',
 
+  'employees.details.title': 'Employee Details',
   'employees.details.back': 'Back to Employees',
   'employees.details.backToList': 'Back to Employees',
   'employees.tabs.overview': 'Overview',
