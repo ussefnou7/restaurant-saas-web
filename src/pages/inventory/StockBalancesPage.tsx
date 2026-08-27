@@ -22,15 +22,16 @@ import {
   Th,
 } from '../../components/ui/Table'
 import { useTranslation } from '../../i18n/useTranslation'
+import { useUomLookup } from '../../hooks/useUomLookup'
 import * as inventoryStockService from '../../services/inventoryStockService'
+import type { UomResponse } from '../../types/inventory'
 import type { ManualTransactionPrefill } from '../../types/inventoryStock'
 import type { StockBalanceResponse } from '../../types/inventoryStock'
 import { canManageInventoryStock, canViewInventoryStock } from '../../utils/inventoryAccess'
 import { getInventoryLocalizedName } from '../../utils/inventoryDisplay'
 import { formatMoney } from '../../utils/format'
 import { translateApiError } from '../../utils/errors'
-import { getBalanceDisplayView, resolveDisplayUomId } from '../../utils/inventoryUom'
-import { useInventoryLookups } from './useInventoryLookups'
+import { getBalanceDisplayView, getLocalizedUomSymbol, resolveDisplayUomId } from '../../utils/inventoryUom'
 import { ManualTransactionModal } from './ManualTransactionModal'
 import { StockAccessDenied } from './StockAccessDenied'
 import { useStockFilterLookups } from './useStockFilterLookups'
@@ -42,7 +43,8 @@ export function StockBalancesPage() {
   const canView = canViewInventoryStock()
   const canManage = canManageInventoryStock()
   const { warehouses, materials, categories } = useStockFilterLookups()
-  const { uoms } = useInventoryLookups()
+  const { activeUoms } = useUomLookup()
+  const uoms = activeUoms as unknown as UomResponse[]
 
   const [balances, setBalances] = useState<StockBalanceResponse[]>([])
   const [loading, setLoading] = useState(true)
@@ -204,11 +206,23 @@ export function StockBalancesPage() {
                     row,
                     uoms,
                     t('inventory.stock.balances.storedAs'),
+                    locale,
                   )
                   const material = materials.find((m) => m.id === row.materialId)
                   const displayUomId =
                     row.displayUomId ??
                     (material ? resolveDisplayUomId(material) : row.uomId)
+                  const displayUom = uoms.find((u) => u.id === displayUomId)
+                  const stockUom = uoms.find((u) => u.id === row.uomId)
+                  const displayUomText =
+                    (displayUom ? getLocalizedUomSymbol(displayUom, locale) : undefined) ??
+                    displayUom?.code ??
+                    row.displayUomSymbol ??
+                    (stockUom ? getLocalizedUomSymbol(stockUom, locale) : undefined) ??
+                    stockUom?.code ??
+                    row.uomSymbol ??
+                    row.uomCode ??
+                    t('common.empty.dash')
 
                   return (
                     <TableRow key={row.id}>
@@ -244,12 +258,7 @@ export function StockBalancesPage() {
                           </span>
                         ) : null}
                       </Td>
-                      <Td>
-                        {row.displayUomSymbol ??
-                          uoms.find((u) => u.id === displayUomId)?.symbol ??
-                          row.uomSymbol ??
-                          t('common.empty.dash')}
-                      </Td>
+                      <Td>{displayUomText}</Td>
                       <Td dir="ltr" className="table-cell--numeric">{formatMoney(row.averageCost)}</Td>
                       <Td dir="ltr" className="table-cell--numeric">{formatMoney(row.stockValue)}</Td>
                       <Td column="status">

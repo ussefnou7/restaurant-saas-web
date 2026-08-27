@@ -3,8 +3,10 @@ import { RotateCcw } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { FormInput } from '../../../components/fields'
 import { OrderConsumptionStatusBadge } from '../../../components/inventory/OrderConsumptionStatusBadge'
+import { ErrorState } from '../../../components/ui/ErrorState'
 import {
   ListCard,
+  ListCardBody,
   ListCardHeader,
   ListPage,
   ListPageStates,
@@ -30,7 +32,7 @@ import type {
   OrderConsumptionDocListResponse,
   OrderConsumptionStatus,
 } from '../../../types/orderConsumption'
-import { canManageInventoryStock } from '../../../utils/inventoryAccess'
+import { canManageInventoryStock, canViewInventoryStock } from '../../../utils/inventoryAccess'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { translateApiError } from '../../../utils/errors'
 import { formatDate, formatDateTime } from '../../../utils/format'
@@ -58,6 +60,7 @@ export function OrderConsumptionListPage() {
   const { t, locale } = useTranslation()
   const navigate = useNavigate()
   const notify = useNotify()
+  const canView = canViewInventoryStock()
   const canManage = canManageInventoryStock()
   const { warehouses } = useStockFilterLookups()
 
@@ -99,10 +102,10 @@ export function OrderConsumptionListPage() {
   }, [dateFrom, dateTo, page, status, t, warehouseId])
 
   useEffect(() => {
-    if (!canManage) return
+    if (!canView) return
     const timer = window.setTimeout(() => void loadDocs(), 300)
     return () => window.clearTimeout(timer)
-  }, [canManage, loadDocs])
+  }, [canView, loadDocs])
 
   async function handleRecalculate(docId: number) {
     setRecalculatingId(docId)
@@ -117,7 +120,7 @@ export function OrderConsumptionListPage() {
     }
   }
 
-  if (!canManage) return <StockAccessDenied />
+  if (!canView) return <StockAccessDenied />
 
   const hasFilters = Boolean(warehouseId || status || dateFrom || dateTo)
   const showEmpty = !loading && !error && docs.length === 0 && !hasFilters
@@ -201,62 +204,68 @@ export function OrderConsumptionListPage() {
           }
         />
 
-        <ListPageStates
-          loading={loading}
-          loadingMessage={t('orderConsumption.loading')}
-          loadingColumns={6}
-          showEmpty={showEmpty}
-          emptyTitle={t('orderConsumption.empty.title')}
-          emptyDescription={t('orderConsumption.empty.description')}
-          showFilterEmpty={showFilterEmpty}
-          filterEmptyTitle={t('orderConsumption.empty.filteredTitle')}
-          filterEmptyDescription={t('orderConsumption.empty.filteredDescription')}
-          showTable={showTable}
-          table={
-            <DataTable>
-              <TableHead>
-                <TableRow>
-                  <Th column="entity">{t('orderConsumption.col.reference')}</Th>
-                  <Th column="status">{t('orderConsumption.col.status')}</Th>
-                  <Th column="date">{t('orderConsumption.col.createdAt')}</Th>
-                  <Th column="date">{t('orderConsumption.col.processedAt')}</Th>
-                  <Th>{t('orderConsumption.col.lines')}</Th>
-                  <ThActions>{t('orderConsumption.col.actions')}</ThActions>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {docs.map((doc) => (
-                  <ClickableTableRow
-                    key={doc.id}
-                    onClick={() => navigate(`/inventory/order-consumption/${doc.id}`)}
-                  >
-                    <Td column="entity">{getReference(doc)}</Td>
-                    <Td column="status"><OrderConsumptionStatusBadge status={doc.status} /></Td>
-                    <Td column="date" dir="ltr">{formatDateTime(doc.createdAt)}</Td>
-                    <Td column="date" dir="ltr">{formatDateTime(doc.processedAt)}</Td>
-                    <Td dir="ltr">{doc.lineCount}</Td>
-                    <StopPropagationCell className="order-consumption-page__actions" cellAlign="end">
-                      {canRecalculateStatus() ? (
-                        <button
-                          type="button"
-                          className="order-consumption-recalculate-action"
-                          disabled={recalculatingId === doc.id}
-                          onClick={() => void handleRecalculate(doc.id)}
-                          aria-label={t('orderConsumption.action.recalculate')}
-                          title={t('orderConsumption.action.recalculate')}
-                        >
-                          <RotateCcw size={16} aria-hidden />
-                        </button>
-                      ) : (
-                        <span className="order-consumption-page__no-action">-</span>
-                      )}
-                    </StopPropagationCell>
-                  </ClickableTableRow>
-                ))}
-              </TableBody>
-            </DataTable>
-          }
-        />
+        {error ? (
+          <ListCardBody>
+            <ErrorState message={error} onRetry={() => void loadDocs()} />
+          </ListCardBody>
+        ) : (
+          <ListPageStates
+            loading={loading}
+            loadingMessage={t('orderConsumption.loading')}
+            loadingColumns={6}
+            showEmpty={showEmpty}
+            emptyTitle={t('orderConsumption.empty.title')}
+            emptyDescription={t('orderConsumption.empty.description')}
+            showFilterEmpty={showFilterEmpty}
+            filterEmptyTitle={t('orderConsumption.empty.filteredTitle')}
+            filterEmptyDescription={t('orderConsumption.empty.filteredDescription')}
+            showTable={showTable}
+            table={
+              <DataTable>
+                <TableHead>
+                  <TableRow>
+                    <Th column="entity">{t('orderConsumption.col.reference')}</Th>
+                    <Th column="status">{t('orderConsumption.col.status')}</Th>
+                    <Th column="date">{t('orderConsumption.col.createdAt')}</Th>
+                    <Th column="date">{t('orderConsumption.col.processedAt')}</Th>
+                    <Th>{t('orderConsumption.col.lines')}</Th>
+                    <ThActions>{t('orderConsumption.col.actions')}</ThActions>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {docs.map((doc) => (
+                    <ClickableTableRow
+                      key={doc.id}
+                      onClick={() => navigate(`/inventory/order-consumption/${doc.id}`)}
+                    >
+                      <Td column="entity">{getReference(doc)}</Td>
+                      <Td column="status"><OrderConsumptionStatusBadge status={doc.status} /></Td>
+                      <Td column="date" dir="ltr">{formatDateTime(doc.createdAt)}</Td>
+                      <Td column="date" dir="ltr">{formatDateTime(doc.processedAt)}</Td>
+                      <Td dir="ltr">{doc.lineCount}</Td>
+                      <StopPropagationCell className="order-consumption-page__actions" cellAlign="end">
+                        {canManage && canRecalculateStatus() ? (
+                          <button
+                            type="button"
+                            className="order-consumption-recalculate-action"
+                            disabled={recalculatingId === doc.id}
+                            onClick={() => void handleRecalculate(doc.id)}
+                            aria-label={t('orderConsumption.action.recalculate')}
+                            title={t('orderConsumption.action.recalculate')}
+                          >
+                            <RotateCcw size={16} aria-hidden />
+                          </button>
+                        ) : (
+                          <span className="order-consumption-page__no-action">-</span>
+                        )}
+                      </StopPropagationCell>
+                    </ClickableTableRow>
+                  ))}
+                </TableBody>
+              </DataTable>
+            }
+          />
+        )}
 
         {showTable ? (
           <ListPagination

@@ -16,6 +16,7 @@ import {
   Th,
 } from '../../../components/ui/Table'
 import { useTranslation } from '../../../i18n/useTranslation'
+import { useUomLookup } from '../../../hooks/useUomLookup'
 import * as inventoryService from '../../../services/inventoryService'
 import * as transferService from '../../../services/inventoryTransferService'
 import type { MaterialResponse, UomResponse, WarehouseResponse } from '../../../types/inventory'
@@ -63,9 +64,10 @@ function TransferFormInner({ mode, transfer }: { mode: FormMode; transfer: Inven
   const { t, locale } = useTranslation()
   const navigate = useNavigate()
   const notify = useNotify()
+  const { activeUoms, loading: uomLoading, uomLabel, uomSymbol } = useUomLookup()
   const [warehouses, setWarehouses] = useState<WarehouseResponse[]>([])
   const [materials, setMaterials] = useState<MaterialResponse[]>([])
-  const [uoms, setUoms] = useState<UomResponse[]>([])
+  const uoms = activeUoms as unknown as UomResponse[]
   const [lookupLoading, setLookupLoading] = useState(true)
 
   const [sourceWarehouseId, setSourceWarehouseId] = useState(
@@ -98,14 +100,12 @@ function TransferFormInner({ mode, transfer }: { mode: FormMode; transfer: Inven
   useEffect(() => {
     async function loadLookups() {
       try {
-        const [ws, mats, uomList] = await Promise.all([
+        const [ws, mats] = await Promise.all([
           inventoryService.getWarehouses({ active: true }),
           inventoryService.getMaterials({ active: true }),
-          inventoryService.getUoms(true),
         ])
         setWarehouses(ws)
         setMaterials(mats)
-        setUoms(uomList)
       } finally {
         setLookupLoading(false)
       }
@@ -200,6 +200,20 @@ function TransferFormInner({ mode, transfer }: { mode: FormMode; transfer: Inven
     } finally {
       setSaving(false)
     }
+  }
+
+  function resolveUomDisplay(
+    uomId: number | string | null | undefined,
+    fallbackSymbol?: string | null,
+    fallbackCode?: string | null,
+  ): string {
+    const symbol = uomSymbol(uomId)
+    if (symbol !== '—') return symbol
+
+    const label = uomLabel(uomId)
+    if (label !== '—') return label
+
+    return fallbackSymbol ?? fallbackCode ?? '—'
   }
 
   const warehouseOptions = warehouses.map((w) => ({
@@ -302,7 +316,7 @@ function TransferFormInner({ mode, transfer }: { mode: FormMode; transfer: Inven
                       <Td dir="ltr" className="table-cell--numeric">{line.requestedQuantity}</Td>
                       <Td dir="ltr" className="table-cell--numeric">{line.dispatchedQuantity ?? <span className="text-muted">—</span>}</Td>
                       <Td dir="ltr" className="table-cell--numeric">{line.receivedQuantity ?? <span className="text-muted">—</span>}</Td>
-                      <Td>{line.uomSymbol ?? line.uomCode}</Td>
+                      <Td>{resolveUomDisplay(line.uomId, line.uomSymbol, line.uomCode)}</Td>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -389,7 +403,7 @@ function TransferFormInner({ mode, transfer }: { mode: FormMode; transfer: Inven
                   const selectedMat = materials.find((m) => String(m.id) === line.materialId)
                   const uomOptions = uoms.map((u) => ({
                     value: String(u.id),
-                    label: `${u.symbol ?? u.code} — ${u.name}`,
+                    label: `${resolveUomDisplay(u.id, u.symbol, u.code)} — ${getInventoryLocalizedName(u, locale)}`,
                   }))
                   return (
                     <TableRow key={line.clientId}>
@@ -423,14 +437,20 @@ function TransferFormInner({ mode, transfer }: { mode: FormMode; transfer: Inven
                         <FormSelect
                           value={line.uomId}
                           onChange={(e) => updateLine(line.clientId, 'uomId', e.target.value)}
-                          disabled={saving || lookupLoading}
+                          disabled={saving || lookupLoading || uomLoading}
                         >
                           <option value="">{t('inventory.common.selectUom')}</option>
                           {uomOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                         </FormSelect>
-                        {selectedMat?.stockUomSymbol ? (
+                        {selectedMat ? (
                           <span className="transfer-form__stock-hint" dir="ltr">
-                            {t('inventory.purchase.lines.stockUomHint', { uom: selectedMat.stockUomSymbol ?? selectedMat.stockUomCode ?? '' })}
+                            {t('inventory.purchase.lines.stockUomHint', {
+                              uom: resolveUomDisplay(
+                                selectedMat.stockUomId ?? selectedMat.defaultUomId,
+                                selectedMat.stockUomSymbol,
+                                selectedMat.stockUomCode,
+                              ),
+                            })}
                           </span>
                         ) : null}
                       </Td>

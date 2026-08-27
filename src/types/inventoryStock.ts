@@ -87,6 +87,8 @@ export type WarehouseStockResponse = {
   materialName: string
   materialNameAr?: string | null
   warehouseId: number
+  uomId?: number | null
+  displayUomId?: number | null
   uomName: string
   uomNameAr?: string | null
   uomSymbol?: string | null

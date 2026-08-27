@@ -8,6 +8,7 @@ import { OrderConsumptionStatusBadge } from '../../../components/inventory/Order
 import { Button } from '../../../components/ui/Button'
 import { LoadingState } from '../../../components/ui/LoadingState'
 import { useNotify } from '../../../components/ui/NotificationContext'
+import { useUomLookup } from '../../../hooks/useUomLookup'
 import {
   DataTable,
   TableBody,
@@ -24,7 +25,7 @@ import type {
   OrderConsumptionMaterialsSummaryResponse,
 } from '../../../types/orderConsumption'
 import type { UserResponse } from '../../../types/user'
-import { canManageInventoryStock } from '../../../utils/inventoryAccess'
+import { canManageInventoryStock, canViewInventoryStock } from '../../../utils/inventoryAccess'
 import { translateApiError } from '../../../utils/errors'
 import { formatDate, formatDateTime } from '../../../utils/format'
 import { StockAccessDenied } from '../StockAccessDenied'
@@ -56,6 +57,8 @@ export function OrderConsumptionDetailPage() {
   const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const notify = useNotify()
+  const { uomLabel, uomSymbol } = useUomLookup()
+  const canView = canViewInventoryStock()
   const canManage = canManageInventoryStock()
   const [doc, setDoc] = useState<OrderConsumptionDocDetailResponse | null>(null)
   const [users, setUsers] = useState<UserResponse[]>([])
@@ -119,16 +122,16 @@ export function OrderConsumptionDetailPage() {
   }, [id, materialsLoading, materialsSummary, t])
 
   useEffect(() => {
-    if (!canManage) return
+    if (!canView) return
     const timer = window.setTimeout(() => void loadDoc(), 0)
     return () => window.clearTimeout(timer)
-  }, [canManage, loadDoc])
+  }, [canView, loadDoc])
 
   useEffect(() => {
-    if (!canManage) return
+    if (!canView) return
     const timer = window.setTimeout(() => void loadUsers(), 0)
     return () => window.clearTimeout(timer)
-  }, [canManage, loadUsers])
+  }, [canView, loadUsers])
 
   useEffect(() => {
     if (activeTab === TAB_MATERIALS) {
@@ -153,7 +156,7 @@ export function OrderConsumptionDetailPage() {
     }
   }
 
-  if (!canManage) return <StockAccessDenied />
+  if (!canView) return <StockAccessDenied />
 
   function getReference(item: OrderConsumptionDocDetailResponse): string {
     return `${item.warehouseName} - ${formatDate(item.createdAt)}`
@@ -163,61 +166,79 @@ export function OrderConsumptionDetailPage() {
     return userNameById.get(userId) ?? t('orderConsumption.lines.unknownUser', { id: userId })
   }
 
+  function getMaterialUom(item: OrderConsumptionDocDetailResponse['materials'][number]): string | null {
+    const symbol = uomSymbol(item.uomId)
+    if (symbol !== '—') return symbol
+
+    const label = uomLabel(item.uomId)
+    if (label !== '—') return label
+
+    return item.uomSymbol?.trim() || null
+  }
+
+  function getSummaryUom(summary: OrderConsumptionMaterialsSummaryResponse['materials'][number]): string {
+    const symbol = uomSymbol(summary.uomId)
+    if (symbol !== '—') return symbol
+
+    const label = uomLabel(summary.uomId)
+    if (label !== '—') return label
+
+    return summary.uom
+  }
+
   // Both lists come from the persisted (doc, material) rows, split by why each one failed.
   const failedMaterials =
     doc?.materials.filter((item) => item.failureReason === 'TECHNICAL_FAILURE') ?? []
   const blockedMaterials =
     doc?.materials.filter((item) => item.failureReason === 'INSUFFICIENT_STOCK') ?? []
-  const canRecalculate = doc ? canRecalculateStatus(doc.status) : false
+  const canRecalculate = canManage && (doc ? canRecalculateStatus(doc.status) : false)
+
+  const actions = doc && canRecalculate ? (
+    <Button variant="primary" onClick={() => void handleRecalculate()} disabled={recalculating}>
+      <RotateCcw size={16} aria-hidden />
+      {recalculating
+        ? t('orderConsumption.action.recalculating')
+        : t('orderConsumption.action.recalculate')}
+    </Button>
+  ) : null
 
   const overview = doc ? (
+    <div className="order-consumption-detail__header-grid">
+      <div className="order-consumption-detail__info">
+        <span className="order-consumption-detail__label">
+          {t('orderConsumption.col.reference')}
+        </span>
+        <span className="order-consumption-detail__value">{getReference(doc)}</span>
+      </div>
+      <div className="order-consumption-detail__info">
+        <span className="order-consumption-detail__label">
+          {t('orderConsumption.col.status')}
+        </span>
+        <span className="order-consumption-detail__value">
+          <OrderConsumptionStatusBadge status={doc.status} />
+        </span>
+      </div>
+      <div className="order-consumption-detail__info">
+        <span className="order-consumption-detail__label">
+          {t('orderConsumption.col.createdAt')}
+        </span>
+        <span className="order-consumption-detail__value" dir="ltr">
+          {formatDateTime(doc.createdAt)}
+        </span>
+      </div>
+      <div className="order-consumption-detail__info">
+        <span className="order-consumption-detail__label">
+          {t('orderConsumption.col.processedAt')}
+        </span>
+        <span className="order-consumption-detail__value" dir="ltr">
+          {formatDateTime(doc.processedAt)}
+        </span>
+      </div>
+    </div>
+  ) : null
+
+  const detailContent = doc ? (
     <div className="order-consumption-detail">
-      <DetailsCard
-        title={getReference(doc)}
-        actions={
-          canRecalculate ? (
-            <Button variant="primary" onClick={() => void handleRecalculate()} disabled={recalculating}>
-              <RotateCcw size={16} aria-hidden />
-              {recalculating
-                ? t('orderConsumption.action.recalculating')
-                : t('orderConsumption.action.recalculate')}
-            </Button>
-          ) : null
-        }
-      >
-        <div className="order-consumption-detail__header-grid">
-          <div className="order-consumption-detail__info">
-            <span className="order-consumption-detail__label">
-              {t('orderConsumption.col.reference')}
-            </span>
-            <span className="order-consumption-detail__value">{getReference(doc)}</span>
-          </div>
-          <div className="order-consumption-detail__info">
-            <span className="order-consumption-detail__label">
-              {t('orderConsumption.col.status')}
-            </span>
-            <span className="order-consumption-detail__value">
-              <OrderConsumptionStatusBadge status={doc.status} />
-            </span>
-          </div>
-          <div className="order-consumption-detail__info">
-            <span className="order-consumption-detail__label">
-              {t('orderConsumption.col.createdAt')}
-            </span>
-            <span className="order-consumption-detail__value" dir="ltr">
-              {formatDateTime(doc.createdAt)}
-            </span>
-          </div>
-          <div className="order-consumption-detail__info">
-            <span className="order-consumption-detail__label">
-              {t('orderConsumption.col.processedAt')}
-            </span>
-            <span className="order-consumption-detail__value" dir="ltr">
-              {formatDateTime(doc.processedAt)}
-            </span>
-          </div>
-        </div>
-      </DetailsCard>
 
       {usersError ? <div className="page-error-banner">{usersError}</div> : null}
 
@@ -280,17 +301,21 @@ export function OrderConsumptionDetailPage() {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {blockedMaterials.map((item) => (
-                        <TableRow key={item.materialId}>
-                          <Td column="entity">{item.materialName}</Td>
-                          <Td dir="ltr">
-                            {formatQuantityWithUnit(item.requiredQuantity, item.uomSymbol)}
-                          </Td>
-                          <Td dir="ltr">
-                            {formatQuantityWithUnit(item.availableQuantity, item.uomSymbol)}
-                          </Td>
-                        </TableRow>
-                      ))}
+                      {blockedMaterials.map((item) => {
+                        const materialUom = getMaterialUom(item)
+
+                        return (
+                          <TableRow key={item.materialId}>
+                            <Td column="entity">{item.materialName}</Td>
+                            <Td dir="ltr">
+                              {formatQuantityWithUnit(item.requiredQuantity, materialUom)}
+                            </Td>
+                            <Td dir="ltr">
+                              {formatQuantityWithUnit(item.availableQuantity, materialUom)}
+                            </Td>
+                          </TableRow>
+                        )
+                      })}
                     </TableBody>
                   </DataTable>
                 </div>
@@ -355,7 +380,7 @@ export function OrderConsumptionDetailPage() {
                       <TableRow key={`${summary.materialId}-${summary.uom}`}>
                         <Td column="entity">{summary.materialName}</Td>
                         <Td dir="ltr">{formatDecimalString(summary.totalQtyConsumed)}</Td>
-                        <Td>{summary.uom}</Td>
+                        <Td>{getSummaryUom(summary)}</Td>
                         <Td dir="ltr">{summary.orderCount}</Td>
                       </TableRow>
                     ))}
@@ -371,6 +396,10 @@ export function OrderConsumptionDetailPage() {
 
   return (
     <EntityDetailScreen
+      title={doc ? t('orderConsumption.detail.title', { id: doc.id }) : undefined}
+      subtitle={doc ? getReference(doc) : undefined}
+      badge={doc ? <OrderConsumptionStatusBadge status={doc.status} /> : undefined}
+      actions={actions}
       backTo="/inventory/order-consumption"
       backLabel={t('orderConsumption.detail.back')}
       loading={loading}
@@ -380,6 +409,8 @@ export function OrderConsumptionDetailPage() {
       notFoundMessage={t('orderConsumption.detail.notFoundMessage')}
       error={error}
       overview={overview}
-    />
+    >
+      {detailContent}
+    </EntityDetailScreen>
   )
 }

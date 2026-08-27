@@ -22,6 +22,7 @@ import {
 } from '../../components/ui/Table'
 import { FormInput } from '../../components/fields'
 import { useTranslation } from '../../i18n/useTranslation'
+import { useUomLookup } from '../../hooks/useUomLookup'
 import * as inventoryStockService from '../../services/inventoryStockService'
 import type { InventoryTransactionResponse, InventoryTransactionType } from '../../types/inventoryStock'
 import { translateApiError } from '../../utils/errors'
@@ -56,6 +57,7 @@ export function InventoryTransactionsPage() {
   const canView = canViewInventoryStock()
   const canManage = canManageInventoryStock()
   const { warehouses, materials, categories } = useStockFilterLookups()
+  const { uomLabel, uomSymbol } = useUomLookup()
 
   const [transactions, setTransactions] = useState<InventoryTransactionResponse[]>([])
   const [loading, setLoading] = useState(true)
@@ -112,6 +114,21 @@ export function InventoryTransactionsPage() {
   function handleTransactionSuccess() {
     notify.success(t('inventory.stock.manual.toast.success'))
     void loadTransactions()
+  }
+
+  function resolveUomDisplay(
+    uomId: number | string,
+    fallbackSymbol?: string | null,
+    fallbackName?: string | null,
+    fallbackCode?: string | null,
+  ): string | null {
+    const symbol = uomSymbol(uomId)
+    if (symbol !== '—') return symbol
+
+    const label = uomLabel(uomId)
+    if (label !== '—') return label
+
+    return fallbackSymbol ?? fallbackName ?? fallbackCode ?? null
   }
 
   if (!canView) return <StockAccessDenied />
@@ -249,13 +266,25 @@ export function InventoryTransactionsPage() {
               </TableHead>
               <TableBody>
                 {transactions.map((txn) => {
+                  const enteredUomDisplay = resolveUomDisplay(
+                    txn.enteredUomId,
+                    txn.enteredUomSymbol,
+                    txn.enteredUomName,
+                    txn.enteredUomCode,
+                  )
+                  const stockUomDisplay = resolveUomDisplay(
+                    txn.stockUomId,
+                    txn.stockUomSymbol,
+                    txn.stockUomName,
+                    txn.stockUomCode,
+                  )
                   const quantityView = getTransactionQuantityView(
                     txn.enteredQuantity,
-                    txn.enteredUomSymbol,
-                    txn.enteredUomCode,
+                    enteredUomDisplay,
+                    null,
                     txn.stockQuantity,
-                    txn.stockUomSymbol,
-                    txn.stockUomCode,
+                    stockUomDisplay,
+                    null,
                     t('inventory.stock.transactions.storedAs'),
                   )
 
@@ -298,12 +327,7 @@ export function InventoryTransactionsPage() {
                           <span className="inventory-uom-secondary">{quantityView.stockSecondary}</span>
                         ) : null}
                       </Td>
-                      <Td>
-                        {txn.enteredUomSymbol ??
-                          txn.enteredUomName ??
-                          txn.enteredUomCode ??
-                          t('common.empty.dash')}
-                      </Td>
+                      <Td>{enteredUomDisplay ?? t('common.empty.dash')}</Td>
                     </TableRow>
                   )
                 })}

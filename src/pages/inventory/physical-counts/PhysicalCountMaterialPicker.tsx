@@ -20,6 +20,7 @@ import { translateApiError } from '../../../utils/errors'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { getPhysicalCountUomDisplay } from './physicalCountDisplay'
 import { useInventoryLookups } from '../useInventoryLookups'
+import { useUomLookup } from '../../../hooks/useUomLookup'
 
 interface PhysicalCountMaterialPickerProps {
   open: boolean
@@ -39,7 +40,8 @@ export function PhysicalCountMaterialPicker({
   loading = false,
 }: PhysicalCountMaterialPickerProps) {
   const { t, locale } = useTranslation()
-  const { categories, uoms } = useInventoryLookups()
+  const { categories } = useInventoryLookups()
+  const { uomLabel, uomSymbol } = useUomLookup()
 
   const [materials, setMaterials] = useState<MaterialResponse[]>([])
   const [lookupLoading, setLookupLoading] = useState(false)
@@ -131,6 +133,21 @@ export function PhysicalCountMaterialPicker({
   const showEmpty = !lookupLoading && !error && visibleMaterials.length === 0
   const showTable = !lookupLoading && !error && visibleMaterials.length > 0
 
+  function getMaterialUomDisplay(material: MaterialResponse) {
+    const uomId = material.stockUomId ?? material.displayUomId ?? material.defaultUomId
+    if (uomId) {
+      const symbol = uomSymbol(uomId)
+      if (symbol !== '—') return getPhysicalCountUomDisplay(symbol, locale, t)
+
+      const label = uomLabel(uomId)
+      if (label !== '—') {
+        return { label, dir: locale === 'ar' ? undefined : ('ltr' as const) }
+      }
+    }
+
+    return getPhysicalCountUomDisplay(material.stockUomSymbol ?? material.stockUomCode ?? '', locale, t)
+  }
+
   return (
     <Modal
       open={open}
@@ -198,11 +215,7 @@ export function PhysicalCountMaterialPicker({
           </TableHead>
           <TableBody>
             {visibleMaterials.map((material) => {
-              const uomId = material.stockUomId ?? material.displayUomId ?? material.defaultUomId
-              const uomObject = uomId ? uoms.find((u) => u.id === uomId) : undefined
-              const uomDisplay = uomObject
-                ? { label: getInventoryLocalizedName(uomObject, locale), dir: locale === 'ar' ? undefined : ('ltr' as const) }
-                : getPhysicalCountUomDisplay(material.stockUomSymbol ?? material.stockUomCode ?? '', locale, t)
+              const uomDisplay = getMaterialUomDisplay(material)
 
               return (
                 <TableRow key={material.id}>
@@ -227,4 +240,3 @@ export function PhysicalCountMaterialPicker({
     </Modal>
   )
 }
-
