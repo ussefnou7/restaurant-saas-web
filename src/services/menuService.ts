@@ -54,7 +54,11 @@ export async function deleteMenuCategory(id: number | string): Promise<void> {
 
 export async function getProducts(params: ProductListParams = {}): Promise<Product[]> {
   const response = await api.get<Product[]>(
-    `/api/menu/products${toSearchParams({ menuCategoryId: params.menuCategoryId })}`,
+    `/api/menu/products${toSearchParams({
+      menuCategoryId: params.menuCategoryId,
+      parentEligible: params.parentEligible,
+      excludeProductId: params.excludeProductId,
+    })}`,
   )
   return response.data
 }

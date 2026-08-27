@@ -47,7 +47,7 @@ export function MenuCategoryFormModal({
       setForm({
         name: category.name,
         sortOrder: String(category.sortOrder ?? 0),
-        active: category.active,
+        active: category.isActive,
       })
     }
   }, [open, isCreate, category])

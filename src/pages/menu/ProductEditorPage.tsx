@@ -27,12 +27,14 @@ const emptyForm = {
   sellingPrice: '',
   menuCategoryId: '',
   parentProductId: '',
+  variantLabel: '',
+  variantLabelAr: '',
   isMenu: true,
 }
 
 function getProductRole(product: Product | null): ProductRole {
   if (product?.parentProductId != null) return 'variant'
-  if (product?.parent || product?.isParent) return 'parent'
+  if (product?.isParent) return 'parent'
   return 'standalone'
 }
 
@@ -62,10 +64,10 @@ export function ProductEditorPage() {
 
   const role = getProductRole(product)
   const isParent = role === 'parent'
-  const isVariant = role === 'variant'
   const dirty = JSON.stringify(form) !== savedSnapshot
   const readOnly = !isCreate && mode === 'view'
   const draftHasParent = form.parentProductId !== ''
+  const draftIsParent = isParent && !draftHasParent
 
   const loadProduct = useCallback(async () => {
     if (isCreate || productId == null) return
@@ -83,11 +85,13 @@ export function ProductEditorPage() {
         sellingPrice: String(nextProduct.sellingPrice),
         menuCategoryId: String(nextProduct.menuCategoryId),
         parentProductId: nextProduct.parentProductId == null ? '' : String(nextProduct.parentProductId),
+        variantLabel: nextProduct.variantLabel ?? '',
+        variantLabelAr: nextProduct.variantLabelAr ?? '',
         isMenu: nextProduct.isMenu,
       }
       setForm(nextForm)
       setSavedSnapshot(JSON.stringify(nextForm))
-      if (nextProduct.parent || nextProduct.isParent) {
+      if (nextProduct.isParent) {
         const nextVariants = await menuService.getProductVariants(nextProduct.id)
         setVariants(nextVariants)
         setActiveTab('variants')
@@ -108,14 +112,17 @@ export function ProductEditorPage() {
   const loadProductOptions = useCallback(async () => {
     setProductsLoading(true)
     try {
-      setProductOptions(await menuService.getProducts())
+      setProductOptions(await menuService.getProducts({
+        parentEligible: true,
+        excludeProductId: productId ?? undefined,
+      }))
     } catch (err) {
       setError(translateApiError(err, t).message)
       setProductOptions([])
     } finally {
       setProductsLoading(false)
     }
-  }, [t])
+  }, [productId, t])
 
   useEffect(() => {
     void refreshCategories()
@@ -148,10 +155,13 @@ export function ProductEditorPage() {
 
   useEffect(() => {
     if (!isCreate || form.menuCategoryId || categories.length === 0) return
-    const firstActive = categories.find((category) => category.active)
+    const firstActive = categories.find((category) => category.isActive)
     if (!firstActive) return
     const timer = window.setTimeout(() => {
-      setForm((current) => ({ ...current, menuCategoryId: String(firstActive.id) }))
+      setForm((current) => ({
+        ...current,
+        menuCategoryId: String(firstActive.id),
+      }))
     }, 0)
     return () => window.clearTimeout(timer)
   }, [categories, form.menuCategoryId, isCreate])
@@ -159,7 +169,7 @@ export function ProductEditorPage() {
   const categoryOptions = useMemo(
     () =>
       categories
-        .filter((category) => category.active || String(category.id) === form.menuCategoryId)
+        .filter((category) => category.isActive || String(category.id) === form.menuCategoryId)
         .map((category) => ({
           value: String(category.id),
           label: category.name,
@@ -181,24 +191,26 @@ export function ProductEditorPage() {
   )
 
   const tabs = useMemo(() => {
+    if (draftHasParent) {
+      return [{ id: 'recipe', label: t('menu.editor.tabs.recipe') }]
+    }
     if (isCreate) {
       return [
         { id: 'recipe', label: t('menu.editor.tabs.recipe') },
         { id: 'addons', label: t('menu.editor.tabs.addons') },
       ]
     }
-    if (isParent) {
+    if (draftIsParent) {
       return [
         { id: 'variants', label: t('menu.editor.tabs.variants') },
         { id: 'addons', label: t('menu.editor.tabs.addons') },
       ]
     }
-    if (isVariant) return [{ id: 'recipe', label: t('menu.editor.tabs.recipe') }]
     return [
       { id: 'recipe', label: t('menu.editor.tabs.recipe') },
       { id: 'addons', label: t('menu.editor.tabs.addons') },
     ]
-  }, [isCreate, isParent, isVariant, t])
+  }, [draftHasParent, draftIsParent, isCreate, t])
 
   const effectiveActiveTab = tabs.some((tab) => tab.id === activeTab)
     ? activeTab
@@ -214,8 +226,11 @@ export function ProductEditorPage() {
   function validate(): string | null {
     if (!form.name.trim()) return t('menu.products.validation.nameRequired')
     if (!form.menuCategoryId) return t('menu.products.validation.categoryRequired')
-    if (!isParent && parseNonNegativeNumber(form.sellingPrice) === null) {
+    if (!draftIsParent && parseNonNegativeNumber(form.sellingPrice) === null) {
       return t('menu.products.validation.priceInvalid')
+    }
+    if (draftHasParent && (!form.variantLabel.trim() || !form.variantLabelAr.trim())) {
+      return t('menu.products.validation.variantLabelsRequired')
     }
     return null
   }
@@ -234,12 +249,12 @@ export function ProductEditorPage() {
       name: form.name.trim(),
       description: form.description.trim() || null,
       descriptionAr: form.descriptionAr.trim() || null,
-      sellingPrice: isParent && product ? product.sellingPrice : parseNonNegativeNumber(form.sellingPrice) ?? 0,
+      sellingPrice: draftIsParent && product ? product.sellingPrice : parseNonNegativeNumber(form.sellingPrice) ?? 0,
       menuCategoryId: Number(form.menuCategoryId),
       parentProductId: form.parentProductId ? Number(form.parentProductId) : null,
-      variantLabel: product?.variantLabel ?? null,
-      variantLabelAr: product?.variantLabelAr ?? null,
-      isMenu: isVariant || draftHasParent ? false : form.isMenu,
+      variantLabel: draftHasParent ? form.variantLabel.trim() : null,
+      variantLabelAr: draftHasParent ? form.variantLabelAr.trim() : null,
+      isMenu: draftHasParent ? false : form.isMenu,
     }
 
     try {
@@ -259,6 +274,8 @@ export function ProductEditorPage() {
           sellingPrice: String(updated.sellingPrice),
           menuCategoryId: String(updated.menuCategoryId),
           parentProductId: updated.parentProductId == null ? '' : String(updated.parentProductId),
+          variantLabel: updated.variantLabel ?? '',
+          variantLabelAr: updated.variantLabelAr ?? '',
           isMenu: updated.isMenu,
         }
         setForm(nextForm)
@@ -396,7 +413,9 @@ export function ProductEditorPage() {
               <FormField label={t('menu.fields.category')} htmlFor="product-editor-category" required>
                 <Dropdown
                   value={form.menuCategoryId}
-                  onChange={(menuCategoryId) => setForm((current) => ({ ...current, menuCategoryId }))}
+                  onChange={(menuCategoryId) =>
+                    setForm((current) => ({ ...current, menuCategoryId }))
+                  }
                   options={categoryOptions}
                   ariaLabel={t('menu.fields.category')}
                   disabled={readOnly || saving || categoriesLoading}
@@ -410,6 +429,8 @@ export function ProductEditorPage() {
                       ...current,
                       parentProductId,
                       isMenu: parentProductId ? false : current.isMenu,
+                      variantLabel: parentProductId ? current.variantLabel : '',
+                      variantLabelAr: parentProductId ? current.variantLabelAr : '',
                     }))
                   }
                   options={parentProductOptions}
@@ -419,8 +440,44 @@ export function ProductEditorPage() {
                   disabled={readOnly || saving || productsLoading}
                 />
               </FormField>
-              <FormField label={isParent ? t('menu.editor.fields.priceRange') : t('menu.editor.fields.price')} htmlFor="product-editor-price">
-                {isParent ? (
+              {draftHasParent ? (
+                <>
+                  <FormField
+                    label={t('menu.editor.fields.variantLabelEn')}
+                    htmlFor="product-editor-variant-label"
+                    required
+                  >
+                    <FormInput
+                      id="product-editor-variant-label"
+                      value={form.variantLabel}
+                      onChange={(event) => setForm((current) => ({
+                        ...current,
+                        variantLabel: event.target.value,
+                      }))}
+                      disabled={readOnly || saving}
+                      required
+                    />
+                  </FormField>
+                  <FormField
+                    label={t('menu.editor.fields.variantLabelAr')}
+                    htmlFor="product-editor-variant-label-ar"
+                    required
+                  >
+                    <FormInput
+                      id="product-editor-variant-label-ar"
+                      value={form.variantLabelAr}
+                      onChange={(event) => setForm((current) => ({
+                        ...current,
+                        variantLabelAr: event.target.value,
+                      }))}
+                      disabled={readOnly || saving}
+                      required
+                    />
+                  </FormField>
+                </>
+              ) : null}
+              <FormField label={draftIsParent ? t('menu.editor.fields.priceRange') : t('menu.editor.fields.price')} htmlFor="product-editor-price">
+                {draftIsParent ? (
                   <div className="product-editor__price-range" dir="ltr">{variantPriceRange}</div>
                 ) : (
                   <FormInput
@@ -453,23 +510,23 @@ export function ProductEditorPage() {
                   rows={4}
                 />
               </FormField>
-              {!isVariant ? (
-                <div className="product-editor__visibility field-box--full">
-                  <div>
-                    <strong>{t('menu.editor.fields.isMenu')}</strong>
-                    <span>
-                      {isParent
+              <div className="product-editor__visibility field-box--full">
+                <div>
+                  <strong>{t('menu.editor.fields.isMenu')}</strong>
+                  <span>
+                    {draftHasParent
+                      ? t('menu.editor.fields.isMenuVariantHint')
+                      : draftIsParent
                         ? t('menu.editor.fields.isMenuParentHint')
                         : t('menu.editor.fields.isMenuHint')}
-                    </span>
-                  </div>
-                  <StatusSwitch
-                    active={form.isMenu}
-                    disabled={readOnly || saving || draftHasParent}
-                    onChange={(isMenu) => setForm((current) => ({ ...current, isMenu }))}
-                  />
+                  </span>
                 </div>
-              ) : null}
+                <StatusSwitch
+                  active={form.isMenu}
+                  disabled={readOnly || saving || draftHasParent}
+                  onChange={(isMenu) => setForm((current) => ({ ...current, isMenu }))}
+                />
+              </div>
             </FieldGrid>
           </form>
 
@@ -488,7 +545,7 @@ export function ProductEditorPage() {
                 {product ? <ProductVariantsTab parent={product} readOnly={readOnly} onChanged={() => void loadProduct()} /> : null}
               </DetailTabPanel>
               <DetailTabPanel id="addons" active={effectiveActiveTab === 'addons'}>
-                {product ? <ProductAddOnsTab product={product} readOnly={readOnly} /> : <p className="product-editor__tab-placeholder">{t('menu.editor.tabsHint')}</p>}
+                {product ? <ProductAddOnsTab product={product} /> : <p className="product-editor__tab-placeholder">{t('menu.editor.tabsHint')}</p>}
               </DetailTabPanel>
             </DetailTabs>
           ) : null}

@@ -1,5 +1,5 @@
 import { FileText, RotateCcw, Truck } from 'lucide-react'
-import { ModuleHubPage } from '../../components/hub/ModuleHubPage'
+import { ModuleHubPage, type HubNavCardConfig } from '../../components/hub/ModuleHubPage'
 import { ListPage } from '../../components/ui/ListPage'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { useTranslation } from '../../i18n/useTranslation'
@@ -11,13 +11,14 @@ export function PurchaseHubPage() {
   const canViewSuppliers = canViewInventorySetup()
   const canViewPurchasing = canViewPurchaseInvoices()
 
-  const cards = []
+  const cards: HubNavCardConfig[] = []
 
   if (canViewSuppliers) {
     cards.push({
       id: 'suppliers',
       icon: Truck,
       title: t('hubs.purchase.suppliers.title'),
+      description: t('hubs.purchase.suppliers.description'),
       to: '/purchase/suppliers',
     })
   }
@@ -27,6 +28,7 @@ export function PurchaseHubPage() {
       id: 'invoices',
       icon: FileText,
       title: t('hubs.purchase.invoices.title'),
+      description: t('hubs.purchase.invoices.description'),
       to: '/purchase/purchase-invoices',
     })
 
@@ -34,6 +36,7 @@ export function PurchaseHubPage() {
       id: 'returns',
       icon: RotateCcw,
       title: t('hubs.purchase.returns.title'),
+      description: t('hubs.purchase.returns.description'),
       to: '/purchase/purchase-returns',
     })
   }
@@ -55,6 +58,7 @@ export function PurchaseHubPage() {
       className="purchase-hub-page"
       title={t('hubs.purchase.title')}
       subtitle={t('hubs.purchase.subtitle')}
+      cardsLabel={t('hubs.section.operations')}
       cards={cards}
     />
   )

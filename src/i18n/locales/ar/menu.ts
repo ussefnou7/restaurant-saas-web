@@ -62,6 +62,8 @@ export const menuAr: TranslationDictionary = {
   'menu.products.validation.priceInvalid': 'سعر البيع يجب أن يكون رقماً غير سالب',
   'menu.products.validation.categoryRequired': 'يرجى اختيار تصنيف',
   'menu.products.validation.parentRequired': 'يرجى اختيار المنتج الرئيسي',
+  'menu.products.validation.variantLabelsRequired':
+    'تسمية الصنف بالعربية والإنجليزية مطلوبة',
   'menu.products.actions.manageRecipe': 'الوصفة',
   'menu.products.deleteConfirm.title': 'حذف المنتج؟',
   'menu.products.deleteConfirm.message':
@@ -143,6 +145,10 @@ export const menuAr: TranslationDictionary = {
   'menu.editor.fields.isMenu': 'العرض في المنيو',
   'menu.editor.fields.isMenuHint': 'يظهر هذا المنتج للكاشير في المنيو',
   'menu.editor.fields.isMenuParentHint': 'الأصناف الفرعية لا تُعرض في المنيو مباشرة',
+  'menu.editor.fields.isMenuVariantHint':
+    'يتم الوصول إلى الصنف من خلال المنتج الرئيسي ولا يمكن عرضه مباشرة في المنيو',
+  'menu.editor.fields.variantLabelEn': 'تسمية الصنف (إنجليزي)',
+  'menu.editor.fields.variantLabelAr': 'تسمية الصنف',
   'menu.editor.fields.image': 'صورة المنتج',
   'menu.editor.tabs.recipe': 'الوصفة',
   'menu.editor.tabs.variants': 'الأصناف',

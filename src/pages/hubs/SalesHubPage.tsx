@@ -10,23 +10,27 @@ export function SalesHubPage() {
       className="sales-hub-page"
       title={t('hubs.sales.title')}
       subtitle={t('hubs.sales.subtitle')}
+      cardsLabel={t('hubs.section.operations')}
       cards={[
         {
           id: 'menu',
           icon: UtensilsCrossed,
           title: t('hubs.sales.menu.title'),
+          description: t('hubs.sales.menu.description'),
           to: '/menu',
         },
         {
           id: 'operations',
           icon: ClipboardList,
           title: t('hubs.sales.operations.title'),
+          description: t('hubs.sales.operations.description'),
           to: '/orders',
         },
         {
           id: 'reports',
           icon: BarChart3,
           title: t('reports.salesHub.title'),
+          description: t('hubs.sales.reports.description'),
           to: '/sales/reports',
         },
       ]}
