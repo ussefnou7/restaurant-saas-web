@@ -1,4 +1,8 @@
-import type { PermissionResponse, UserPermissionsResponse } from '../types/permission'
+import type {
+  PermissionResponse,
+  ReplaceUserPermissionsRequest,
+  UserPermissionsResponse,
+} from '../types/permission'
 import { api } from './api'
 
 export async function getPermissions(): Promise<PermissionResponse[]> {
@@ -17,8 +21,9 @@ export async function replaceUserPermissions(
   userId: number | string,
   permissionCodes: string[],
 ): Promise<UserPermissionsResponse | void> {
-  const response = await api.put<UserPermissionsResponse>(`/api/permissions/users/${userId}`, {
+  const request: ReplaceUserPermissionsRequest = {
     permissionCodes,
-  })
+  }
+  const response = await api.put<UserPermissionsResponse>(`/api/permissions/users/${userId}`, request)
   return response.data
 }

@@ -1,12 +1,14 @@
 export type MenuCategory = {
   id: number
   name: string
+  nameAr?: string | null
   sortOrder: number
   isActive: boolean
 }
 
 export type CreateMenuCategoryRequest = {
   name: string
+  nameAr?: string | null
   sortOrder: number
   active: boolean
 }
@@ -22,6 +24,7 @@ export type Product = {
   isActive: boolean
   menuCategoryId: number
   menuCategoryName?: string | null
+  menuCategoryNameAr?: string | null
   parentProductId?: number | null
   variantLabel?: string | null
   variantLabelAr?: string | null
