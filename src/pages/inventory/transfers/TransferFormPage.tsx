@@ -16,6 +16,7 @@ import {
   Th,
 } from '../../../components/ui/Table'
 import { useTranslation } from '../../../i18n/useTranslation'
+import { useUomLookup } from '../../../hooks/useUomLookup'
 import { useUomPickerProps } from '../../../hooks/useUomPickerProps'
 import * as inventoryService from '../../../services/inventoryService'
 import * as transferService from '../../../services/inventoryTransferService'
@@ -63,11 +64,13 @@ function getStatusVariant(status: string): 'muted' | 'warning' | 'success' | 'da
 function TransferFormInner({ mode, transfer }: { mode: FormMode; transfer: InventoryTransferResponse | null }) {
   const { t, locale } = useTranslation()
   const uomPicker = useUomPickerProps()
+  const { activeUoms } = useUomLookup()
   const navigate = useNavigate()
   const notify = useNotify()
   const [warehouses, setWarehouses] = useState<WarehouseResponse[]>([])
   const [materials, setMaterials] = useState<MaterialResponse[]>([])
-  const [uoms, setUoms] = useState<UomResponse[]>([])
+  // Options come from the shared cache, not a per-page fetch (D111).
+  const uoms = activeUoms as unknown as UomResponse[]
   const [lookupLoading, setLookupLoading] = useState(true)
 
   const [sourceWarehouseId, setSourceWarehouseId] = useState(
@@ -100,14 +103,12 @@ function TransferFormInner({ mode, transfer }: { mode: FormMode; transfer: Inven
   useEffect(() => {
     async function loadLookups() {
       try {
-        const [ws, mats, uomList] = await Promise.all([
+        const [ws, mats] = await Promise.all([
           inventoryService.getWarehouses({ active: true }),
           inventoryService.getMaterials({ active: true }),
-          inventoryService.getUoms(true),
         ])
         setWarehouses(ws)
         setMaterials(mats)
-        setUoms(uomList)
       } finally {
         setLookupLoading(false)
       }

@@ -138,7 +138,7 @@ function PiFormField({ label, htmlFor, required, error, children }: PiFormFieldP
 function WasteDocumentForm({ mode }: { mode: FormMode }) {
   const { id } = useParams<{ id: string }>()
   const { t, locale } = useTranslation()
-  const { uomLabel, uomSymbol } = useUomLookup()
+  const { uomLabel, uomSymbol, activeUoms } = useUomLookup()
   const uomPicker = useUomPickerProps()
   const navigate = useNavigate()
   const notify = useNotify()
@@ -152,7 +152,8 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
   const [header, setHeader] = useState<HeaderFormState>(emptyHeader())
   const [warehouses, setWarehouses] = useState<WarehouseResponse[]>([])
   const [materials, setMaterials] = useState<MaterialResponse[]>([])
-  const [uoms, setUoms] = useState<UomResponse[]>([])
+  // Options come from the shared cache, not a per-page fetch (D111).
+  const uoms = activeUoms as unknown as UomResponse[]
   const [lookupsLoading, setLookupsLoading] = useState(false)
   const [loading, setLoading] = useState(!isCreate)
   const [error, setError] = useState('')
@@ -237,18 +238,15 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
   const loadLookups = useCallback(async () => {
     setLookupsLoading(true)
     try {
-      const [warehouseData, materialData, uomData] = await Promise.all([
+      const [warehouseData, materialData] = await Promise.all([
         inventoryService.getWarehouses({ active: true }),
         inventoryService.getMaterials({ active: true }),
-        inventoryService.getUoms(true),
       ])
       setWarehouses(warehouseData)
       setMaterials(materialData)
-      setUoms(uomData)
     } catch {
       setWarehouses([])
       setMaterials([])
-      setUoms([])
     } finally {
       setLookupsLoading(false)
     }

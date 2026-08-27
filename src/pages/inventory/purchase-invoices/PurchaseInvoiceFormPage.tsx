@@ -187,7 +187,7 @@ function usePurchaseInvoiceFormMode(): FormMode {
 
 function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
   const { t, locale } = useTranslation()
-  const { uomLabel, uomSymbol } = useUomLookup()
+  const { uomLabel, uomSymbol, activeUoms } = useUomLookup()
   const uomPicker = useUomPickerProps()
   const navigate = useNavigate()
   const notify = useNotify()
@@ -202,7 +202,10 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
   const [warehouses, setWarehouses] = useState<WarehouseResponse[]>([])
   const [suppliers, setSuppliers] = useState<SupplierResponse[]>([])
   const [materials, setMaterials] = useState<MaterialResponse[]>([])
-  const [uoms, setUoms] = useState<UomResponse[]>([])
+  // Options come from the shared cache, not a per-page fetch (D111). Reading a
+  // separate snapshot would make revalidate-on-open a no-op here: the cache would
+  // refresh and this picker would keep showing the list it loaded at mount.
+  const uoms = activeUoms as unknown as UomResponse[]
   const [lookupsLoading, setLookupsLoading] = useState(false)
   const [loading, setLoading] = useState(mode !== 'create')
   const [error, setError] = useState('')
@@ -286,21 +289,18 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
   const loadLookups = useCallback(async () => {
     setLookupsLoading(true)
     try {
-      const [warehouseData, supplierData, materialData, uomData] = await Promise.all([
+      const [warehouseData, supplierData, materialData] = await Promise.all([
         inventoryService.getWarehouses({ active: true }),
         inventoryService.getSuppliers({ active: true }),
         inventoryService.getMaterials({ active: true }),
-        inventoryService.getUoms(true),
       ])
       setWarehouses(warehouseData)
       setSuppliers(supplierData)
       setMaterials(materialData)
-      setUoms(uomData)
     } catch {
       setWarehouses([])
       setSuppliers([])
       setMaterials([])
-      setUoms([])
     } finally {
       setLookupsLoading(false)
     }

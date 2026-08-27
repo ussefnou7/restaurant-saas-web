@@ -10,10 +10,10 @@ import {
 import { Button } from '../../components/ui/Button'
 import { Modal } from '../../components/ui/Modal'
 import { useTranslation } from '../../i18n/useTranslation'
+import { useUomLookup } from '../../hooks/useUomLookup'
 import { useUomPickerProps } from '../../hooks/useUomPickerProps'
 import * as inventoryService from '../../services/inventoryService'
 import type { MaterialCategoryResponse, MaterialResponse, UomResponse } from '../../types/inventory'
-import { translateApiError } from '../../utils/errors'
 import { getInventoryLocalizedName } from '../../utils/inventoryDisplay'
 import { resolveDisplayUomId, resolveStockUomId } from '../../utils/inventoryUom'
 
@@ -61,11 +61,13 @@ export function MaterialFormModal({
 }: MaterialFormModalProps) {
   const { t, locale } = useTranslation()
   const uomPicker = useUomPickerProps()
+  const { uoms: cachedUoms, loading: loadingUoms } = useUomLookup()
   const [form, setForm] = useState(emptyForm)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
-  const [loadingUoms, setLoadingUoms] = useState(false)
-  const [uoms, setUoms] = useState<UomResponse[]>([])
+  // The full cached set, matching the previous getUoms(false): a material may
+  // reference a since-deactivated unit and the form still has to show it (D111).
+  const uoms = cachedUoms as unknown as UomResponse[]
   const isCreate = mode === 'create'
 
   useEffect(() => {
@@ -89,36 +91,6 @@ export function MaterialFormModal({
     }
   }, [open, isCreate, material])
 
-  useEffect(() => {
-    if (!open) return
-
-    let cancelled = false
-
-    async function loadUoms() {
-      setLoadingUoms(true)
-      try {
-        const data = await inventoryService.getUoms(false)
-        if (!cancelled) {
-          setUoms(data)
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(translateApiError(err, t).message)
-          setUoms([])
-        }
-      } finally {
-        if (!cancelled) {
-          setLoadingUoms(false)
-        }
-      }
-    }
-
-    void loadUoms()
-
-    return () => {
-      cancelled = true
-    }
-  }, [open, t])
 
   const categoryOptions = useMemo(
     () => [

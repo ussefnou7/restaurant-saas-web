@@ -13,6 +13,7 @@ import {
   getTransactionTypeLabel,
   toLocalDateTimeInputValue,
 } from '../../utils/inventoryStockDisplay'
+import { useUomLookup } from '../../hooks/useUomLookup'
 import { useUomPickerProps } from '../../hooks/useUomPickerProps'
 import {
   getCompatibleUoms,
@@ -57,10 +58,12 @@ export function ManualTransactionModal({
 }: ManualTransactionModalProps) {
   const { t, locale } = useTranslation()
   const uomPickerProps = useUomPickerProps()
+  const { activeUoms } = useUomLookup()
   const [form, setForm] = useState<FormState>(emptyForm)
   const [warehouses, setWarehouses] = useState<WarehouseResponse[]>([])
   const [materials, setMaterials] = useState<MaterialResponse[]>([])
-  const [uoms, setUoms] = useState<UomResponse[]>([])
+  // Options come from the shared cache, not a per-modal fetch (D111).
+  const uoms = activeUoms as unknown as UomResponse[]
   const [lookupsLoading, setLookupsLoading] = useState(false)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -80,12 +83,10 @@ export function ManualTransactionModal({
     void Promise.all([
       inventoryService.getWarehouses({ active: true }),
       inventoryService.getMaterials({ active: true }),
-      inventoryService.getUoms(true),
     ])
-      .then(([warehouseData, materialData, uomData]) => {
+      .then(([warehouseData, materialData]) => {
         setWarehouses(warehouseData)
         setMaterials(materialData)
-        setUoms(uomData)
         // Default the UoM for a prefilled material once lookups arrive,
         // unless the prefill pinned a UoM that is still selected.
         setForm((prev) => {
@@ -98,7 +99,6 @@ export function ManualTransactionModal({
       .catch(() => {
         setWarehouses([])
         setMaterials([])
-        setUoms([])
       })
       .finally(() => setLookupsLoading(false))
   }, [open, prefill?.materialId, prefill?.uomId, prefill?.warehouseId])
