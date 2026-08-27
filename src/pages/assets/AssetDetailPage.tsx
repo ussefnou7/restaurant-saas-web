@@ -1,41 +1,35 @@
-import { ArrowLeft, ArrowRight, Check, Loader2, Pencil, Plus, Trash2, Wrench, X } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { Check, Loader2, Pencil, Trash2, X } from 'lucide-react'
+import { useCallback, useEffect, useState, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { DetailField } from '../../components/fields'
-import { DocumentHeader, DocumentLinesCard } from '../../components/layout/DocumentLayout'
+import { DetailHeader } from '../../components/entity-detail/DetailHeader'
+import { SchemaDocumentLinesCard } from '../../components/layout/DocumentLayout/SchemaDocumentLinesCard'
+import { createAssetLineSchema } from '../../schemas/assetLineSchema'
+import type { AssetLineFormState } from '../../schemas/assetLineSchema'
+import { useDocumentLines } from '../../hooks/useDocumentLines'
 import { Button } from '../../components/ui/Button'
 import { ConfirmModal } from '../../components/ui/ConfirmModal'
 import { ListPage } from '../../components/ui/ListPage'
 import { IconActionButton } from '../../components/ui/RowActions'
-import {
-  DataTable,
-  StopPropagationCell,
-  TableBody,
-  TableHead,
-  TableRow,
-  Td,
-  Th,
-} from '../../components/ui/Table'
+import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 import { useTranslation } from '../../i18n/useTranslation'
 import * as assetService from '../../services/assetService'
 import * as branchService from '../../services/branchService'
-import type { AssetCategory, AssetLineResponse, AssetResponse } from '../../types/assets'
+import type { AssetCategory, AssetResponse, AssetStatus, CreateAssetLineRequest } from '../../types/assets'
 import type { BranchResponse } from '../../types/branch'
 import {
-  formatAssetLineLabel,
   formatDecimalString,
   getAssetCategoryLabel,
 } from '../../utils/assetDisplay'
-import { getLocalizedBranchName } from '../../utils/branchDisplay'
+import { getLocalizedBranchName, resolveBranchName } from '../../utils/branchDisplay'
 import { translateApiError } from '../../utils/errors'
-import { formatDate } from '../../utils/format'
 import { getInventoryLocalizedName } from '../../utils/inventoryDisplay'
 import { AssetStatusBadge } from './AssetBadges'
 import { AssetDisposalForm, AssetMaintenanceForm } from './AssetOperationForms'
 
 type LineAction =
-  | { kind: 'dispose'; line: AssetLineResponse }
-  | { kind: 'maintenance'; line: AssetLineResponse }
+  | { kind: 'dispose'; line: AssetLineFormState }
+  | { kind: 'maintenance'; line: AssetLineFormState }
   | null
 
 interface PiFormFieldProps {
@@ -83,7 +77,7 @@ export function AssetDetailPage() {
   const numericAssetId = Number(assetId)
 
   const [asset, setAsset] = useState<AssetResponse | null>(null)
-  const [lines, setLines] = useState<AssetLineResponse[]>([])
+  const [initialLines, setInitialLines] = useState<AssetLineFormState[]>([])
   const [branches, setBranches] = useState<BranchResponse[]>([])
   const [loading, setLoading] = useState(!isCreate)
   const [actionLoading, setActionLoading] = useState(false)
@@ -104,32 +98,78 @@ export function AssetDetailPage() {
     branchId: '',
   })
 
-  // Inline Line Creation State
-  const [addingLine, setAddingLine] = useState(false)
-  const [lineForm, setLineForm] = useState({
-    label: '',
-    quantity: '1',
-    unitCost: '',
-    purchaseDate: getTodayInputDate(),
-  })
-  const [lineSaving, setLineSaving] = useState(false)
-  const [lineError, setLineError] = useState('')
-
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [lineAction, setLineAction] = useState<LineAction>(null)
+  const [lineToDelete, setLineToDelete] = useState<AssetLineFormState | null>(null)
+  const [lineDeleting, setLineDeleting] = useState(false)
+
+  useDocumentTitle(
+    isCreate
+      ? t('assets.form.createTitle')
+      : asset
+        ? getInventoryLocalizedName(asset, locale)
+        : undefined,
+  )
+
+  const schema = useMemo(
+    () =>
+      createAssetLineSchema({
+        lookups: { branches },
+        locale,
+        t,
+        handlers: {
+          onMaintenanceLine: (line) => setLineAction({ kind: 'maintenance', line }),
+          onDisposeLine: (line) => setLineAction({ kind: 'dispose', line }),
+          onDeleteLine: setLineToDelete,
+        },
+      }),
+    [branches, locale, t],
+  )
+
+  const loadLines = useCallback(async (): Promise<AssetLineFormState[]> => {
+    if (!assetId || isCreate) return []
+    return assetService.getAssetLines(assetId)
+  }, [assetId, isCreate])
+
+  const refreshAssetSummary = useCallback(async () => {
+    if (!assetId || isCreate) return
+    setAsset(await assetService.getAsset(assetId))
+  }, [assetId, isCreate])
+
+  const lineController = useDocumentLines<AssetLineFormState, { branches: BranchResponse[] }>({
+    schema,
+    initialLines,
+    linesReady: !loading,
+    lookups: { branches },
+    locale,
+    t,
+    onAddLine: async (payload) => {
+      await assetService.createAssetLine(numericAssetId, payload as CreateAssetLineRequest)
+      const updatedLines = await loadLines()
+      await refreshAssetSummary()
+      return updatedLines
+    },
+    onUpdateLine: null,
+    onDeleteLine: async (lineId) => {
+      await assetService.deleteAssetLine(numericAssetId, lineId)
+      const updatedLines = await loadLines()
+      await refreshAssetSummary()
+      return updatedLines
+    },
+  })
 
   const loadDetail = useCallback(async () => {
-    if (isCreate) return
+    if (isCreate || !assetId) return
     setLoading(true)
     setError('')
     try {
       const [assetData, lineData, branchData] = await Promise.all([
-        assetService.getAsset(assetId!),
-        assetService.getAssetLines(assetId!),
+        assetService.getAsset(assetId),
+        loadLines(),
         branchService.getBranches().catch(() => []),
       ])
       setAsset(assetData)
-      setLines(lineData)
+      setInitialLines(lineData)
       setBranches(branchData)
       setHeader({
         name: assetData.name,
@@ -140,12 +180,12 @@ export function AssetDetailPage() {
     } catch (err) {
       setError(translateApiError(err, t).message)
       setAsset(null)
-      setLines([])
+      setInitialLines([])
       setBranches([])
     } finally {
       setLoading(false)
     }
-  }, [assetId, isCreate, t])
+  }, [assetId, isCreate, loadLines, t])
 
   const loadBranchesOnly = useCallback(async () => {
     try {
@@ -200,10 +240,10 @@ export function AssetDetailPage() {
   async function handleSaveHeader() {
     const errors: { name?: string; branchId?: string } = {}
     if (!header.name.trim()) {
-      errors.name = t('common.requiredField', { defaultValue: 'هذا الحقل مطلوب' })
+      errors.name = t('common.requiredField')
     }
     if (isCreate && !header.branchId) {
-      errors.branchId = t('common.requiredField', { defaultValue: 'هذا الحقل مطلوب' })
+      errors.branchId = t('common.requiredField')
     }
 
     if (Object.keys(errors).length > 0) {
@@ -255,51 +295,119 @@ export function AssetDetailPage() {
   }
 
   function handleStartAddLine() {
-    setLineForm({
+    lineController.startAddLine({
       label: '',
       quantity: '1',
       unitCost: '',
       purchaseDate: getTodayInputDate(),
+      status: 'ACTIVE',
     })
-    setLineError('')
-    setAddingLine(true)
   }
 
   async function handleSaveLine() {
-    if (!numericAssetId || !lineForm.quantity || !lineForm.unitCost || !lineForm.purchaseDate) return
-    setLineSaving(true)
-    setLineError('')
+    const result = await lineController.saveNewLine((form) => ({
+      label: form.label?.trim() || undefined,
+      quantity: form.quantity,
+      unitCost: form.unitCost,
+      purchaseDate: form.purchaseDate,
+    }))
+    if (!result.ok && result.kind === 'validation') return
+  }
+
+  async function handleDeleteLine() {
+    if (!numericAssetId || !lineToDelete) return
+    setLineDeleting(true)
+    setError('')
     try {
-      await assetService.createAssetLine(numericAssetId, {
-        label: lineForm.label.trim() || undefined,
-        quantity: lineForm.quantity,
-        unitCost: lineForm.unitCost,
-        purchaseDate: lineForm.purchaseDate,
-      })
-      setAddingLine(false)
-      await loadDetail()
-    } catch (err) {
-      setLineError(translateApiError(err, t).message)
+      const result = await lineController.deleteLine(lineToDelete.id!)
+      if (result.ok) setLineToDelete(null)
+    } catch {
+      // Mutation errors are translated once by the global interceptor.
     } finally {
-      setLineSaving(false)
+      setLineDeleting(false)
     }
   }
 
-  const currentBranch = asset
-    ? branches.find((b) => b.id === asset.branchId)
-    : branches.find((b) => String(b.id) === header.branchId)
-  const branchName = currentBranch ? getLocalizedBranchName(currentBranch, locale) : '—'
+  const branchName = resolveBranchName(
+    asset?.branchId ?? header.branchId,
+    branches,
+    locale,
+    asset,
+  )
   const pageTitle = isCreate
     ? t('assets.form.createTitle')
     : asset
       ? getInventoryLocalizedName(asset, locale)
       : t('assets.detail.title')
 
-  const showEmpty = !loading && !error && lines.length === 0
-  const showTable = !loading && !error && lines.length > 0
+
+  const subtitle = asset
+    ? [getAssetCategoryLabel(asset.category, t), branchName]
+        .filter(Boolean)
+        .join(' · ')
+    : undefined
+
+  const pageActions = isCreate ? (
+    <Button
+      variant="primary"
+      type="submit"
+      disabled={headerSaving}
+    >
+      {headerSaving ? (
+        <>
+          <Loader2 size={18} className="pi-form-actions__submit-spinner" aria-hidden />
+          {t('common.loading')}
+        </>
+      ) : (
+        t('common.save')
+      )}
+    </Button>
+  ) : isEditingHeader ? (
+    <>
+      <IconActionButton
+        className="action-btn action-btn--icon action-btn--confirm"
+        label={t('common.save')}
+        onClick={() => void handleSaveHeader()}
+        disabled={headerSaving}
+      >
+        {headerSaving ? (
+          <Loader2 size={20} className="pi-form-actions__submit-spinner" aria-hidden />
+        ) : (
+          <Check size={20} aria-hidden />
+        )}
+      </IconActionButton>
+      <IconActionButton
+        className="action-btn action-btn--icon action-btn--cancel"
+        label={t('common.cancel')}
+        onClick={handleCancelEditHeader}
+        disabled={headerSaving}
+      >
+        <X size={20} aria-hidden />
+      </IconActionButton>
+    </>
+  ) : (
+    <>
+      <IconActionButton
+        className="action-btn action-btn--icon action-btn--delete-danger"
+        label={t('common.delete')}
+        onClick={() => setDeleteModalOpen(true)}
+        disabled={actionLoading || headerSaving}
+      >
+        <Trash2 size={18} aria-hidden />
+      </IconActionButton>
+      <IconActionButton
+        className="action-btn action-btn--icon"
+        label={t('common.edit')}
+        onClick={handleStartEditHeader}
+        disabled={actionLoading || headerSaving}
+      >
+        <Pencil size={20} aria-hidden />
+      </IconActionButton>
+    </>
+  )
 
   return (
-    <ListPage className="purchase-invoice-form-page purchase-invoice-form-page--redesign asset-detail-page">
+    <ListPage className="asset-detail-page">
       {error ? <div className="page-error-banner">{error}</div> : null}
 
       <form
@@ -308,109 +416,15 @@ export function AssetDetailPage() {
           e.preventDefault()
           void handleSaveHeader()
         }}
-        dir="rtl"
         noValidate
       >
-        <DocumentHeader
+        <DetailHeader
           title={pageTitle}
+          reference={subtitle}
           statusBadge={asset ? <AssetStatusBadge status={asset.status} /> : null}
-          actions={
-            isCreate ? (
-              <>
-                <Button
-                  variant="primary"
-                  type="submit"
-                  disabled={headerSaving}
-                >
-                  {headerSaving ? (
-                    <>
-                      <Loader2 size={18} className="pi-form-actions__submit-spinner" aria-hidden />
-                      {t('common.loading')}
-                    </>
-                  ) : (
-                    t('common.save')
-                  )}
-                </Button>
-
-                <span className="pi-form-topbar__actions-divider" aria-hidden="true" />
-
-                <IconActionButton
-                  className="action-btn action-btn--icon action-btn--header-back"
-                  label={t('assets.actions.back')}
-                  onClick={() => navigate('/assets/list')}
-                  disabled={headerSaving}
-                >
-                  {locale === 'ar' ? <ArrowRight size={20} aria-hidden="true" /> : <ArrowLeft size={20} aria-hidden="true" />}
-                </IconActionButton>
-              </>
-            ) : isEditingHeader ? (
-              <>
-                <IconActionButton
-                  className="action-btn action-btn--icon action-btn--confirm"
-                  label={t('common.save')}
-                  onClick={() => void handleSaveHeader()}
-                  disabled={headerSaving}
-                >
-                  {headerSaving ? (
-                    <Loader2 size={20} className="pi-form-actions__submit-spinner" aria-hidden />
-                  ) : (
-                    <Check size={20} aria-hidden="true" />
-                  )}
-                </IconActionButton>
-
-                <IconActionButton
-                  className="action-btn action-btn--icon action-btn--cancel"
-                  label={t('common.cancel')}
-                  onClick={handleCancelEditHeader}
-                  disabled={headerSaving}
-                >
-                  <X size={20} aria-hidden="true" />
-                </IconActionButton>
-
-                <span className="pi-form-topbar__actions-divider" aria-hidden="true" />
-
-                <IconActionButton
-                  className="action-btn action-btn--icon action-btn--header-back"
-                  label={t('assets.actions.back')}
-                  onClick={() => navigate('/assets/list')}
-                  disabled={headerSaving}
-                >
-                  {locale === 'ar' ? <ArrowRight size={20} aria-hidden="true" /> : <ArrowLeft size={20} aria-hidden="true" />}
-                </IconActionButton>
-              </>
-            ) : (
-              <>
-                <IconActionButton
-                  className="action-btn action-btn--icon action-btn--delete-danger"
-                  label={t('common.delete')}
-                  onClick={() => setDeleteModalOpen(true)}
-                  disabled={actionLoading || headerSaving}
-                >
-                  <Trash2 size={18} aria-hidden="true" />
-                </IconActionButton>
-
-                <IconActionButton
-                  className="action-btn action-btn--icon"
-                  label={t('common.edit')}
-                  onClick={handleStartEditHeader}
-                  disabled={actionLoading || headerSaving}
-                >
-                  <Pencil size={20} aria-hidden="true" />
-                </IconActionButton>
-
-                <span className="pi-form-topbar__actions-divider" aria-hidden="true" />
-
-                <IconActionButton
-                  className="action-btn action-btn--icon action-btn--header-back"
-                  label={t('assets.actions.back')}
-                  onClick={() => navigate('/assets/list')}
-                  disabled={actionLoading || headerSaving}
-                >
-                  {locale === 'ar' ? <ArrowRight size={20} aria-hidden="true" /> : <ArrowLeft size={20} aria-hidden="true" />}
-                </IconActionButton>
-              </>
-            )
-          }
+          actions={pageActions}
+          backTo="/assets/list"
+          backDisabled={headerSaving}
         >
           <div className="pi-form-header-grid">
             {isEditingHeader ? (
@@ -485,157 +499,55 @@ export function AssetDetailPage() {
                 />
                 <DetailField
                   label={t('assets.columns.currentValue')}
-                  value={`${formatDecimalString(asset.totalCurrentValue)} ج.م`}
+                  value={formatDecimalString(asset.totalCurrentValue)}
                   dir="ltr"
                 />
               </>
             ) : null}
           </div>
-        </DocumentHeader>
+        </DetailHeader>
       </form>
 
-      <DocumentLinesCard
-        title={t('assets.lines.tableTitle')}
-        actions={
-          !isCreate ? (
-            <Button onClick={handleStartAddLine} disabled={!asset || actionLoading || isEditingHeader || addingLine}>
-              <Plus size={16} aria-hidden="true" />
-              {t('assets.lines.add')}
-            </Button>
-          ) : null
-        }
-      >
-        {lineError ? <div className="form-error-banner" style={{ margin: '12px 16px' }}>{lineError}</div> : null}
-
-        {isCreate ? (
-          <div className="pi-form-lines__empty" style={{ padding: '24px', textAlign: 'center' }}>
-            <p className="text-muted">{t('assets.lines.empty.description')}</p>
-          </div>
-        ) : showEmpty && !addingLine ? (
-          <div className="pi-form-lines__empty" style={{ padding: '24px', textAlign: 'center' }}>
-            <p className="text-muted">{t('assets.lines.empty.description')}</p>
-          </div>
-        ) : (
-          <DataTable className="pi-form-lines-table asset-lines-table">
-            <TableHead>
-              <TableRow>
-                <Th className="asset-lines-col--label">{t('assets.lines.label')}</Th>
-                <Th className="table-cell--numeric asset-lines-col--qty">{t('assets.lines.quantity')}</Th>
-                <Th className="table-cell--numeric asset-lines-col--rem">{t('assets.lines.remainingQuantity')}</Th>
-                <Th className="table-cell--numeric asset-lines-col--cost">{t('assets.lines.unitCost')}</Th>
-                <Th column="date" className="asset-lines-col--date">{t('assets.lines.purchaseDate')}</Th>
-                <Th column="status">{t('common.status')}</Th>
-                <Th column="actions">{t('assets.columns.actions')}</Th>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {addingLine ? (
-                <TableRow className="pi-form-lines-table__row--edit">
-                  <Td className="asset-lines-col--label">
-                    <textarea
-                      className="pi-form-line-row__input pi-form-line-row__textarea"
-                      value={lineForm.label}
-                      onChange={(e) => setLineForm((prev) => ({ ...prev, label: e.target.value }))}
-                      placeholder={t('assets.lines.label')}
-                      disabled={lineSaving}
-                      rows={1}
-                      autoFocus
-                    />
-                  </Td>
-                  <Td className="table-cell--numeric asset-lines-col--qty">
-                    <input
-                      type="number"
-                      min={0}
-                      step="any"
-                      className="pi-form-line-row__input pi-form-line-row__input--ltr"
-                      value={lineForm.quantity}
-                      onChange={(e) => setLineForm((prev) => ({ ...prev, quantity: e.target.value }))}
-                      disabled={lineSaving}
-                    />
-                  </Td>
-                  <Td className="table-cell--numeric asset-lines-col--rem text-muted" dir="ltr">
-                    {formatDecimalString(lineForm.quantity) || '—'}
-                  </Td>
-                  <Td className="table-cell--numeric asset-lines-col--cost">
-                    <input
-                      type="number"
-                      min={0}
-                      step="any"
-                      className="pi-form-line-row__input pi-form-line-row__input--ltr"
-                      value={lineForm.unitCost}
-                      onChange={(e) => setLineForm((prev) => ({ ...prev, unitCost: e.target.value }))}
-                      placeholder="0.00"
-                      disabled={lineSaving}
-                    />
-                  </Td>
-                  <Td column="date" className="asset-lines-col--date">
-                    <input
-                      type="date"
-                      className="pi-form-line-row__input"
-                      value={lineForm.purchaseDate}
-                      onChange={(e) => setLineForm((prev) => ({ ...prev, purchaseDate: e.target.value }))}
-                      disabled={lineSaving}
-                    />
-                  </Td>
-                  <Td column="status">
-                    <span className="text-muted">—</span>
-                  </Td>
-                  <Td column="actions">
-                    <div className="pi-form-lines-table__row-actions">
-                      <IconActionButton
-                        className="action-btn action-btn--icon action-btn--confirm"
-                        label={t('common.save')}
-                        onClick={() => void handleSaveLine()}
-                        disabled={lineSaving || !lineForm.quantity || !lineForm.unitCost || !lineForm.purchaseDate}
-                      >
-                        {lineSaving ? (
-                          <Loader2 size={16} className="pi-form-actions__submit-spinner" aria-hidden />
-                        ) : (
-                          <Check size={16} aria-hidden />
-                        )}
-                      </IconActionButton>
-                      <IconActionButton
-                        className="action-btn action-btn--icon action-btn--cancel"
-                        label={t('common.cancel')}
-                        onClick={() => setAddingLine(false)}
-                        disabled={lineSaving}
-                      >
-                        <X size={16} aria-hidden />
-                      </IconActionButton>
-                    </div>
-                  </Td>
-                </TableRow>
-              ) : null}
-
-              {lines.map((line) => (
-                <TableRow key={line.id} className="asset-line-row">
-                  <Td className="asset-lines-col--label">{formatAssetLineLabel(line.label, line.id, t)}</Td>
-                  <Td dir="ltr" className="table-cell--numeric asset-lines-col--qty">{formatDecimalString(line.quantity)}</Td>
-                  <Td dir="ltr" className="table-cell--numeric asset-lines-col--rem">{formatDecimalString(line.remainingQuantity)}</Td>
-                  <Td dir="ltr" className="table-cell--numeric asset-lines-col--cost">{formatDecimalString(line.unitCost)}</Td>
-                  <Td column="date" className="asset-lines-col--date">{formatDate(line.purchaseDate)}</Td>
-                  <Td column="status"><AssetStatusBadge status={line.status} /></Td>
-                  <StopPropagationCell className="asset-line-row__actions">
-                    <Button size="sm" variant="secondary" onClick={() => setLineAction({ kind: 'dispose', line })}>
-                      <Trash2 size={16} aria-hidden="true" />
-                      {t('assets.disposal.action')}
-                    </Button>
-                    <Button size="sm" variant="secondary" onClick={() => setLineAction({ kind: 'maintenance', line })}>
-                      <Wrench size={16} aria-hidden="true" />
-                      {t('assets.maintenance.action')}
-                    </Button>
-                  </StopPropagationCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </DataTable>
-        )}
-      </DocumentLinesCard>
+      {loading ? (
+        <div className="pi-form-lines__loading" role="status">{t('common.loading')}</div>
+      ) : !isCreate ? (
+        <SchemaDocumentLinesCard
+          title={t('assets.lines.tableTitle')}
+          schema={schema}
+          lines={lineController.lines}
+          lookups={{ branches }}
+          viewMode={lineController.viewMode}
+          selectedLineId={lineController.selectedLineId}
+          selectedIndex={lineController.selectedIndex}
+          locale={locale}
+          t={t}
+          showActions
+          addingLine={lineController.addingLine}
+          newLineForm={lineController.newLineForm}
+          lineSaving={lineController.lineSaving}
+          lineError={lineController.fieldErrors.lineError ?? lineController.newLineValidationError ?? undefined}
+          interactionLocked={isEditingHeader}
+          addDisabled={isEditingHeader}
+          saveDisabled={Boolean(lineController.newLineValidationError)}
+          renderStatusBadge={(status) => <AssetStatusBadge status={status as AssetStatus} />}
+          emptyState={
+            <div className="pi-form-lines__empty asset-lines-empty">
+              <p className="text-muted">{t('assets.lines.empty.description')}</p>
+            </div>
+          }
+          onFieldChange={lineController.updateFormValue}
+          onSaveLine={() => void handleSaveLine()}
+          onCancelLine={lineController.cancelLineAction}
+          onStartAddLine={handleStartAddLine}
+          onViewModeChange={lineController.setViewMode}
+          onSelectLine={lineController.selectLine}
+        />
+      ) : null}
 
       <ConfirmModal
         open={deleteModalOpen}
         title={t('common.delete')}
-        message={t('common.confirmDelete', { defaultValue: 'هل أنت تأكد من رغبتك في حذف هذا الأصل؟' })}
+        message={t('common.confirmDelete')}
         confirmLabel={t('common.delete')}
         cancelLabel={t('common.cancel')}
         confirmVariant="dangerConfirm"
@@ -645,11 +557,24 @@ export function AssetDetailPage() {
         onConfirm={() => void handleDeleteAsset()}
       />
 
+      <ConfirmModal
+        open={Boolean(lineToDelete)}
+        title={t('common.delete')}
+        message={t('common.confirmDelete')}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
+        confirmVariant="dangerConfirm"
+        loading={lineDeleting}
+        loadingLabel={t('common.loading')}
+        onClose={() => setLineToDelete(null)}
+        onConfirm={() => void handleDeleteLine()}
+      />
+
       {asset && lineAction?.kind === 'dispose' ? (
         <AssetDisposalForm
           open
           initialAssetId={numericAssetId}
-          initialLineId={lineAction.line.id}
+          initialLineId={Number(lineAction.line.id)}
           onClose={() => setLineAction(null)}
           onSaved={() => void loadDetail()}
         />
@@ -659,7 +584,7 @@ export function AssetDetailPage() {
         <AssetMaintenanceForm
           open
           initialAssetId={numericAssetId}
-          initialLineId={lineAction.line.id}
+          initialLineId={Number(lineAction.line.id)}
           onClose={() => setLineAction(null)}
           onSaved={() => void loadDetail()}
         />

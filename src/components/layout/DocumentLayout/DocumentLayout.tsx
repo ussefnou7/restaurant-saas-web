@@ -23,7 +23,7 @@ export function DocumentLayout({
   }
 
   return (
-    <div className="pi-form-wrapper" dir="rtl">
+    <div className="pi-form-wrapper">
       {error ? (
         <div className="form-error" role="alert">
           {error}

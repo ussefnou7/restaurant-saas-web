@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -7,9 +7,7 @@ import {
   CheckCircle,
   Loader2,
   Pencil,
-  Plus,
   Send,
-  Trash2,
   Undo2,
   X,
   XCircle,
@@ -18,12 +16,16 @@ import { PurchaseDocumentReasonModal } from '../../../components/inventory/Purch
 import { Button } from '../../../components/ui/Button'
 import { ConfirmModal } from '../../../components/ui/ConfirmModal'
 import { ListPage } from '../../../components/ui/ListPage'
-import { MaterialSelect } from '../../../components/ui/MaterialSelect'
 import { Modal } from '../../../components/ui/Modal'
 import { IconActionButton } from '../../../components/ui/RowActions'
 import { useNotify } from '../../../components/ui/NotificationContext'
 import { DetailField, FormField, FormTextarea } from '../../../components/fields'
-import { DocumentHeader, DocumentLinesCard } from '../../../components/layout/DocumentLayout'
+import { DocumentHeader } from '../../../components/layout/DocumentLayout'
+import { SchemaDocumentLinesCard } from '../../../components/layout/DocumentLayout/SchemaDocumentLinesCard'
+import { createWasteDocumentLineSchema } from '../../../schemas/wasteDocumentLineSchema'
+import type { WasteDocumentLineFormState } from '../../../schemas/wasteDocumentLineSchema'
+import { useDocumentLines, type LineOpResult } from '../../../hooks/useDocumentLines'
+import { useUomLookup } from '../../../hooks/useUomLookup'
 import { useTranslation } from '../../../i18n/useTranslation'
 import * as inventoryService from '../../../services/inventoryService'
 import * as wasteDocumentService from '../../../services/wasteDocumentService'
@@ -33,14 +35,15 @@ import {
   type DocumentStatus,
   type WasteDocumentResponse,
   type WasteLineResponse,
+  type WasteLineRequest,
   type WasteReasonCode,
+  type WasteUpdateLineRequest,
 } from '../../../types/wasteDocument'
 import { translateApiError } from '../../../utils/errors'
 import { formatDate, todayLocalDate } from '../../../utils/format'
 import { canManageInventoryStock, canUncompleteWasteDocuments, canViewInventoryStock } from '../../../utils/inventoryAccess'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { notifyStockBalancesRefresh } from '../../../utils/inventoryStockRefresh'
-import { getCompatibleUoms, resolveStockUomId } from '../../../utils/inventoryUom'
 import { StockAccessDenied } from '../StockAccessDenied'
 import { WasteDocumentStatusPill } from './WasteDocumentStatusPill'
 import { WasteDocumentStockWarnings } from './WasteDocumentStockWarnings'
@@ -52,18 +55,9 @@ type HeaderFormState = {
   notes: string
 }
 
-type LineFormState = {
-  clientId: string
-  materialId: string
-  quantity: string
-  uomId: string
-  notes: string
-}
-
 type FieldErrors = {
   warehouseId?: string
   wasteDate?: string
-  lineError?: string
 }
 
 type FormMode = 'create' | 'detail'
@@ -82,9 +76,8 @@ function emptyHeader(): HeaderFormState {
   }
 }
 
-function createEmptyLineForm(): LineFormState {
+function createEmptyLineForm(): WasteDocumentLineFormState {
   return {
-    clientId: crypto.randomUUID(),
     materialId: '',
     quantity: '',
     uomId: '',
@@ -101,9 +94,9 @@ function mapDocumentToHeader(doc: WasteDocumentResponse): HeaderFormState {
   }
 }
 
-function mapLineToForm(line: WasteLineResponse): LineFormState {
+function mapLineToForm(line: WasteLineResponse): WasteDocumentLineFormState {
   return {
-    clientId: String(line.id),
+    id: line.id,
     materialId: String(line.materialId),
     quantity: String(line.quantity),
     uomId: String(line.uomId),
@@ -144,11 +137,12 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
 
   const isCreate = mode === 'create'
 
+  const { uoms: cachedUoms } = useUomLookup()
   const [document, setDocument] = useState<WasteDocumentResponse | null>(null)
   const [header, setHeader] = useState<HeaderFormState>(emptyHeader())
   const [warehouses, setWarehouses] = useState<WarehouseResponse[]>([])
   const [materials, setMaterials] = useState<MaterialResponse[]>([])
-  const [uoms, setUoms] = useState<UomResponse[]>([])
+  const uoms = cachedUoms as unknown as UomResponse[]
   const [lookupsLoading, setLookupsLoading] = useState(false)
   const [loading, setLoading] = useState(!isCreate)
   const [error, setError] = useState('')
@@ -157,12 +151,6 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
 
   const [isEditingHeader, setIsEditingHeader] = useState(false)
   const [headerSaving, setHeaderSaving] = useState(false)
-  const [editingLineId, setEditingLineId] = useState<string | null>(null)
-  const [editLineForm, setEditLineForm] = useState<LineFormState | null>(null)
-  const [lineSaving, setLineSaving] = useState(false)
-  const [addingLine, setAddingLine] = useState(false)
-  const [newLineForm, setNewLineForm] = useState<LineFormState | null>(null)
-
   const [cancelModalOpen, setCancelModalOpen] = useState(false)
   const [completeConfirmOpen, setCompleteConfirmOpen] = useState(false)
   const [uncompleteModalOpen, setUncompleteModalOpen] = useState(false)
@@ -181,6 +169,16 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
   const showDraftLineActions = isDraft && canManage
   const stockWarnings = document?.stockWarnings ?? []
   const showStockWarnings = isComplete && stockWarnings.length > 0
+  const startEditLineRef = useRef<(line: WasteDocumentLineFormState) => void>(() => undefined)
+  const deleteLineRef = useRef<(lineId: number) => void>(() => undefined)
+  const handleSchemaEditLine = useCallback(
+    (line: WasteDocumentLineFormState) => startEditLineRef.current(line),
+    [],
+  )
+  const handleSchemaDeleteLine = useCallback(
+    (line: WasteDocumentLineFormState) => deleteLineRef.current(line.id!),
+    [],
+  )
 
   const isHeaderDirty = useMemo(() => {
     if (!document) return false
@@ -192,6 +190,113 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
       header.notes !== initial.notes
     )
   }, [document, header])
+
+  const schema = useMemo(
+    () =>
+      // Schema actions run only from user events; the refs keep the factory stable
+      // while dispatching to the current hook controller.
+      // eslint-disable-next-line react-hooks/refs
+      createWasteDocumentLineSchema({
+        lookups: { materials, uoms },
+        locale,
+        t,
+        handlers: {
+          onEditLine: handleSchemaEditLine,
+          onDeleteLine: handleSchemaDeleteLine,
+        },
+      }),
+    [materials, uoms, locale, t, handleSchemaEditLine, handleSchemaDeleteLine],
+  )
+
+  const initialLineForms = useMemo(
+    () => (document?.lines ?? []).map(mapLineToForm),
+    [document?.lines],
+  )
+
+  const lineController = useDocumentLines<
+    WasteDocumentLineFormState,
+    { materials: MaterialResponse[]; uoms: UomResponse[] }
+  >({
+    schema,
+    initialLines: initialLineForms,
+    linesReady: !loading,
+    lookups: { materials, uoms },
+    locale,
+    t,
+    onAddLine: async (payload) => {
+      if (!persistedId) throw new Error('Waste document must be persisted before adding a line')
+      const updated = await wasteDocumentService.addWasteLine(
+        persistedId,
+        payload as WasteLineRequest,
+      )
+      setDocument(updated)
+      return updated.lines.map(mapLineToForm)
+    },
+    onUpdateLine: async (lineId, payload) => {
+      if (!persistedId) throw new Error('Waste document must be persisted before updating a line')
+      const updated = await wasteDocumentService.updateWasteLine(
+        persistedId,
+        lineId,
+        payload as WasteUpdateLineRequest,
+      )
+      setDocument(updated)
+      return updated.lines.map(mapLineToForm)
+    },
+    onDeleteLine: async (lineId) => {
+      if (!persistedId) throw new Error('Waste document must be persisted before deleting a line')
+      const updated = await wasteDocumentService.deleteWasteLine(persistedId, lineId)
+      setDocument(updated)
+      return updated.lines.map(mapLineToForm)
+    },
+  })
+
+  const {
+    lines,
+    editingLineId,
+    editLineForm,
+    addingLine,
+    newLineForm,
+    lineSaving,
+    fieldErrors: lineFieldErrors,
+    startAddLine,
+    startEditLine,
+    cancelLineAction,
+    updateFormValue,
+    saveNewLine,
+    saveEditLine,
+    deleteLine,
+  } = lineController
+
+  const handleLineResult = useCallback(
+    (result: LineOpResult<WasteDocumentLineFormState>, successKey: string) => {
+      if (result.ok) {
+        notify.success(t(successKey))
+        return
+      }
+      switch (result.kind) {
+        case 'validation':
+          return
+        case 'api':
+          // The global axios interceptor is the single translated API-error channel.
+          return
+        default: {
+          const exhaustive: never = result
+          return exhaustive
+        }
+      }
+    },
+    [notify, t],
+  )
+
+  useEffect(() => {
+    startEditLineRef.current = startEditLine
+    deleteLineRef.current = (lineId) => {
+      if (!persistedId || !isDraft) return
+      void deleteLine(lineId).then((result) => {
+        handleLineResult(result, 'inventory.waste.toast.lineDeleteSuccess')
+      })
+    }
+  }, [startEditLine, persistedId, isDraft, deleteLine, handleLineResult])
 
   function handleEditButtonClick() {
     if (!isEditingHeader) {
@@ -233,18 +338,15 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
   const loadLookups = useCallback(async () => {
     setLookupsLoading(true)
     try {
-      const [warehouseData, materialData, uomData] = await Promise.all([
+      const [warehouseData, materialData] = await Promise.all([
         inventoryService.getWarehouses({ active: true }),
         inventoryService.getMaterials({ active: true }),
-        inventoryService.getUoms(true),
       ])
       setWarehouses(warehouseData)
       setMaterials(materialData)
-      setUoms(uomData)
     } catch {
       setWarehouses([])
       setMaterials([])
-      setUoms([])
     } finally {
       setLookupsLoading(false)
     }
@@ -257,10 +359,6 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
       setDocument(data)
       setHeader(mapDocumentToHeader(data))
       setIsEditingHeader(false)
-      setEditingLineId(null)
-      setEditLineForm(null)
-      setAddingLine(false)
-      setNewLineForm(null)
     } catch (err) {
       setDocument(null)
       setError(translateApiError(err, t).message)
@@ -284,18 +382,6 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
     if (!header.warehouseId) errors.warehouseId = fieldRequired
     if (!header.wasteDate) errors.wasteDate = fieldRequired
     return errors
-  }
-
-  function validateLineForm(form: LineFormState, requireMaterial = true): string | null {
-    if (requireMaterial && !form.materialId) {
-      return t('inventory.waste.validation.fieldRequired')
-    }
-    const quantity = Number(form.quantity)
-    if (!form.quantity.trim() || Number.isNaN(quantity) || quantity <= 0) {
-      return t('inventory.waste.validation.quantityRequired')
-    }
-    if (!form.uomId) return t('inventory.waste.validation.uomRequired')
-    return null
   }
 
   async function handleSaveHeader() {
@@ -368,106 +454,26 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
   async function handleAddItemClick() {
     const doc = await ensureDocumentPersisted()
     if (!doc) return
-    setAddingLine(true)
-    setNewLineForm(createEmptyLineForm())
-    setFieldErrors({})
-  }
-
-  function handleNewLineMaterialChange(materialId: string) {
-    const material = materials.find((m) => String(m.id) === materialId)
-    const defaultUomId = material ? String(resolveStockUomId(material)) : ''
-    setNewLineForm((prev) => (prev ? { ...prev, materialId, uomId: defaultUomId } : prev))
+    startAddLine(createEmptyLineForm())
   }
 
   async function handleSaveNewLine() {
-    if (!persistedId || !newLineForm) return
-    const lineError = validateLineForm(newLineForm, true)
-    if (lineError) {
-      setFieldErrors({ lineError })
-      return
-    }
-    setFieldErrors({})
-    setLineSaving(true)
-    try {
-      const updated = await wasteDocumentService.addWasteLine(persistedId, {
-        materialId: Number(newLineForm.materialId),
-        quantity: Number(newLineForm.quantity),
-        uomId: Number(newLineForm.uomId),
-        notes: newLineForm.notes.trim() || undefined,
-      })
-      setDocument(updated)
-      setAddingLine(false)
-      setNewLineForm(null)
-      notify.success(t('inventory.waste.toast.lineAddSuccess'))
-    } catch {
-      // API errors are translated and toasted by the global axios interceptor.
-    } finally {
-      setLineSaving(false)
-    }
-  }
-
-  function handleCancelNewLine() {
-    setAddingLine(false)
-    setNewLineForm(null)
-    setFieldErrors({})
-  }
-
-  function handleStartEditLine(line: WasteLineResponse) {
-    setAddingLine(false)
-    setNewLineForm(null)
-    setEditingLineId(String(line.id))
-    setEditLineForm(mapLineToForm(line))
-    setFieldErrors({})
+    const result = await saveNewLine((form) => ({
+      materialId: Number(form.materialId),
+      quantity: Number(form.quantity),
+      uomId: Number(form.uomId),
+      notes: form.notes?.trim() || undefined,
+    }))
+    handleLineResult(result, 'inventory.waste.toast.lineAddSuccess')
   }
 
   async function handleSaveEditLine(lineId: number) {
-    if (!persistedId || !editLineForm) return
-    const lineError = validateLineForm(editLineForm, false)
-    if (lineError) {
-      setFieldErrors({ lineError })
-      return
-    }
-    setFieldErrors({})
-    setLineSaving(true)
-    try {
-      const updated = await wasteDocumentService.updateWasteLine(persistedId, lineId, {
-        quantity: Number(editLineForm.quantity),
-        uomId: Number(editLineForm.uomId),
-        notes: editLineForm.notes.trim() || undefined,
-      })
-      setDocument(updated)
-      setEditingLineId(null)
-      setEditLineForm(null)
-      notify.success(t('inventory.waste.toast.lineUpdateSuccess'))
-    } catch {
-      // API errors are translated and toasted by the global axios interceptor.
-    } finally {
-      setLineSaving(false)
-    }
-  }
-
-  function handleCancelEditLine() {
-    setEditingLineId(null)
-    setEditLineForm(null)
-    setFieldErrors({})
-  }
-
-  async function handleDeleteLine(lineId: number) {
-    if (!persistedId || !isDraft) return
-    setLineSaving(true)
-    try {
-      const updated = await wasteDocumentService.deleteWasteLine(persistedId, lineId)
-      setDocument(updated)
-      if (editingLineId === String(lineId)) {
-        setEditingLineId(null)
-        setEditLineForm(null)
-      }
-      notify.success(t('inventory.waste.toast.lineDeleteSuccess'))
-    } catch {
-      // API errors are translated and toasted by the global axios interceptor.
-    } finally {
-      setLineSaving(false)
-    }
+    const result = await saveEditLine(lineId, (form) => ({
+      quantity: Number(form.quantity),
+      uomId: Number(form.uomId),
+      notes: form.notes?.trim() || undefined,
+    }))
+    handleLineResult(result, 'inventory.waste.toast.lineUpdateSuccess')
   }
 
   async function handleComplete() {
@@ -547,118 +553,10 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
     isCreate ||
     (document != null && !isReadOnly && (canManage || (canUncomplete && isComplete)))
 
-  function renderLineEditCells(
-    form: LineFormState,
-    options: {
-      materialReadOnly?: WasteLineResponse
-      onMaterialChange?: (materialId: string) => void
-      onChange: (patch: Partial<LineFormState>) => void
-      onSave: () => void
-      onCancel: () => void
-    },
-  ) {
-    const compatibleUoms = form.uomId
-      ? getCompatibleUoms(uoms, Number(form.uomId))
-      : uoms.filter((u) => u.active)
-
-    return (
-      <>
-        <td className="pi-form-lines-table__td pi-form-lines-table__td--material">
-          {options.materialReadOnly ? (
-            <div className="pi-form-view-line__material">
-              <span className="pi-form-view-line__name">
-                {getInventoryLocalizedName(
-                  {
-                    name: options.materialReadOnly.materialName,
-                    nameAr: options.materialReadOnly.materialNameAr,
-                    code: options.materialReadOnly.materialCode,
-                  },
-                  locale,
-                )}
-              </span>
-              <span className="entity-cell__code">{options.materialReadOnly.materialCode}</span>
-            </div>
-          ) : (
-            <MaterialSelect
-              value={form.materialId}
-              onChange={(materialId) => options.onMaterialChange?.(materialId)}
-              materials={materials}
-              locale={locale}
-              disabled={lineSaving}
-              loading={lookupsLoading}
-              hasError={Boolean(fieldErrors.lineError && !form.materialId)}
-              placeholder={t('inventory.waste.lines.selectMaterial')}
-              searchPlaceholder={t('common.search')}
-              ariaLabel={t('inventory.waste.lines.material')}
-            />
-          )}
-        </td>
-        <td className="pi-form-lines-table__td pi-form-lines-table__td--num">
-          <input
-            type="number"
-            min={0}
-            step="any"
-            className="pi-form-line-row__input pi-form-line-row__input--ltr"
-            value={form.quantity}
-            onChange={(e) => options.onChange({ quantity: e.target.value })}
-            disabled={lineSaving}
-            aria-label={t('inventory.waste.lines.quantity')}
-          />
-        </td>
-        <td className="pi-form-lines-table__td pi-form-lines-table__td--uom">
-          <select
-            className="pi-form-line-row__input pi-form-line-row__input--uom"
-            value={form.uomId}
-            onChange={(e) => options.onChange({ uomId: e.target.value })}
-            disabled={lineSaving || lookupsLoading || !form.materialId}
-            aria-label={t('inventory.waste.lines.uom')}
-          >
-            <option value="">{t('inventory.common.selectUom')}</option>
-            {compatibleUoms.map((u) => (
-              <option key={u.id} value={String(u.id)}>
-                {u.symbol ?? getInventoryLocalizedName(u, locale)}
-              </option>
-            ))}
-          </select>
-        </td>
-        <td className="pi-form-lines-table__td">
-          <input
-            type="text"
-            className="pi-form-line-row__input"
-            value={form.notes}
-            onChange={(e) => options.onChange({ notes: e.target.value })}
-            disabled={lineSaving}
-            aria-label={t('inventory.waste.lines.notes')}
-          />
-        </td>
-        <td className="pi-form-lines-table__td pi-form-lines-table__td--actions">
-          <div className="pi-form-lines-table__row-actions">
-            <IconActionButton
-              className="action-btn action-btn--icon action-btn--confirm"
-              label={t('inventory.waste.form.save')}
-              onClick={options.onSave}
-              disabled={lineSaving}
-            >
-              <Check size={16} aria-hidden />
-            </IconActionButton>
-            <IconActionButton
-              className="action-btn action-btn--icon action-btn--cancel"
-              label={t('common.cancel')}
-              onClick={options.onCancel}
-              disabled={lineSaving}
-            >
-              <X size={16} aria-hidden />
-            </IconActionButton>
-          </div>
-        </td>
-      </>
-    )
-  }
-
   return (
     <ListPage className="waste-document-detail-page purchase-invoice-form-page purchase-invoice-form-page--redesign">
       {loading ? (
-        <div className="pi-form-header-card" dir="rtl">
+        <div className="pi-form-header-card">
           <div className="pi-form-header-grid">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="pi-form-field">
@@ -697,7 +595,6 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
           <form
             className="pi-form"
             onSubmit={(event: FormEvent) => event.preventDefault()}
-            dir="rtl"
             noValidate
           >
             <DocumentHeader
@@ -952,150 +849,53 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
               </div>
             </DocumentHeader>
 
-            <DocumentLinesCard
+            <SchemaDocumentLinesCard
               title={t('inventory.waste.lines.title')}
-              dir="rtl"
-              actions={
-                showDraftLineActions && !addingLine && editingLineId == null ? (
-                  <button
-                    type="button"
-                    className="pi-form-lines__add-btn"
-                    disabled={lineSaving || actionLoading || isEditingHeader || headerSaving}
-                    onClick={() => void handleAddItemClick()}
-                  >
-                    <Plus size={16} aria-hidden="true" />
-                    {t('inventory.waste.lines.add')}
-                  </button>
-                ) : null
+              schema={schema}
+              lines={lines}
+              lookups={{ materials, uoms }}
+              viewMode={lineController.viewMode}
+              selectedLineId={lineController.selectedLineId}
+              selectedIndex={lineController.selectedIndex}
+              locale={locale}
+              t={t}
+              showActions={showDraftLineActions}
+              editingLineId={editingLineId}
+              editLineForm={editLineForm}
+              addingLine={addingLine}
+              newLineForm={newLineForm}
+              lineSaving={lineSaving}
+              lineError={lineFieldErrors.lineError}
+              lookupsLoading={lookupsLoading}
+              emptyState={
+                <div className="pi-form-lines__empty">
+                  <p className="pi-form-lines__empty-title">{t('inventory.waste.lines.empty')}</p>
+                </div>
               }
-            >
-              {fieldErrors.lineError ? (
-                <p className="pi-form-lines__inline-error">{fieldErrors.lineError}</p>
-              ) : null}
-
-              {showStockWarnings ? <WasteDocumentStockWarnings warnings={stockWarnings} /> : null}
-
-              <div className="pi-form-lines__table-wrap">
-                <table
-                  className={`pi-form-lines-table${showDraftLineActions ? ' pi-form-lines-table--draft' : ' pi-form-lines-table--readonly'}`}
-                >
-                  <thead>
-                    <tr>
-                      <th className="pi-form-lines-table__th">{t('inventory.waste.lines.material')}</th>
-                      <th className="pi-form-lines-table__th pi-form-lines-table__th--num">
-                        {t('inventory.waste.lines.quantity')}
-                      </th>
-                      <th className="pi-form-lines-table__th pi-form-lines-table__th--uom">
-                        {t('inventory.waste.lines.uom')}
-                      </th>
-                      <th className="pi-form-lines-table__th">{t('inventory.waste.lines.notes')}</th>
-                      {showDraftLineActions ? (
-                        <th className="pi-form-lines-table__th pi-form-lines-table__th--actions">
-                          {t('inventory.col.actions')}
-                        </th>
-                      ) : null}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {addingLine && newLineForm
-                      ? (
-                          <tr className="pi-form-lines-table__row pi-form-lines-table__row--edit">
-                            {renderLineEditCells(newLineForm, {
-                              onMaterialChange: handleNewLineMaterialChange,
-                              onChange: (patch) =>
-                                setNewLineForm((prev) => (prev ? { ...prev, ...patch } : prev)),
-                              onSave: () => void handleSaveNewLine(),
-                              onCancel: handleCancelNewLine,
-                            })}
-                          </tr>
-                        )
-                      : null}
-
-                    {(document?.lines.length ?? 0) === 0 && !addingLine ? (
-                      <tr>
-                        <td
-                          colSpan={showDraftLineActions ? 5 : 4}
-                          className="pi-form-lines-table__td pi-form-lines-table__td--empty"
-                        >
-                          {t('inventory.waste.lines.empty')}
-                        </td>
-                      </tr>
-                    ) : null}
-
-                    {(document?.lines ?? []).map((line) => {
-                      const isEditing = editingLineId === String(line.id) && editLineForm
-                      if (isEditing && editLineForm) {
-                        return (
-                          <tr
-                            key={line.id}
-                            className="pi-form-lines-table__row pi-form-lines-table__row--edit"
-                          >
-                            {renderLineEditCells(editLineForm, {
-                              materialReadOnly: line,
-                              onChange: (patch) =>
-                                setEditLineForm((prev) => (prev ? { ...prev, ...patch } : prev)),
-                              onSave: () => void handleSaveEditLine(line.id),
-                              onCancel: handleCancelEditLine,
-                            })}
-                          </tr>
-                        )
-                      }
-
-                      return (
-                        <tr key={line.id} className="pi-form-lines-table__row">
-                          <td className="pi-form-lines-table__td pi-form-lines-table__td--material">
-                            <div className="pi-form-view-line__material">
-                              <span className="pi-form-view-line__name">
-                                {getInventoryLocalizedName(
-                                  {
-                                    name: line.materialName,
-                                    nameAr: line.materialNameAr,
-                                    code: line.materialCode,
-                                  },
-                                  locale,
-                                )}
-                              </span>
-                              <span className="entity-cell__code">{line.materialCode}</span>
-                            </div>
-                          </td>
-                          <td className="pi-form-lines-table__td pi-form-lines-table__td--num" dir="ltr">
-                            {line.quantity}
-                          </td>
-                          <td className="pi-form-lines-table__td">{line.uomSymbol}</td>
-                          <td className="pi-form-lines-table__td">{line.notes?.trim() || '—'}</td>
-                          {showDraftLineActions ? (
-                            <td className="pi-form-lines-table__td pi-form-lines-table__td--actions">
-                              <div className="pi-form-lines-table__row-actions">
-                                <IconActionButton
-                                  className="action-btn action-btn--icon"
-                                  label={t('inventory.waste.actions.editLine')}
-                                  onClick={() => handleStartEditLine(line)}
-                                  disabled={lineSaving || addingLine || editingLineId != null}
-                                >
-                                  <Pencil size={16} aria-hidden />
-                                </IconActionButton>
-                                <IconActionButton
-                                  className="action-btn action-btn--icon action-btn--cancel"
-                                  label={t('inventory.waste.actions.removeLine')}
-                                  onClick={() => void handleDeleteLine(line.id)}
-                                  disabled={lineSaving || addingLine || editingLineId != null}
-                                >
-                                  <Trash2 size={16} aria-hidden />
-                                </IconActionButton>
-                              </div>
-                            </td>
-                          ) : null}
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-
-              {isComplete && !showStockWarnings ? (
-                <p className="waste-document-post-note">{t('inventory.waste.postNote')}</p>
-              ) : null}
-            </DocumentLinesCard>
+              extraFooter={
+                <>
+                  {showStockWarnings ? <WasteDocumentStockWarnings warnings={stockWarnings} /> : null}
+                  {isComplete && !showStockWarnings ? (
+                    <p className="waste-document-post-note">{t('inventory.waste.postNote')}</p>
+                  ) : null}
+                </>
+              }
+              onFieldChange={updateFormValue}
+              onSaveLine={(lineId) => {
+                if (lineId != null) {
+                  void handleSaveEditLine(Number(lineId))
+                } else {
+                  void handleSaveNewLine()
+                }
+              }}
+              onCancelLine={() => {
+                cancelLineAction()
+              }}
+              onStartAddLine={() => void handleAddItemClick()}
+              onStartEditLine={startEditLine}
+              onViewModeChange={lineController.setViewMode}
+              onSelectLine={lineController.selectLine}
+            />
           </form>
         </>
       ) : null}

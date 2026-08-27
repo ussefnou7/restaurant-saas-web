@@ -1,4 +1,5 @@
 export { DetailTabPanel, DetailTabs, type DetailTabItem } from './DetailTabs'
+export { DetailHeader, type DetailHeaderProps } from './DetailHeader'
 export { EntityAuditFooter, type EntityAuditFooterProps } from './EntityAuditFooter'
 export {
   EntityDetailModulePanel,
