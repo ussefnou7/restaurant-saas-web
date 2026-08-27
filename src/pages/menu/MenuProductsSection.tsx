@@ -22,6 +22,7 @@ import { useTranslation } from '../../i18n/useTranslation'
 import * as menuService from '../../services/menuService'
 import type { Product } from '../../types/menu'
 import { translateApiError } from '../../utils/errors'
+import { getLocalizedMenuCategoryName } from '../../utils/menuDisplay'
 import { useMenuCategories } from './useMenuCategories'
 
 const variantCache = new Map<number, Product[]>()
@@ -133,10 +134,10 @@ export function MenuProductsSection() {
       { value: 'all', label: t('menu.products.filter.allCategories') },
       ...categories.map((category) => ({
         value: String(category.id),
-        label: category.name,
+        label: getLocalizedMenuCategoryName(category, locale),
       })),
     ],
-    [categories, t],
+    [categories, locale, t],
   )
 
   function openCreate() {
@@ -276,7 +277,17 @@ export function MenuProductsSection() {
             ) : null}
           </div>
         </Td>
-        <Td>{product.menuCategoryName ?? t('common.empty.dash')}</Td>
+        <Td>
+          {product.menuCategoryName
+            ? getLocalizedMenuCategoryName(
+                {
+                  name: product.menuCategoryName,
+                  nameAr: product.menuCategoryNameAr,
+                },
+                locale,
+              )
+            : t('common.empty.dash')}
+        </Td>
         <Td dir="ltr" className={`table-cell--numeric${product.isParent && !nested ? ' menu-products__price-range' : ''}`}>
           {product.isParent && !nested
             ? getParentPrice(product)

@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { FieldGrid, FormField, FormInput, FormTextarea } from '../../../components/fields'
 import { Button } from '../../../components/ui/Button'
 import { Modal } from '../../../components/ui/Modal'
+import { useTranslation } from '../../../i18n/useTranslation'
 import * as jobService from '../../../services/jobService'
 import type { JobResponse } from '../../../types/job'
 
@@ -17,12 +18,14 @@ interface JobFormModalProps {
 
 const emptyForm = {
   name: '',
+  nameAr: '',
   code: '',
   description: '',
   active: true,
 }
 
 export function JobFormModal({ open, mode, job, onClose, onSuccess }: JobFormModalProps) {
+  const { t } = useTranslation()
   const [form, setForm] = useState(emptyForm)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -41,6 +44,7 @@ export function JobFormModal({ open, mode, job, onClose, onSuccess }: JobFormMod
     if (job) {
       setForm({
         name: job.name,
+        nameAr: job.nameAr ?? '',
         code: job.code,
         description: job.description ?? '',
         active: job.active,
@@ -67,6 +71,7 @@ export function JobFormModal({ open, mode, job, onClose, onSuccess }: JobFormMod
     try {
       const payload = {
         name: form.name.trim(),
+        nameAr: form.nameAr.trim() || null,
         description: form.description.trim() || undefined,
         active: form.active,
       }
@@ -124,6 +129,17 @@ export function JobFormModal({ open, mode, job, onClose, onSuccess }: JobFormMod
               onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
               placeholder="Head Chef"
               required
+              disabled={saving}
+            />
+          </FormField>
+
+          <FormField label={t('jobs.fields.nameAr')} htmlFor="jobNameAr">
+            <FormInput
+              id="jobNameAr"
+              type="text"
+              value={form.nameAr}
+              onChange={(event) => setForm((prev) => ({ ...prev, nameAr: event.target.value }))}
+              placeholder={t('jobs.placeholders.nameAr')}
               disabled={saving}
             />
           </FormField>

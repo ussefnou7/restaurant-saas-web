@@ -125,6 +125,7 @@
 }
 
 .main-content {
+  min-width: 0;
   padding: var(--space-lg) var(--space-xl);
   background: var(--color-background);
 }

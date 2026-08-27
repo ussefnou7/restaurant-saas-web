@@ -19,6 +19,7 @@ interface MenuCategoryFormModalProps {
 
 const emptyForm = {
   name: '',
+  nameAr: '',
   sortOrder: '0',
   active: true,
 }
@@ -46,6 +47,7 @@ export function MenuCategoryFormModal({
     if (category) {
       setForm({
         name: category.name,
+        nameAr: category.nameAr ?? '',
         sortOrder: String(category.sortOrder ?? 0),
         active: category.isActive,
       })
@@ -74,6 +76,7 @@ export function MenuCategoryFormModal({
     try {
       const payload = {
         name: form.name.trim(),
+        nameAr: form.nameAr.trim() || null,
         sortOrder,
         active: form.active,
       }
@@ -121,6 +124,15 @@ export function MenuCategoryFormModal({
               onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
               disabled={saving}
               required
+            />
+          </FormField>
+          <FormField label={t('menu.fields.nameAr')} htmlFor="menu-category-name-ar">
+            <FormInput
+              id="menu-category-name-ar"
+              value={form.nameAr}
+              onChange={(e) => setForm((prev) => ({ ...prev, nameAr: e.target.value }))}
+              disabled={saving}
+              dir="rtl"
             />
           </FormField>
           <FormField label={t('menu.fields.sortOrder')} htmlFor="menu-category-sort">

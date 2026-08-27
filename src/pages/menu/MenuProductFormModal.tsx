@@ -9,6 +9,7 @@ import { Modal } from '../../components/ui/Modal'
 import { useTranslation } from '../../i18n/useTranslation'
 import * as menuService from '../../services/menuService'
 import type { MenuCategory, Product } from '../../types/menu'
+import { getLocalizedMenuCategoryName } from '../../utils/menuDisplay'
 import { useMenuCategories } from './useMenuCategories'
 import {
   formatMenuPrice,
@@ -61,7 +62,7 @@ export function MenuProductFormModal({
   onRequestEditProduct,
   onRequestDeleteProduct,
 }: MenuProductFormModalProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const { categories, loading: categoriesLoading, refreshCategories } = useMenuCategories()
   const [form, setForm] = useState(emptyForm)
   const [error, setError] = useState('')
@@ -89,8 +90,11 @@ export function MenuProductFormModal({
   const locksMenuVisibility = isVariantChild || (isCreate && isAddOnOnly)
 
   const activeCategories = useMemo(
-    () => categories.filter((category) => category.isActive),
-    [categories],
+    () =>
+      categories.filter(
+        (category) => category.isActive !== false || String(category.id) === form.menuCategoryId,
+      ),
+    [categories, form.menuCategoryId],
   )
 
   // Role-driven tabs: standalone → Recipe·Add-Ons, parent → Variants·Add-Ons, variant → Recipe.
@@ -111,14 +115,14 @@ export function MenuProductFormModal({
     () => [
       ...activeCategories.map((category) => ({
         value: String(category.id),
-        label: category.name,
+        label: getLocalizedMenuCategoryName(category, locale),
       })),
       {
         value: QUICK_ADD_CATEGORY_VALUE,
         label: t('menu.products.quickAddCategory.option'),
       },
     ],
-    [activeCategories, t],
+    [activeCategories, locale, t],
   )
 
   const parentOptions = useMemo(

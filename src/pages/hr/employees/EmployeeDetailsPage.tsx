@@ -8,6 +8,8 @@ import {
   useEntityDetailTab,
 } from '../../../components/entity-detail'
 import { ConfirmModal } from '../../../components/ui/ConfirmModal'
+import { StatusBadge } from '../../../components/ui/StatusBadge'
+import { useDocumentTitle } from '../../../hooks/useDocumentTitle'
 import { useTranslation } from '../../../i18n/useTranslation'
 import * as employeeService from '../../../services/employeeService'
 import type { EmployeeResponse } from '../../../types/employee'
@@ -24,7 +26,7 @@ const TAB_LEAVE_ASSIGN = 'leave-assign'
 const TAB_LEAVE_REQUESTS = 'leave-requests'
 
 export function EmployeeDetailsPage() {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const navigate = useNavigate()
   const { employeeId } = useParams<{ employeeId: string }>()
 
@@ -131,9 +133,29 @@ export function EmployeeDetailsPage() {
       />
     ) : null
 
+  const employeeName = employee
+    ? (locale === 'ar' ? (employee.fullNameAr || employee.fullName) : (employee.fullNameEn || employee.fullName)) || employee.employeeCode || String(employee.id)
+    : ''
+
+  useDocumentTitle(employee ? employeeName : undefined)
+
+  const subtitle = employee
+    ? [
+        employee.employeeCode,
+        locale === 'ar' ? (employee.jobNameAr || employee.jobName) : (employee.jobNameEn || employee.jobName),
+        locale === 'ar' ? (employee.branchNameAr || employee.branchName) : (employee.branchNameEn || employee.branchName),
+      ]
+        .filter(Boolean)
+        .join(' · ')
+    : undefined
+
   return (
     <>
       <EntityDetailScreen
+        title={employee ? employeeName : undefined}
+        subtitle={subtitle}
+        badge={employee ? <StatusBadge active={employee.active} /> : undefined}
+        actions={overviewActions}
         backTo="/hr/employees"
         backLabel={t('employees.details.back')}
         loading={loading}
@@ -149,7 +171,6 @@ export function EmployeeDetailsPage() {
               editing={isEditing}
               onCancel={handleCancelEdit}
               onSaved={handleSaved}
-              toolbarActions={overviewActions}
             />
           ) : null
         }

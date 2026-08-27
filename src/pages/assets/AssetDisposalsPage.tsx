@@ -37,7 +37,7 @@ import {
   getAssetCategoryLabel,
   getAssetDisposalReasonLabel,
 } from '../../utils/assetDisplay'
-import { getLocalizedBranchName } from '../../utils/branchDisplay'
+import { getLocalizedBranchName, resolveBranchName } from '../../utils/branchDisplay'
 import { translateApiError } from '../../utils/errors'
 import { formatDate } from '../../utils/format'
 import { getInventoryLocalizedName } from '../../utils/inventoryDisplay'
@@ -225,7 +225,7 @@ export function AssetDisposalsPage() {
         <ListPageStates
           loading={loading}
           loadingMessage={t('assets.disposals.loading')}
-          loadingColumns={9}
+          loadingColumns={10}
           showEmpty={showEmpty}
           emptyTitle={t('assets.disposals.empty.title')}
           emptyDescription={t('assets.disposals.empty.description')}
@@ -240,6 +240,7 @@ export function AssetDisposalsPage() {
                   <Th column="entity">{t('assets.columns.name')}</Th>
                   <Th>{t('assets.lines.label')}</Th>
                   <Th>{t('assets.columns.category')}</Th>
+                  <Th>{t('assets.form.branch')}</Th>
                   <Th className="table-cell--numeric">{t('assets.disposal.quantityDisposed')}</Th>
                   <Th className="table-cell--numeric">{t('assets.lines.unitCost')}</Th>
                   <Th className="table-cell--numeric">{t('assets.disposals.disposalValue')}</Th>
@@ -256,6 +257,7 @@ export function AssetDisposalsPage() {
                     </Td>
                     <Td>{formatAssetLineLabel(row.assetLineLabel ?? undefined, row.assetLineId, t)}</Td>
                     <Td>{getAssetCategoryLabel(row.category, t)}</Td>
+                    <Td>{resolveBranchName(row.branchId, branches, locale, row)}</Td>
                     <Td dir="ltr" className="table-cell--numeric">{formatDecimalString(row.quantityDisposed)}</Td>
                     <Td dir="ltr" className="table-cell--numeric">{formatDecimalString(row.unitCost)}</Td>
                     <Td dir="ltr" className="table-cell--numeric">{formatDecimalString(row.disposalValue)}</Td>

@@ -91,7 +91,8 @@
 
 .order-consumption-detail__header-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 420px));
+  justify-content: start;
   gap: var(--space-lg);
   padding: var(--space-lg);
 }
