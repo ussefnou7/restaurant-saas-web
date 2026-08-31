@@ -43,6 +43,19 @@ export function resolveDisplayUomId(source: MaterialUomSource | CatalogUomSource
   return source.displayUomId ?? source.defaultUomId ?? 0
 }
 
+export function getLocalizedUomSymbol(
+  uom: {
+    code?: string | null
+    symbol?: string | null
+    symbolAr?: string | null
+  },
+  locale: Locale,
+): string | undefined {
+  const symbol = uom.symbol?.trim()
+  if (locale === 'ar') return uom.symbolAr?.trim() || symbol || uom.code?.trim() || undefined
+  return symbol || uom.code?.trim() || undefined
+}
+
 export function getDisplayUomLabel(
   source: MaterialUomSource | CatalogUomSource,
   locale: Locale,
@@ -52,7 +65,8 @@ export function getDisplayUomLabel(
   const uom = uoms?.find((item) => item.id === displayId)
   if (uom) {
     const name = getInventoryLocalizedName(uom, locale)
-    return uom.symbol ? `${name} (${uom.symbol})` : name
+    const symbol = getLocalizedUomSymbol(uom, locale)
+    return symbol ? `${name} (${symbol})` : name
   }
   return (
     source.displayUomSymbol ??
@@ -74,7 +88,7 @@ export function getStockUomLabel(
   const uom = uoms?.find((item) => item.id === stockId)
   if (uom) {
     const name = getInventoryLocalizedName(uom, locale)
-    return uom.symbol ?? name
+    return getLocalizedUomSymbol(uom, locale) ?? name
   }
   return (
     source.stockUomSymbol ??
@@ -119,6 +133,11 @@ export function formatQuantityWithUom(quantity: number, symbol?: string | null, 
   return unit ? `${formatted} ${unit}` : formatted
 }
 
+function findUom(uoms: UomResponse[], uomId?: number | null): UomResponse | undefined {
+  if (uomId == null) return undefined
+  return uoms.find((u) => u.id === uomId)
+}
+
 export type BalanceDisplayView = {
   primary: string
   stockSecondary: string | null
@@ -128,23 +147,26 @@ export function getBalanceDisplayView(
   row: StockBalanceResponse,
   uoms: UomResponse[],
   storedAsLabel: string,
+  locale?: Locale,
 ): BalanceDisplayView {
+  const stockUom = findUom(uoms, row.uomId)
+  const displayUom = findUom(uoms, row.displayUomId)
+
   if (row.displayQuantity != null) {
+    const primaryUom = displayUom ?? stockUom
+    const stockUnitSymbol = (stockUom && locale ? getLocalizedUomSymbol(stockUom, locale) : stockUom?.symbol) ?? row.uomSymbol
+    const stockUnitCode = stockUom?.code ?? row.uomCode
     const primary = formatQuantityWithUom(
       row.displayQuantity,
-      row.displayUomSymbol,
-      row.displayUomCode,
+      (primaryUom && locale ? getLocalizedUomSymbol(primaryUom, locale) : primaryUom?.symbol) ?? row.displayUomSymbol,
+      primaryUom?.code ?? row.displayUomCode,
     )
     const stockSecondary =
-      row.quantity != null && row.uomSymbol
-        ? `${storedAsLabel} ${formatQuantityWithUom(row.quantity, row.uomSymbol, row.uomCode)}`
+      row.quantity != null && (stockUnitSymbol || stockUnitCode)
+        ? `${storedAsLabel} ${formatQuantityWithUom(row.quantity, stockUnitSymbol, stockUnitCode)}`
         : null
     return { primary, stockSecondary }
   }
-
-  const stockUom = uoms.find((u) => u.id === row.uomId)
-  const displayUomId = row.displayUomId
-  const displayUom = displayUomId ? uoms.find((u) => u.id === displayUomId) : undefined
 
   if (stockUom && displayUom) {
     const displayQty = convertUomQuantity(row.quantity, stockUom, displayUom)
@@ -152,16 +174,20 @@ export function getBalanceDisplayView(
       return {
         primary: formatQuantityWithUom(
           displayQty,
-          displayUom.symbol,
+          locale ? getLocalizedUomSymbol(displayUom, locale) : displayUom.symbol,
           displayUom.code,
         ),
-        stockSecondary: `${storedAsLabel} ${formatQuantityWithUom(row.quantity, stockUom.symbol, stockUom.code)}`,
+        stockSecondary: `${storedAsLabel} ${formatQuantityWithUom(row.quantity, locale ? getLocalizedUomSymbol(stockUom, locale) : stockUom.symbol, stockUom.code)}`,
       }
     }
   }
 
   return {
-    primary: formatQuantityWithUom(row.quantity, row.uomSymbol, row.uomCode),
+    primary: formatQuantityWithUom(
+      row.quantity,
+      (stockUom && locale ? getLocalizedUomSymbol(stockUom, locale) : stockUom?.symbol) ?? row.uomSymbol,
+      stockUom?.code ?? row.uomCode,
+    ),
     stockSecondary: null,
   }
 }

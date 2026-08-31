@@ -1,9 +1,9 @@
 /* Module hub landing pages — shared shell for every hub screen */
 
 .module-hub {
-  max-width: 1080px;
-  margin-inline: auto;
+  max-width: none;
   width: 100%;
+  margin-inline: 0;
 }
 
 .module-hub__shell {
@@ -90,7 +90,8 @@
 
 .hub-nav-card-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  justify-content: stretch;
   gap: 14px;
 }
 
@@ -242,10 +243,6 @@
 }
 
 @media (max-width: 1024px) {
-  .hub-nav-card-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .hub-panel-row {
     grid-template-columns: minmax(0, 1fr);
   }

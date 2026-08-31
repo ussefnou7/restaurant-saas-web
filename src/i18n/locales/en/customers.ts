@@ -1,6 +1,7 @@
 import type { TranslationDictionary } from '../../types'
 
 export const customersEn: TranslationDictionary = {
+  'customers.title': 'Customers',
   'customers.tabs.customers': 'Customers',
   'customers.list.title': 'Customers',
   'customers.list.loading': 'Loading customers…',

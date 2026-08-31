@@ -6,8 +6,8 @@ import * as assetService from '../../services/assetService'
 import * as branchService from '../../services/branchService'
 import type { AssetCategory, AssetResponse } from '../../types/assets'
 import type { BranchResponse } from '../../types/branch'
+import { getLocalizedBranchName } from '../../utils/branchDisplay'
 import { translateApiError } from '../../utils/errors'
-import { getInventoryLocalizedName } from '../../utils/inventoryDisplay'
 
 const categories: AssetCategory[] = ['FURNITURE', 'KITCHEN_EQUIPMENT', 'FINISHING', 'ELECTRONICS', 'OTHER']
 
@@ -121,7 +121,7 @@ export function AssetFormModal({ open, asset, onClose, onSaved }: AssetFormModal
               <option value="">{t('assets.form.selectBranch')}</option>
               {branches.map((branch) => (
                 <option key={branch.id} value={branch.id}>
-                  {getInventoryLocalizedName(branch, locale)}
+                  {getLocalizedBranchName(branch, locale)}
                 </option>
               ))}
             </select>

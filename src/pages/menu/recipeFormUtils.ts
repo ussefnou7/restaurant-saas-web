@@ -43,7 +43,7 @@ export function rowsFromRecipeItems(items: RecipeItemView[]): EditableRecipeRow[
 }
 
 export function formatRecipeVersionDate(value: string, locale: string): string {
-  const intlLocale = locale === 'ar' ? 'ar-EG' : 'en-US'
+  const intlLocale = locale === 'ar' ? 'ar-EG-u-nu-latn' : 'en-US'
   return new Date(value).toLocaleString(intlLocale, {
     year: 'numeric',
     month: 'short',

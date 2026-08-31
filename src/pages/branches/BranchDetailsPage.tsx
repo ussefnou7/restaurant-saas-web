@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { DetailTabPanel, DetailTabs } from '../../components/entity-detail/DetailTabs'
 import { EntityDetailLayout } from '../../components/entity-detail/EntityDetailLayout'
-import { Button } from '../../components/ui/Button'
+import { EntityOverviewActions } from '../../components/entity-detail/EntityOverviewActions'
 import { LoadingState } from '../../components/ui/LoadingState'
 import { StatusBadge } from '../../components/ui/StatusBadge'
 import { useTranslation } from '../../i18n/useTranslation'
@@ -139,43 +139,46 @@ export function BranchDetailsPage() {
   const displayName = getLocalizedBranchName(branch, locale)
 
   const headerActions = isEditing ? null : (
-    <div className="entity-detail-page__actions-inline">
-      <Button variant="primary" size="sm" onClick={handleStartEdit}>
-        {t('branchDetails.actions.editBranch')}
-      </Button>
-      <Button
-        variant="secondary"
-        size="sm"
-        onClick={() => void handleToggleStatus()}
-        disabled={statusBusy}
-      >
-        {branch.active
+    <EntityOverviewActions
+      editLabel={t('branchDetails.actions.editBranch')}
+      statusLabel={
+        branch.active
           ? t('branchDetails.actions.deactivateBranch')
-          : t('branchDetails.actions.activateBranch')}
-      </Button>
-    </div>
+          : t('branchDetails.actions.activateBranch')
+      }
+      active={branch.active}
+      statusBusy={statusBusy}
+      showDelete={false}
+      onEdit={handleStartEdit}
+      onToggleStatus={() => void handleToggleStatus()}
+    />
   )
+
+  const subtitle = [branch.code, branch.phone].filter(Boolean).join(' · ')
 
   return (
     <EntityDetailLayout
       className="entity-detail-page--branch"
+      title={displayName}
+      subtitle={subtitle}
+      badge={<StatusBadge active={branch.active} />}
+      actions={headerActions}
       backTo="/branches"
       backLabel={t('branchDetails.backToList')}
-      title={displayName}
-      subtitle={branch.code}
-      headerExtra={<StatusBadge active={branch.active} />}
-      actions={headerActions}
+      headerFields={
+        <BranchOverviewPanel
+          branch={branch}
+          editing={isEditing}
+          onCancel={handleCancelEdit}
+          onSaved={handleSaved}
+        />
+      }
     >
       {error ? <div className="page-error-banner">{error}</div> : null}
 
       <DetailTabs tabs={tabs} activeTab={activeTab} onTabChange={setTab} variant="master">
         <DetailTabPanel id={TAB_OVERVIEW} active={activeTab === TAB_OVERVIEW}>
-          <BranchOverviewPanel
-            branch={branch}
-            editing={isEditing}
-            onCancel={handleCancelEdit}
-            onSaved={handleSaved}
-          />
+          {null}
         </DetailTabPanel>
 
         <DetailTabPanel id={TAB_EMPLOYEES} active={activeTab === TAB_EMPLOYEES}>

@@ -17,11 +17,43 @@ export function buildBranchOptions(
   return [current, ...active]
 }
 
-export function getLocalizedBranchName(branch: BranchResponse, locale: Locale): string {
-  return pickLocalizedValue(locale, {
-    en: branch.nameEn ?? branch.name,
-    ar: branch.nameAr ?? branch.name,
-  })
+export type BranchLike = {
+  name?: string | null
+  nameEn?: string | null
+  nameAr?: string | null
+  branchName?: string | null
+  branchNameEn?: string | null
+  branchNameAr?: string | null
+}
+
+export function getLocalizedBranchName(
+  branch: BranchLike | null | undefined,
+  locale: Locale,
+): string {
+  if (!branch) return ''
+  const en = branch.nameEn ?? branch.branchNameEn ?? branch.name ?? branch.branchName ?? ''
+  const ar = branch.nameAr ?? branch.branchNameAr ?? branch.name ?? branch.branchName ?? ''
+  return pickLocalizedValue(locale, { en, ar })
+}
+
+export function resolveBranchName(
+  branchId: number | string | undefined | null,
+  branches: BranchResponse[],
+  locale: Locale,
+  fallbackEntity?: BranchLike | null,
+): string {
+  if (branchId != null) {
+    const found = branches.find((b) => String(b.id) === String(branchId))
+    if (found) {
+      const localized = getLocalizedBranchName(found, locale)
+      if (localized) return localized
+    }
+  }
+  if (fallbackEntity) {
+    const localizedFallback = getLocalizedBranchName(fallbackEntity, locale)
+    if (localizedFallback) return localizedFallback
+  }
+  return '—'
 }
 
 export function getLocalizedBranchAddress(branch: BranchResponse, locale: Locale): string {

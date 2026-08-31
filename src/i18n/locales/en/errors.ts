@@ -94,6 +94,10 @@ export const errorsEn: TranslationDictionary = {
     'The material "{{materialName}}" is already included in this recipe',
   'errors.VARIANT_CANNOT_BE_MENU_ITEM':
     'A variant cannot be shown on the menu directly. Remove it from the menu, then try again.',
+  'errors.VARIANT_LABEL_REQUIRED':
+    'Enter both the English and Arabic variant labels before saving.',
+  'errors.DUPLICATE_VARIANT_LABEL':
+    'Another variant under this parent already uses one of these labels.',
   'errors.PARENT_PRODUCT_NOT_ORDERABLE':
     'This is a variant group and cannot be ordered directly. Please choose one of its variants.',
   'errors.PARENT_PRODUCT_HAS_NO_RECIPE':

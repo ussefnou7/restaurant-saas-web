@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../../components/ui/Button'
 import { EntityCell } from '../../components/ui/EntityCell'
+import { SelectFilter } from '../../components/ui/SelectFilter'
 import {
   ClickableTableRow,
   DataTable,
@@ -22,30 +23,49 @@ import {
 import { PageHeader } from '../../components/ui/PageHeader'
 import { useTranslation } from '../../i18n/useTranslation'
 import * as assetService from '../../services/assetService'
-import type { AssetResponse } from '../../types/assets'
+import * as branchService from '../../services/branchService'
+import type { AssetCategory, AssetResponse } from '../../types/assets'
+import type { BranchResponse } from '../../types/branch'
 import { formatDecimalString, getAssetCategoryLabel } from '../../utils/assetDisplay'
+import { getLocalizedBranchName, resolveBranchName } from '../../utils/branchDisplay'
 import { translateApiError } from '../../utils/errors'
 import { getInventoryLocalizedName } from '../../utils/inventoryDisplay'
 import { AssetStatusBadge } from './AssetBadges'
-import { AssetFormModal } from './AssetFormModal'
+
+const ASSET_CATEGORIES: Array<AssetCategory | ''> = [
+  '',
+  'FURNITURE',
+  'KITCHEN_EQUIPMENT',
+  'FINISHING',
+  'ELECTRONICS',
+  'OTHER',
+]
 
 export function AssetsListPage() {
   const { t, locale } = useTranslation()
   const navigate = useNavigate()
   const [assets, setAssets] = useState<AssetResponse[]>([])
+  const [branches, setBranches] = useState<BranchResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
-  const [createOpen, setCreateOpen] = useState(false)
+  const [branchId, setBranchId] = useState('')
+  const [category, setCategory] = useState<AssetCategory | ''>('')
 
   const loadAssets = useCallback(async () => {
     setLoading(true)
     setError('')
     try {
-      setAssets(await assetService.getAssets())
+      const [assetData, branchData] = await Promise.all([
+        assetService.getAssets(),
+        branchService.getBranches().catch(() => []),
+      ])
+      setAssets(assetData)
+      setBranches(branchData)
     } catch (err) {
       setError(translateApiError(err, t).message)
       setAssets([])
+      setBranches([])
     } finally {
       setLoading(false)
     }
@@ -58,12 +78,22 @@ export function AssetsListPage() {
 
   const filteredAssets = useMemo(() => {
     const query = search.trim().toLowerCase()
-    if (!query) return assets
-    return assets.filter((asset) =>
-      [asset.name, asset.nameAr ?? '', asset.category]
-        .some((value) => value.toLowerCase().includes(query)),
-    )
-  }, [assets, search])
+    return assets.filter((asset) => {
+      if (branchId && String(asset.branchId) !== branchId) {
+        return false
+      }
+      if (category && asset.category !== category) {
+        return false
+      }
+      if (!query) return true
+
+      const localizedBranch = resolveBranchName(asset.branchId, branches, locale, asset)
+      const categoryLabel = getAssetCategoryLabel(asset.category, t)
+      return [asset.name, asset.nameAr ?? '', categoryLabel, localizedBranch].some((value) =>
+        value.toLowerCase().includes(query),
+      )
+    })
+  }, [assets, branchId, category, branches, locale, search, t])
 
   const showEmpty = !loading && !error && assets.length === 0
   const showFilterEmpty = !loading && !error && assets.length > 0 && filteredAssets.length === 0
@@ -88,7 +118,7 @@ export function AssetsListPage() {
               <BarChart3 size={16} aria-hidden />
               {t('assets.list.reports')}
             </Button>
-            <Button onClick={() => setCreateOpen(true)}>
+            <Button onClick={() => navigate('/assets/new')}>
               <Plus size={16} aria-hidden />
               {t('assets.list.newAsset')}
             </Button>
@@ -102,12 +132,35 @@ export function AssetsListPage() {
         <ListCardHeader
           title={t('assets.list.tableTitle')}
           toolbar={
-            <ListToolbarSearch
-              value={search}
-              onChange={setSearch}
-              placeholder={t('common.search')}
-              ariaLabel={t('common.search')}
-            />
+            <>
+              <ListToolbarSearch
+                value={search}
+                onChange={setSearch}
+                placeholder={t('common.search')}
+                ariaLabel={t('common.search')}
+              />
+              <SelectFilter
+                value={category}
+                onChange={(val) => setCategory(val as AssetCategory | '')}
+                options={ASSET_CATEGORIES.map((cat) => ({
+                  value: cat,
+                  label: cat ? getAssetCategoryLabel(cat, t) : t('assets.filters.allCategories'),
+                }))}
+                ariaLabel={t('assets.filters.category')}
+              />
+              <SelectFilter
+                value={branchId}
+                onChange={setBranchId}
+                options={[
+                  { value: '', label: t('assets.filters.allBranches') },
+                  ...branches.map((b) => ({
+                    value: String(b.id),
+                    label: getLocalizedBranchName(b, locale),
+                  })),
+                ]}
+                ariaLabel={t('assets.filters.branch')}
+              />
+            </>
           }
         />
         <ListPageStates
@@ -118,7 +171,7 @@ export function AssetsListPage() {
           emptyTitle={t('assets.list.empty.title')}
           emptyDescription={t('assets.list.empty.description')}
           emptyActionLabel={t('assets.list.newAsset')}
-          onEmptyAction={() => setCreateOpen(true)}
+          onEmptyAction={() => navigate('/assets/new')}
           showFilterEmpty={showFilterEmpty}
           filterEmptyTitle={t('common.noResults')}
           filterEmptyDescription={t('common.tryAdjustFilters')}
@@ -128,6 +181,7 @@ export function AssetsListPage() {
               <TableHead>
                 <TableRow>
                   <Th column="entity">{t('assets.columns.name')}</Th>
+                  <Th>{t('assets.form.branch')}</Th>
                   <Th>{t('assets.columns.category')}</Th>
                   <Th column="status">{t('common.status')}</Th>
                   <Th className="table-cell--numeric">{t('assets.columns.lineCount')}</Th>
@@ -140,6 +194,7 @@ export function AssetsListPage() {
                     <Td column="entity">
                       <EntityCell name={getInventoryLocalizedName(asset, locale)} compact />
                     </Td>
+                    <Td>{resolveBranchName(asset.branchId, branches, locale, asset)}</Td>
                     <Td>{getAssetCategoryLabel(asset.category, t)}</Td>
                     <Td column="status">
                       <AssetStatusBadge status={asset.status} />
@@ -157,12 +212,6 @@ export function AssetsListPage() {
           }
         />
       </ListCard>
-
-      <AssetFormModal
-        open={createOpen}
-        onClose={() => setCreateOpen(false)}
-        onSaved={() => void loadAssets()}
-      />
     </ListPage>
   )
 }

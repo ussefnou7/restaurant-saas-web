@@ -7,7 +7,7 @@ import { useNotify } from '../../../components/ui/NotificationContext'
 import { useTranslation } from '../../../i18n/useTranslation'
 import * as inventoryService from '../../../services/inventoryService'
 import * as menuService from '../../../services/menuService'
-import * as uomService from '../../../services/uomService'
+import { useUomLookup } from '../../../hooks/useUomLookup'
 import type { MaterialResponse, UomResponse } from '../../../types/inventory'
 import type { Product, Recipe, RecipeItemRequest } from '../../../types/menu'
 import { getApiErrorCode, translateApiError } from '../../../utils/errors'
@@ -41,12 +41,13 @@ function hasRecipeItems(recipe: Recipe): boolean {
 
 export function ProductRecipeTab({ product, nested = false, readOnly = false }: ProductRecipeTabProps) {
   const { t, locale } = useTranslation()
+  const { activeUoms } = useUomLookup()
   const notify = useNotify()
 
   const [activeRecipe, setActiveRecipe] = useState<Recipe | null>(null)
   const [history, setHistory] = useState<Recipe[]>([])
   const [materials, setMaterials] = useState<MaterialResponse[]>([])
-  const [uoms, setUoms] = useState<UomResponse[]>([])
+  const uoms = activeUoms as unknown as UomResponse[]
   const [rows, setRows] = useState<EditableRecipeRow[]>([])
   const [savedSnapshot, setSavedSnapshot] = useState('')
   const [loading, setLoading] = useState(true)
@@ -92,12 +93,8 @@ export function ProductRecipeTab({ product, nested = false, readOnly = false }: 
   const loadLookups = useCallback(async () => {
     setLookupsLoading(true)
     try {
-      const [materialList, uomList] = await Promise.all([
-        inventoryService.getMaterials({ active: true }),
-        uomService.getTenantUoms(),
-      ])
+      const materialList = await inventoryService.getMaterials({ active: true })
       setMaterials(materialList)
-      setUoms(uomList)
     } catch (err) {
       setError(translateApiError(err, t).message)
     } finally {

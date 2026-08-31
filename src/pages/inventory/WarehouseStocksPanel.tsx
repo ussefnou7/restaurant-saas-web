@@ -15,9 +15,10 @@ import {
   Th,
 } from '../../components/ui/Table'
 import { useTranslation } from '../../i18n/useTranslation'
+import { useUomLookup } from '../../hooks/useUomLookup'
 import * as inventoryService from '../../services/inventoryService'
 import * as inventoryStockService from '../../services/inventoryStockService'
-import type { MaterialResponse } from '../../types/inventory'
+import type { MaterialResponse, UomResponse } from '../../types/inventory'
 import type { StockBatchResponse, WarehouseStockResponse } from '../../types/inventoryStock'
 import { canManageInventoryStock } from '../../utils/inventoryAccess'
 import { translateApiError } from '../../utils/errors'
@@ -57,12 +58,6 @@ function displayMaterialName(stock: WarehouseStockResponse): string {
   return stock.materialNameAr?.trim() || stock.materialName
 }
 
-function displayUomName(stock: WarehouseStockResponse): string {
-  const symbol = stock.uomSymbol?.trim()
-  if (symbol) return symbol
-  return stock.uomNameAr?.trim() || stock.uomName
-}
-
 function settingsFormFromStock(stock: WarehouseStockResponse): StockSettingsForm {
   return {
     minimumQuantity: String(getMinimumQuantity(stock)),
@@ -85,7 +80,17 @@ function mergeStockRow(
 
 export function WarehouseStocksPanel({ warehouseId }: WarehouseStocksPanelProps) {
   const { t, locale } = useTranslation()
+  const { activeUoms, uomLabel, uomSymbol } = useUomLookup()
+  const uoms = activeUoms as unknown as UomResponse[]
   const canManage = canManageInventoryStock()
+
+  function displayUomName(stock: WarehouseStockResponse): string {
+    const sym = uomSymbol(stock.uomId)
+    if (sym !== '—') return sym
+    const lbl = uomLabel(stock.uomId)
+    if (lbl !== '—') return lbl
+    return stock.uomSymbol?.trim() || stock.uomNameAr?.trim() || stock.uomName || '—'
+  }
 
   const [stocks, setStocks] = useState<WarehouseStockResponse[]>([])
   const [loading, setLoading] = useState(true)
@@ -429,7 +434,7 @@ export function WarehouseStocksPanel({ warehouseId }: WarehouseStocksPanelProps)
                     </Td>
                     <Td>
                       {addMaterial
-                        ? getDisplayUomLabel(addMaterial, locale)
+                        ? getDisplayUomLabel(addMaterial, locale, uoms)
                         : t('common.empty.dash')}
                     </Td>
                     <Td className="table-cell--numeric">

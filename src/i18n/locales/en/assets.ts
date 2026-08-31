@@ -1,6 +1,7 @@
 import type { TranslationDictionary } from '../../types'
 
 export const assetsEn: TranslationDictionary = {
+  'assets.title': 'Assets',
   'assets.actions.back': 'Back',
   'assets.actions.saving': 'Saving...',
 
@@ -45,6 +46,10 @@ export const assetsEn: TranslationDictionary = {
   'assets.lines.purchaseDate': 'Purchase Date',
   'assets.lines.empty.title': 'No lines yet',
   'assets.lines.empty.description': 'Add a purchase line to start tracking this asset.',
+  'assets.lines.cannotDeleteWithOperations': 'Cannot delete a line with recorded disposals or maintenance',
+  'assets.lines.validation.quantityRequired': 'Quantity is required and must be greater than zero.',
+  'assets.lines.validation.unitCostRequired': 'Unit cost is required and must be greater than zero.',
+  'assets.lines.validation.purchaseDateRequired': 'Purchase date is required.',
 
   'assets.operation.asset': 'Asset',
   'assets.operation.line': 'Line',

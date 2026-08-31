@@ -1,17 +1,11 @@
 /* Shared field design system */
 
-.field-grid {
+.field-grid,
+.field-grid--cols-2,
+.field-grid--cols-3 {
   display: grid;
   gap: var(--space-sm);
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.field-grid--cols-2 {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.field-grid--cols-3 {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
 .field-box--full {
@@ -442,13 +436,6 @@
 
 .field-box--full > .status-switch {
   align-self: flex-start;
-}
-
-@media (max-width: 1024px) {
-  .field-grid,
-  .field-grid--cols-3 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 @media (max-width: 640px) {

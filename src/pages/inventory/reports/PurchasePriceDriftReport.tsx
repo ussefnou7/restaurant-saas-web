@@ -1,6 +1,6 @@
 import { ArrowLeft, Download, FileText, Filter, RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Button } from '../../../components/ui/Button'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import {
@@ -9,6 +9,7 @@ import {
   ListPage,
 } from '../../../components/ui/ListPage'
 import { LoadingRows } from '../../../components/ui/LoadingRows'
+import { getReportCatalogEntry } from '../../../data/reportsCatalog'
 import { useTranslation } from '../../../i18n/useTranslation'
 import * as inventoryService from '../../../services/inventoryService'
 import * as reportService from '../../../services/reportService'
@@ -17,6 +18,8 @@ import type { PurchasePriceDriftRow, ReportFilters } from '../../../types/report
 import { translateApiError } from '../../../utils/errors'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { exportCsv, exportPdf } from '../../../utils/reportExport'
+
+const reportMeta = getReportCatalogEntry('purchase-price-drift')!
 
 function formatMoneyNumber(value: number): string {
   return Math.abs(value).toLocaleString(undefined, {
@@ -231,11 +234,14 @@ export function PurchasePriceDriftReport() {
           <div className="report-header-block">
             <div className="report-header-block__top">
               <div className="report-header-block__title-group">
-                <h1 className="report-header-block__title">{t('reports.purchasePriceDrift')}</h1>
-                <span className="report-header-block__code-badge">{t('reports.code.purchasePriceDrift')}</span>
+                <h1 className="report-header-block__title">{t(reportMeta.titleKey)}</h1>
+                <span className="report-header-block__code-badge">{t(reportMeta.codeKey)}</span>
+                <Link to="/reports" className="report-header-block__catalog-link">
+                  {t('reports.catalog.backToCatalog')}
+                </Link>
               </div>
             </div>
-            <p className="report-header-block__method">{t('reports.purchasePriceDrift.subtitle')}</p>
+            <p className="report-header-block__subtitle">{t(reportMeta.descriptionKey)}</p>
           </div>
 
           <form className="report-filter-form" onSubmit={handleApplyFilters}>
@@ -361,8 +367,11 @@ export function PurchasePriceDriftReport() {
       <div className="report-header-block">
         <div className="report-header-block__top">
           <div className="report-header-block__title-group">
-            <h1 className="report-header-block__title">{t('reports.purchasePriceDrift')}</h1>
-            <span className="report-header-block__code-badge">{t('reports.code.purchasePriceDrift')}</span>
+            <h1 className="report-header-block__title">{t(reportMeta.titleKey)}</h1>
+            <span className="report-header-block__code-badge">{t(reportMeta.codeKey)}</span>
+            <Link to="/reports" className="report-header-block__catalog-link">
+              {t('reports.catalog.backToCatalog')}
+            </Link>
           </div>
           <div className="reports-page__actions">
             <Button variant="secondary" onClick={handleEditFilters}>
@@ -383,7 +392,7 @@ export function PurchasePriceDriftReport() {
             </Button>
             <Button
               variant="secondary"
-              onClick={() => exportPdf(exportColumns, rows, 'purchase-price-drift-report', t('reports.purchasePriceDrift'))}
+              onClick={() => exportPdf(exportColumns, rows, 'purchase-price-drift-report', t(reportMeta.titleKey))}
               disabled={loadingRows || rows.length === 0}
             >
               <FileText size={16} />
@@ -392,6 +401,7 @@ export function PurchasePriceDriftReport() {
           </div>
         </div>
 
+        <p className="report-header-block__subtitle">{t(reportMeta.descriptionKey)}</p>
         <p className="report-header-block__method">
           {t('reports.method.period', { dateFrom: urlDateFrom, dateTo: urlDateTo })}
         </p>
@@ -407,13 +417,13 @@ export function PurchasePriceDriftReport() {
         </div>
         <div className="report-summary-item">
           <span className="report-summary-item__label">{t('reports.summary.priceIncreases')}</span>
-          <span className="report-summary-item__val" style={{ color: 'var(--color-danger, #dc2626)' }}>
+          <span className="report-summary-item__val" style={{ color: 'var(--color-danger)' }}>
             {priceIncreasesCount}
           </span>
         </div>
         <div className="report-summary-item">
           <span className="report-summary-item__label">{t('reports.summary.priceDecreases')}</span>
-          <span className="report-summary-item__val" style={{ color: 'var(--color-success, #059669)' }}>
+          <span className="report-summary-item__val" style={{ color: 'var(--color-success)' }}>
             {priceDecreasesCount}
           </span>
         </div>
@@ -484,7 +494,7 @@ export function PurchasePriceDriftReport() {
                               unicodeBidi: 'isolate',
                               fontWeight: 700,
                               fontSize: '1rem',
-                              color: pctValue > 0 ? 'var(--color-danger, #dc2626)' : pctValue < 0 ? 'var(--color-success, #059669)' : 'var(--color-text)',
+                              color: pctValue > 0 ? 'var(--color-danger)' : pctValue < 0 ? 'var(--color-success)' : 'var(--color-text)',
                             }}
                           >
                             {formatPercent(pctValue)}

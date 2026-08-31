@@ -4,6 +4,11 @@ import api from './api'
 const ACCESS_TOKEN_KEY = 'accessToken'
 const AUTH_USER_KEY = 'authUser'
 const TENANT_CODE_KEY = 'tenantCode'
+export const AUTH_SESSION_CHANGED_EVENT = 'auth-session-changed'
+
+export function notifyAuthSessionChanged(): void {
+  window.dispatchEvent(new Event(AUTH_SESSION_CHANGED_EVENT))
+}
 
 export const authService = {
   async login(payload: LoginRequest): Promise<LoginResponse> {
@@ -23,6 +28,7 @@ export const authService = {
     localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken)
     localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.user))
     localStorage.setItem(TENANT_CODE_KEY, tenantCode.trim().toUpperCase())
+    notifyAuthSessionChanged()
   },
 
   getAccessToken(): string | null {
@@ -47,5 +53,6 @@ export const authService = {
     localStorage.removeItem(ACCESS_TOKEN_KEY)
     localStorage.removeItem(AUTH_USER_KEY)
     localStorage.removeItem(TENANT_CODE_KEY)
+    notifyAuthSessionChanged()
   },
 }

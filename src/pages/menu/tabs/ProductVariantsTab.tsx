@@ -77,7 +77,7 @@ export function ProductVariantsTab({ parent, readOnly = false, onChanged }: Prod
           (product) =>
             product.id !== parent.id &&
             product.parentProductId == null &&
-            !(product.parent || product.isParent),
+            !product.isParent,
         ),
       )
     } catch (err) {
@@ -138,7 +138,11 @@ export function ProductVariantsTab({ parent, readOnly = false, onChanged }: Prod
   }
 
   async function linkVariant() {
-    if (!selectedCandidate || !linkDraft.variantLabelAr.trim()) {
+    if (
+      !selectedCandidate ||
+      !linkDraft.variantLabel.trim() ||
+      !linkDraft.variantLabelAr.trim()
+    ) {
       setError(t('menu.variants.validationLabelRequired'))
       return
     }
@@ -152,7 +156,7 @@ export function ProductVariantsTab({ parent, readOnly = false, onChanged }: Prod
         sellingPrice: selectedCandidate.sellingPrice,
         menuCategoryId: selectedCandidate.menuCategoryId,
         parentProductId: parent.id,
-        variantLabel: linkDraft.variantLabel.trim() || null,
+        variantLabel: linkDraft.variantLabel.trim(),
         variantLabelAr: linkDraft.variantLabelAr.trim(),
         isMenu: false,
       })
@@ -178,7 +182,7 @@ export function ProductVariantsTab({ parent, readOnly = false, onChanged }: Prod
 
   async function saveEdit(variant: Product) {
     const price = parseNonNegativeNumber(editDraft.sellingPrice)
-    if (!editDraft.variantLabelAr.trim() || price === null) {
+    if (!editDraft.variantLabel.trim() || !editDraft.variantLabelAr.trim() || price === null) {
       setError(t('menu.variants.validationRequired'))
       return
     }
@@ -192,7 +196,7 @@ export function ProductVariantsTab({ parent, readOnly = false, onChanged }: Prod
         sellingPrice: price,
         menuCategoryId: variant.menuCategoryId,
         parentProductId: parent.id,
-        variantLabel: editDraft.variantLabel.trim() || null,
+        variantLabel: editDraft.variantLabel.trim(),
         variantLabelAr: editDraft.variantLabelAr.trim(),
         isMenu: false,
       })

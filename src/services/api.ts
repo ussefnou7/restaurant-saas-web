@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { notifyLookupVersionHeader } from '../contexts/uomLookupBridge'
 
 declare module 'axios' {
   export interface AxiosRequestConfig {
@@ -23,6 +24,8 @@ export function setApiErrorNotifier(notifier: ApiErrorNotifier | null): void {
 }
 
 const AUTH_USER_KEY = 'authUser'
+const TENANT_CODE_KEY = 'tenantCode'
+const AUTH_SESSION_CHANGED_EVENT = 'auth-session-changed'
 
 function getTenantIdHeader(): string | null {
   const raw = localStorage.getItem(AUTH_USER_KEY)
@@ -55,12 +58,20 @@ api.interceptors.request.use((config) => {
 })
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const versionHeader =
+      response.headers?.['x-lookups-version'] ?? response.headers?.['X-Lookups-Version']
+    if (typeof versionHeader === 'string' && versionHeader) {
+      notifyLookupVersionHeader(versionHeader)
+    }
+    return response
+  },
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('accessToken')
-      localStorage.removeItem('authUser')
-      localStorage.removeItem('tenantCode')
+      localStorage.removeItem(AUTH_USER_KEY)
+      localStorage.removeItem(TENANT_CODE_KEY)
+      window.dispatchEvent(new Event(AUTH_SESSION_CHANGED_EVENT))
       if (!window.location.pathname.startsWith('/login')) {
         window.location.href = '/login'
       }

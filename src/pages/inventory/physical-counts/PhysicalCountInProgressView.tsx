@@ -12,6 +12,7 @@ import {
 } from '../../../components/ui/Table'
 import { FormInput, FormTextarea } from '../../../components/fields'
 import type { Locale } from '../../../i18n/types'
+import { useUomLookup } from '../../../hooks/useUomLookup'
 import type { PhysicalCountLineResponse, PhysicalCountResponse } from '../../../types/inventoryOperations'
 import { PhysicalCountDocumentHeader } from './PhysicalCountDocumentHeader'
 import { PhysicalCountExpectedQuantity } from './PhysicalCountExpectedQuantity'
@@ -72,6 +73,7 @@ export function PhysicalCountInProgressView({
   onDelete,
   t,
 }: PhysicalCountInProgressViewProps) {
+  const { uomSymbol } = useUomLookup()
   // Drafts are seeded once per count identity (the parent keys this view by
   // count.id), so background refreshes — e.g. the refetch after a partial
   // save — no longer wipe quantities and notes typed since.
@@ -173,7 +175,7 @@ export function PhysicalCountInProgressView({
                 const parsedDraft = draft?.countedQuantity.trim() === '' ? null : Number(draft?.countedQuantity)
                 const hasInvalidDraft =
                   parsedDraft != null && (Number.isNaN(parsedDraft) || parsedDraft < 0)
-                const uomDisplay = getPhysicalCountUomDisplay(line.uomSymbol, locale, t)
+                const uomDisplay = getPhysicalCountUomDisplay(uomSymbol(line.uomId), locale, t)
 
                 return (
                   <TableRow

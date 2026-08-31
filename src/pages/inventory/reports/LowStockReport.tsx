@@ -1,5 +1,6 @@
 import { Download, FileText, RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Button } from '../../../components/ui/Button'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import {
@@ -10,6 +11,7 @@ import {
 } from '../../../components/ui/ListPage'
 import { LoadingRows } from '../../../components/ui/LoadingRows'
 import { SelectFilter } from '../../../components/ui/SelectFilter'
+import { getReportCatalogEntry } from '../../../data/reportsCatalog'
 import { useTranslation } from '../../../i18n/useTranslation'
 import * as inventoryService from '../../../services/inventoryService'
 import * as reportService from '../../../services/reportService'
@@ -18,6 +20,8 @@ import type { LowStockRow, ReportFilters } from '../../../types/reports'
 import { translateApiError } from '../../../utils/errors'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { exportCsv, exportPdf } from '../../../utils/reportExport'
+
+const reportMeta = getReportCatalogEntry('low-stock')!
 
 function formatDecimalQuantity(value: string | number): string {
   const num = typeof value === 'number' ? value : parseFloat(String(value))
@@ -147,7 +151,11 @@ export function LowStockReport() {
       <div className="report-header-block">
         <div className="report-header-block__top">
           <div className="report-header-block__title-group">
-            <h1 className="report-header-block__title">{t('reports.lowStock')}</h1>
+            <h1 className="report-header-block__title">{t(reportMeta.titleKey)}</h1>
+            <span className="report-header-block__code-badge">{t(reportMeta.codeKey)}</span>
+            <Link to="/reports" className="report-header-block__catalog-link">
+              {t('reports.catalog.backToCatalog')}
+            </Link>
           </div>
           <div className="reports-page__actions">
             <Button variant="secondary" onClick={loadRows} disabled={loadingRows}>
@@ -164,7 +172,7 @@ export function LowStockReport() {
             </Button>
             <Button
               variant="secondary"
-              onClick={() => exportPdf(exportColumns, rows, 'low-stock', t('reports.lowStock'))}
+              onClick={() => exportPdf(exportColumns, rows, 'low-stock', t(reportMeta.titleKey))}
               disabled={loadingRows || rows.length === 0}
             >
               <FileText size={16} />
@@ -173,6 +181,7 @@ export function LowStockReport() {
           </div>
         </div>
 
+        <p className="report-header-block__subtitle">{t(reportMeta.descriptionKey)}</p>
         <p className="report-header-block__method">{methodLine}</p>
         <p className="report-header-block__filter-sentence">{filterSentence}</p>
       </div>

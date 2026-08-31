@@ -7,6 +7,7 @@ export type UomResponse = {
   nameEn?: string | null
   nameAr?: string | null
   symbol?: string
+  symbolAr?: string | null
   type?: UomType
   baseCode?: string
   baseUomId?: number | null
@@ -18,6 +19,24 @@ export type UomResponse = {
   enteredAgainstUomId?: number | null
   enteredAgainstUomSymbol?: string | null
   enteredAgainstUomActive?: boolean | null
+}
+
+export type UomLookupItemResponse = {
+  id: number
+  code?: string | null
+  symbol?: string | null
+  symbolAr?: string | null
+  name: string
+  nameAr?: string | null
+  factorToBase?: number | null
+  baseUomId?: number | null
+  type?: UomType | string | null
+  active: boolean
+}
+
+export type UomLookupResponse = {
+  version: string
+  items: UomLookupItemResponse[]
 }
 
 export type CreateTenantUomRequest = {

@@ -35,6 +35,7 @@ import { InventoryTransactionsPage } from '../pages/inventory/InventoryTransacti
 import { StockBalancesPage } from '../pages/inventory/StockBalancesPage'
 import { MaterialCatalogImportPage } from '../pages/inventory/MaterialCatalogImportPage'
 import { MaterialCategoriesPage } from '../pages/inventory/MaterialCategoriesPage'
+import { MaterialDetailsPage } from '../pages/inventory/MaterialDetailsPage'
 import { MaterialsPage } from '../pages/inventory/MaterialsPage'
 import { SuppliersPage } from '../pages/inventory/SuppliersPage'
 import {
@@ -84,7 +85,7 @@ import { OrderRequestsListSection } from '../pages/orders/OrderRequestsListSecti
 import { OrdersHubLayout } from '../pages/orders/OrdersHubLayout'
 import { OrdersListSection } from '../pages/orders/OrdersListSection'
 import { PosPage } from '../pages/pos/PosPage'
-import { ReportsPage } from '../pages/reports/ReportsPage'
+import { ReportsCataloguePage } from '../pages/reports/ReportsCataloguePage'
 import { SettingsPage } from '../pages/settings/SettingsPage'
 import { TableLayoutPage } from '../pages/tables/TableLayoutPage'
 import { TablesListPage } from '../pages/tables/TablesListPage'
@@ -99,6 +100,7 @@ export const router = createBrowserRouter([
       {
         path: '/login',
         element: <LoginPage />,
+        handle: { titleKey: 'auth.login.screenTitle' },
       },
       {
         element: (
@@ -113,23 +115,26 @@ export const router = createBrowserRouter([
           },
           {
             path: 'dashboard',
+            handle: { titleKey: 'hubs.home.title' },
             children: [
               { index: true, element: <HomeHubPage /> },
-              { path: 'overview', element: <DashboardPage /> },
+              { path: 'overview', element: <DashboardPage />, handle: { titleKey: 'layout.nav.dashboard' } },
             ],
           },
           {
             path: 'sales',
+            handle: { titleKey: 'hubs.sales.title' },
             children: [
               { index: true, element: <SalesHubPage /> },
               {
                 path: 'reports',
+                handle: { titleKey: 'reports.salesHub.title' },
                 children: [
                   { index: true, element: <SalesReportsHub /> },
-                  { path: 'sales-over-time', element: <SalesOverTimeReport /> },
-                  { path: 'sales-by-hour', element: <SalesByHourReport /> },
-                  { path: 'sales-by-product', element: <SalesByProductReport /> },
-                  { path: 'sales-by-payment-method', element: <SalesByPaymentMethodReport /> },
+                  { path: 'sales-over-time', element: <SalesOverTimeReport />, handle: { titleKey: 'reports.salesOverTime' } },
+                  { path: 'sales-by-hour', element: <SalesByHourReport />, handle: { titleKey: 'reports.salesByHour' } },
+                  { path: 'sales-by-product', element: <SalesByProductReport />, handle: { titleKey: 'reports.salesByProduct' } },
+                  { path: 'sales-by-payment-method', element: <SalesByPaymentMethodReport />, handle: { titleKey: 'reports.salesByPaymentMethod' } },
                 ],
               },
             ],
@@ -137,32 +142,35 @@ export const router = createBrowserRouter([
           {
             path: 'pos',
             element: <PosPage />,
+            handle: { titleKey: 'layout.nav.pos' },
           },
           {
             path: 'orders',
+            handle: { titleKey: 'orders.title' },
             children: [
               {
                 element: <OrdersHubLayout />,
                 children: [
                   { index: true, element: <Navigate to="list" replace /> },
-                  { path: 'list', element: <OrdersListSection /> },
-                  { path: 'order-requests', element: <OrderRequestsListSection /> },
-                  { path: 'customers', element: <CustomersListSection /> },
+                  { path: 'list', element: <OrdersListSection />, handle: { titleKey: 'orders.list.title' } },
+                  { path: 'order-requests', element: <OrderRequestsListSection />, handle: { titleKey: 'orders.requests.title' } },
+                  { path: 'customers', element: <CustomersListSection />, handle: { titleKey: 'customers.title' } },
                 ],
               },
-              { path: 'requests/:requestId', element: <OrderRequestDetailPage /> },
-              { path: ':orderId', element: <OrderDetailPage /> },
+              { path: 'requests/:requestId', element: <OrderRequestDetailPage />, handle: { titleKey: 'orders.requests.detailTitle' } },
+              { path: ':orderId', element: <OrderDetailPage />, handle: { titleKey: 'orders.detail.screenTitle' } },
             ],
           },
           {
             path: 'menu',
             element: <MenuHubLayout />,
+            handle: { titleKey: 'hubs.menu.title' },
             children: [
               { index: true, element: <Navigate to="/menu/categories" replace /> },
-              { path: 'categories', element: <MenuCategoriesSection /> },
-              { path: 'products', element: <MenuProductsSection /> },
-              { path: 'products/new', element: <ProductEditorPage /> },
-              { path: 'products/:id/edit', element: <ProductEditorPage /> },
+              { path: 'categories', element: <MenuCategoriesSection />, handle: { titleKey: 'menu.categories.title' } },
+              { path: 'products', element: <MenuProductsSection />, handle: { titleKey: 'menu.products.title' } },
+              { path: 'products/new', element: <ProductEditorPage />, handle: { titleKey: 'menu.products.new' } },
+              { path: 'products/:id/edit', element: <ProductEditorPage />, handle: { titleKey: 'menu.products.edit' } },
             ],
           },
           {
@@ -175,24 +183,28 @@ export const router = createBrowserRouter([
           },
           {
             path: 'branches',
+            handle: { titleKey: 'branches.title' },
             children: [
               { index: true, element: <BranchesPage /> },
-              { path: ':branchId', element: <BranchDetailsPage /> },
+              { path: ':branchId', element: <BranchDetailsPage />, handle: { titleKey: 'branchDetails.title' } },
             ],
           },
           {
             path: 'devices',
             element: <DevicesPage />,
+            handle: { titleKey: 'devices.title' },
           },
           {
             path: 'tables',
+            handle: { titleKey: 'tables.title' },
             children: [
               { index: true, element: <TablesListPage /> },
-              { path: 'layout', element: <TableLayoutPage /> },
+              { path: 'layout', element: <TableLayoutPage />, handle: { titleKey: 'tables.layout.title' } },
             ],
           },
           {
             path: 'inventory',
+            handle: { titleKey: 'hubs.inventory.title' },
             children: [
               {
                 index: true,
@@ -201,29 +213,40 @@ export const router = createBrowserRouter([
               {
                 path: 'setup',
                 element: <InventorySetupPage />,
+                handle: { titleKey: 'inventory.setup.title' },
               },
               {
                 path: 'catalog-import',
                 element: <MaterialCatalogImportPage />,
+                handle: { titleKey: 'inventory.catalogImport.title' },
               },
               {
                 path: 'materials',
-                element: <MaterialsPage />,
+                handle: { titleKey: 'inventory.materials.title' },
+                children: [
+                  { index: true, element: <MaterialsPage /> },
+                  { path: 'new', element: <MaterialDetailsPage />, handle: { titleKey: 'inventory.materials.new' } },
+                  { path: ':materialId', element: <MaterialDetailsPage />, handle: { titleKey: 'inventory.materials.details' } },
+                  { path: ':materialId/edit', element: <MaterialDetailsPage />, handle: { titleKey: 'inventory.materials.edit' } },
+                ],
               },
               {
                 path: 'material-categories',
                 element: <MaterialCategoriesPage />,
+                handle: { titleKey: 'inventory.categories.title' },
               },
               {
                 path: 'warehouses',
+                handle: { titleKey: 'inventory.warehouses.title' },
                 children: [
                   { index: true, element: <WarehousesPage /> },
-                  { path: ':warehouseId', element: <WarehouseDetailsPage /> },
+                  { path: ':warehouseId', element: <WarehouseDetailsPage />, handle: { titleKey: 'inventory.warehouses.details' } },
                 ],
               },
               {
                 path: 'settings/uom',
                 element: <TenantUomPage />,
+                handle: { titleKey: 'inventory.adminUoms.title' },
               },
               {
                 path: 'suppliers',
@@ -254,106 +277,120 @@ export const router = createBrowserRouter([
               },
               {
                 path: 'transfers',
+                handle: { titleKey: 'inventory.transfers.title' },
                 children: [
                   { index: true, element: <TransfersPage /> },
-                  { path: 'new', element: <TransferCreatePage /> },
-                  { path: ':id', element: <TransferViewPage /> },
+                  { path: 'new', element: <TransferCreatePage />, handle: { titleKey: 'inventory.transfers.new' } },
+                  { path: ':id', element: <TransferViewPage />, handle: { titleKey: 'inventory.transfers.details' } },
                 ],
               },
               {
                 path: 'physical-counts',
+                handle: { titleKey: 'inventory.physicalCounts.title' },
                 children: [
                   { index: true, element: <PhysicalCountsPage /> },
-                  { path: 'new', element: <PhysicalCountCreatePage /> },
-                  { path: ':id', element: <PhysicalCountViewPage /> },
+                  { path: 'new', element: <PhysicalCountCreatePage />, handle: { titleKey: 'inventory.physicalCounts.new' } },
+                  { path: ':id', element: <PhysicalCountViewPage />, handle: { titleKey: 'inventory.physicalCounts.details' } },
                 ],
               },
               {
                 path: 'waste-documents',
+                handle: { titleKey: 'inventory.waste.title' },
                 children: [
                   { index: true, element: <WasteDocumentsPage /> },
-                  { path: 'new', element: <WasteDocumentCreatePage /> },
-                  { path: ':id', element: <WasteDocumentDetailPage /> },
+                  { path: 'new', element: <WasteDocumentCreatePage />, handle: { titleKey: 'inventory.waste.new' } },
+                  { path: ':id', element: <WasteDocumentDetailPage />, handle: { titleKey: 'inventory.waste.details' } },
                 ],
               },
               {
                 path: 'order-consumption',
+                handle: { titleKey: 'orderConsumption.list.title' },
                 children: [
                   { index: true, element: <OrderConsumptionListPage /> },
-                  { path: ':id', element: <OrderConsumptionDetailPage /> },
+                  { path: ':id', element: <OrderConsumptionDetailPage />, handle: { titleKey: 'orderConsumption.detail.title' } },
                 ],
               },
               {
                 path: 'stock-balances',
                 element: <StockBalancesPage />,
+                handle: { titleKey: 'inventory.stock.balances.title' },
               },
               {
                 path: 'transactions',
                 element: <InventoryTransactionsPage />,
+                handle: { titleKey: 'inventory.stock.transactions.title' },
               },
               {
                 path: 'reports',
+                handle: { titleKey: 'reports.hub.title' },
                 children: [
                   { index: true, element: <ReportsHub /> },
-                  { path: 'stock-valuation', element: <StockValuationReport /> },
-                  { path: 'low-stock', element: <LowStockReport /> },
-                  { path: 'shrinkage', element: <ShrinkageReport /> },
-                  { path: 'waste-analysis', element: <WasteAnalysisReport /> },
-                  { path: 'loss-comparison', element: <LossComparisonReport /> },
-                  { path: 'purchase-price-drift', element: <PurchasePriceDriftReport /> },
+                  { path: 'stock-valuation', element: <StockValuationReport />, handle: { titleKey: 'reports.stockValuation' } },
+                  { path: 'low-stock', element: <LowStockReport />, handle: { titleKey: 'reports.lowStock' } },
+                  { path: 'shrinkage', element: <ShrinkageReport />, handle: { titleKey: 'reports.shrinkage' } },
+                  { path: 'waste-analysis', element: <WasteAnalysisReport />, handle: { titleKey: 'reports.wasteAnalysis' } },
+                  { path: 'loss-comparison', element: <LossComparisonReport />, handle: { titleKey: 'reports.lossComparison' } },
+                  { path: 'purchase-price-drift', element: <PurchasePriceDriftReport />, handle: { titleKey: 'reports.purchasePriceDrift' } },
                 ],
               },
               {
                 path: 'admin',
+                handle: { titleKey: 'hubs.inventory.admin.title' },
                 children: [
                   {
                     index: true,
                     element: <Navigate to="/inventory/admin/uoms" replace />,
                   },
-                  { path: 'uoms', element: <AdminUomsPage /> },
+                  { path: 'uoms', element: <AdminUomsPage />, handle: { titleKey: 'inventory.adminUoms.title' } },
                   {
                     path: 'material-categories',
                     element: <AdminMaterialCategoriesPage />,
+                    handle: { titleKey: 'inventory.adminCategories.title' },
                   },
-                  { path: 'material-catalog', element: <AdminMaterialCatalogPage /> },
-                  { path: 'seed', element: <InventorySeedPage /> },
+                  { path: 'material-catalog', element: <AdminMaterialCatalogPage />, handle: { titleKey: 'inventory.adminCatalog.title' } },
+                  { path: 'seed', element: <InventorySeedPage />, handle: { titleKey: 'inventory.admin.seed.title' } },
                 ],
               },
             ],
           },
           {
             path: 'assets',
+            handle: { titleKey: 'assets.title' },
             children: [
               { index: true, element: <AssetsHubPage /> },
-              { path: 'list', element: <AssetsListPage /> },
-              { path: 'reports', element: <AssetsReportPage /> },
-              { path: 'disposals', element: <AssetDisposalsPage /> },
-              { path: 'maintenance', element: <AssetMaintenanceListPage /> },
-              { path: 'disposals/new', element: <AssetDisposalPage /> },
-              { path: 'maintenance/new', element: <AssetMaintenancePage /> },
-              { path: ':assetId', element: <AssetDetailPage /> },
+              { path: 'list', element: <AssetsListPage />, handle: { titleKey: 'assets.list.title' } },
+              { path: 'new', element: <AssetDetailPage />, handle: { titleKey: 'assets.form.createTitle' } },
+              { path: 'reports', element: <AssetsReportPage />, handle: { titleKey: 'assets.reports.title' } },
+              { path: 'disposals', element: <AssetDisposalsPage />, handle: { titleKey: 'assets.disposals.title' } },
+              { path: 'maintenance', element: <AssetMaintenanceListPage />, handle: { titleKey: 'assets.maintenanceList.title' } },
+              { path: 'disposals/new', element: <AssetDisposalPage />, handle: { titleKey: 'assets.disposal.title' } },
+              { path: 'maintenance/new', element: <AssetMaintenancePage />, handle: { titleKey: 'assets.maintenance.title' } },
+              { path: ':assetId', element: <AssetDetailPage />, handle: { titleKey: 'assets.detail.title' } },
             ],
           },
           {
             path: 'purchase',
+            handle: { titleKey: 'hubs.purchase.title' },
             children: [
               { index: true, element: <PurchaseHubPage /> },
-              { path: 'suppliers', element: <SuppliersPage /> },
+              { path: 'suppliers', element: <SuppliersPage />, handle: { titleKey: 'inventory.suppliers.title' } },
               {
                 path: 'purchase-invoices',
+                handle: { titleKey: 'inventory.purchaseInvoices.title' },
                 children: [
                   { index: true, element: <PurchaseInvoicesPage /> },
-                  { path: 'new', element: <PurchaseInvoiceCreatePage /> },
-                  { path: ':id/edit', element: <PurchaseInvoiceEditPage /> },
-                  { path: ':id', element: <PurchaseInvoiceViewPage /> },
+                  { path: 'new', element: <PurchaseInvoiceCreatePage />, handle: { titleKey: 'inventory.purchaseInvoices.new' } },
+                  { path: ':id/edit', element: <PurchaseInvoiceEditPage />, handle: { titleKey: 'inventory.purchaseInvoices.edit' } },
+                  { path: ':id', element: <PurchaseInvoiceViewPage />, handle: { titleKey: 'inventory.purchaseInvoices.details' } },
                 ],
               },
               {
                 path: 'purchase-returns',
+                handle: { titleKey: 'inventory.purchaseReturns.title' },
                 children: [
                   { index: true, element: <PurchaseReturnsPage /> },
-                  { path: 'new', element: <PurchaseReturnCreatePage /> },
-                  { path: ':id', element: <PurchaseReturnViewPage /> },
+                  { path: 'new', element: <PurchaseReturnCreatePage />, handle: { titleKey: 'inventory.purchaseReturns.new' } },
+                  { path: ':id', element: <PurchaseReturnViewPage />, handle: { titleKey: 'inventory.purchaseReturns.details' } },
                 ],
               },
             ],
@@ -364,47 +401,56 @@ export const router = createBrowserRouter([
           },
           {
             path: 'users',
+            handle: { titleKey: 'users.title' },
             children: [
               { index: true, element: <UsersPage /> },
-              { path: ':userId', element: <UserDetailsPage /> },
+              { path: ':userId', element: <UserDetailsPage />, handle: { titleKey: 'userDetails.title' } },
             ],
           },
           {
             path: 'hr',
+            handle: { titleKey: 'hubs.hr.title' },
             children: [
               { index: true, element: <HrHubPage /> },
-              { path: 'jobs', element: <JobsPage /> },
+              { path: 'jobs', element: <JobsPage />, handle: { titleKey: 'jobs.title' } },
               {
                 path: 'employees',
+                handle: { titleKey: 'employees.title' },
                 children: [
                   { index: true, element: <EmployeesPage /> },
-                  { path: ':employeeId', element: <EmployeeDetailsPage /> },
+                  { path: ':employeeId', element: <EmployeeDetailsPage />, handle: { titleKey: 'employees.details.title' } },
                 ],
               },
-              { path: 'leave-requests', element: <LeaveRequestsPage /> },
-              { path: 'leave-types', element: <LeaveTypesPage /> },
+              { path: 'leave-requests', element: <LeaveRequestsPage />, handle: { titleKey: 'leaveRequests.title' } },
+              { path: 'leave-types', element: <LeaveTypesPage />, handle: { titleKey: 'leaveTypes.title' } },
             ],
           },
           {
             path: 'reports',
+            handle: { titleKey: 'reports.title' },
             children: [
-              { index: true, element: <ReportsHubPage /> },
-              { path: 'overview', element: <ReportsPage /> },
+              { index: true, element: <ReportsCataloguePage /> },
+              { path: 'catalogue', element: <ReportsCataloguePage />, handle: { titleKey: 'reports.catalogue.title' } },
+              { path: 'overview', element: <ReportsCataloguePage />, handle: { titleKey: 'reports.catalogue.title' } },
+              { path: 'hub', element: <ReportsHubPage />, handle: { titleKey: 'reports.hub.title' } },
             ],
           },
           {
             path: 'admin',
             element: <AdminHubPage />,
+            handle: { titleKey: 'hubs.admin.title' },
           },
           {
             path: 'settings',
             element: <SettingsPage />,
+            handle: { titleKey: 'layout.nav.settings' },
           },
         ],
       },
       {
         path: '*',
         element: <NotFoundPage />,
+        handle: { titleKey: 'common.notFound' },
       },
     ],
   },

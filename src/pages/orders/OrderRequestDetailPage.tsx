@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { RequestSourceBadge, RequestStatusBadge } from '../../components/orders/OrderRequestBadges'
 import { DetailsCard } from '../../components/fields'
 import { EntityDetailScreen } from '../../components/entity-detail/EntityDetailScreen'
+import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 import { useTranslation } from '../../i18n/useTranslation'
 import * as branchService from '../../services/branchService'
 import * as orderRequestService from '../../services/orderRequestService'
@@ -44,6 +45,8 @@ export function OrderRequestDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  useDocumentTitle(requestId ? t('orders.request.detail.title', { id: requestId }) : undefined)
+
   const loadRequest = useCallback(async () => {
     if (!requestId) return
 
@@ -78,21 +81,6 @@ export function OrderRequestDetailPage() {
 
   const overview = request ? (
     <div className="orders-detail">
-      <header className="orders-detail__header">
-        <div className="orders-detail__header-main">
-          <h1 className="orders-detail__title">
-            {t('orders.request.detail.title', { id: request.id })}
-          </h1>
-          <div className="orders-detail__badges">
-            <RequestSourceBadge
-              source={request.source}
-              aggregatorName={request.aggregatorName}
-            />
-            <RequestStatusBadge status={request.status} />
-          </div>
-        </div>
-      </header>
-
       <DetailsCard title={t('orders.request.detail.infoTitle')}>
         <div className="orders-detail-info">
           <InfoItem
@@ -141,7 +129,7 @@ export function OrderRequestDetailPage() {
             className="button-primary orders-request-link-panel__link"
           >
             {t('orders.request.detail.viewLinkedOrder')}
-            <ChevronRight size={16} aria-hidden />
+            {locale === 'ar' ? <ChevronLeft size={16} aria-hidden /> : <ChevronRight size={16} aria-hidden />}
           </Link>
         ) : (
           <p className="orders-request-link-panel__message">
@@ -152,8 +140,28 @@ export function OrderRequestDetailPage() {
     </div>
   ) : null
 
+  const requestTitle = request ? t('orders.request.detail.title', { id: request.id }) : ''
+  const requestSubtitle = request
+    ? [formatDateTime(request.createdAt), request.source, resolveBranchName(request)]
+        .filter(Boolean)
+        .join(' · ')
+    : undefined
+
+  const requestBadges = request ? (
+    <div className="orders-detail__badges">
+      <RequestSourceBadge
+        source={request.source}
+        aggregatorName={request.aggregatorName}
+      />
+      <RequestStatusBadge status={request.status} />
+    </div>
+  ) : undefined
+
   return (
     <EntityDetailScreen
+      title={request ? requestTitle : undefined}
+      subtitle={requestSubtitle}
+      badge={requestBadges}
       backTo="/orders/order-requests"
       backLabel={t('orders.request.detail.back')}
       loading={loading}

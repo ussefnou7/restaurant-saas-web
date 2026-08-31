@@ -1,6 +1,8 @@
 import type { TranslationDictionary } from '../../types'
 
 export const reportsAr: TranslationDictionary = {
+  'reports.title': 'التقارير',
+  'reports.catalogue.title': 'دليل التقارير',
   'reports.hub.title': 'التقارير',
   'reports.hub.subtitle': 'تقارير المخزون لقيمة الرصيد والتنبيه لنقص المواد',
 
@@ -22,17 +24,17 @@ export const reportsAr: TranslationDictionary = {
   'reports.empty.subtitle': 'عدّل الفلاتر وحدّث التقرير.',
 
   'reports.stockValuation': 'تقييم المخزون',
-  'reports.stockValuation.subtitle': 'قيمة المخزون حسب المادة ومكان التخزين.',
+  'reports.stockValuation.subtitle': 'قيمة المخزون الحالية حسب المادة والمستودع، بمتوسط التكلفة المشتق من الدفعات المفتوحة. لتقدير رأس المال المجمّد ولإقفال الفترة.',
   'reports.lowStock': 'المخزون المنخفض',
-  'reports.lowStock.subtitle': 'المواد الأقل من الحد الأدنى حسب مكان التخزين.',
+  'reports.lowStock.subtitle': 'المواد التي انخفضت تحت حدّها الأدنى، بصف مستقل لكل مستودع. لتحديد ما يجب شراؤه اليوم.',
   'reports.shrinkage': 'تحليل العجز والتسرب',
-  'reports.shrinkage.subtitle': 'المواد ذات النقص غير المفسر في الجرد المادي وأثرها المالي.',
+  'reports.shrinkage.subtitle': 'المواد ذات النقص غير المُفسَّر في الجرد المادي وأثرها المالي. الفروقات الموجبة تعني زيادة غير متوقعة، وغالباً ما تكشف خطأً في الوصفة أو في العد.',
   'reports.wasteAnalysis': 'تحليل الهالك والتالف',
-  'reports.wasteAnalysis.subtitle': 'تتبع المواد التالفة والمعدومة حسب السبب والأثر المالي.',
+  'reports.wasteAnalysis.subtitle': 'المواد التالفة والمعدومة موزّعة حسب السبب وأثرها المالي. السبب هو ما يحوّل الرقم إلى قرار في الشراء أو التخزين.',
   'reports.lossComparison': 'مقارنة الخسائر',
-  'reports.lossComparison.subtitle': 'تحليل مقارن للهالك والعجز لتشخيص أسباب المشاكل التشغيلية والتخزينية.',
+  'reports.lossComparison.subtitle': 'مقارنة بين الهدر المسجَّل والعجز غير المفسَّر لكل مادة. النسبة بينهما تحدّد إن كانت المشكلة في التخزين أم في الرقابة.',
   'reports.purchasePriceDrift': 'انحراف أسعار الشراء',
-  'reports.purchasePriceDrift.subtitle': 'تتبع تباين تكلفة شراء المواد بمرور الوقت لدعم إعادة التسعير والتفاوض.',
+  'reports.purchasePriceDrift.subtitle': 'تغيّر أسعار شراء المواد بين أول وآخر فاتورة في الفترة، مرتّبة بنسبة التغيّر. عدد مرات الشراء يوضّح إن كان التغيّر اتجاهاً أم حالة منفردة.',
 
   'reports.filters.dateFrom': 'من تاريخ',
   'reports.filters.dateTo': 'إلى تاريخ',
@@ -113,13 +115,13 @@ export const reportsAr: TranslationDictionary = {
   'reports.salesHub.title': 'تقارير المبيعات',
   'reports.salesHub.subtitle': 'أداء المبيعات، والأنماط الساعية، وترتيب المنتجات، وتوزيع طرق الدفع.',
   'reports.salesOverTime': 'المبيعات اليومية عبر الزمن',
-  'reports.salesOverTime.subtitle': 'تفصيل يومي للطلبات المكتملة، والمجموع الفرعي، والضريبة، والإيرادات، ومتوسط قيمة الطلب.',
+  'reports.salesOverTime.subtitle': 'المبيعات اليومية بعدد الأوردرات والإجمالي ومتوسط قيمة الأوردر. الأيام التي لا مبيعات فيها لا تظهر.',
   'reports.salesByHour': 'المبيعات حسب الساعة',
-  'reports.salesByHour.subtitle': 'توزيع الطلبات والإيرادات حسب ساعات العمل التشغيلية.',
+  'reports.salesByHour.subtitle': 'توزيع المبيعات على ساعات اليوم لتحديد أوقات الذروة. الساعات تُحتسب بالتقويم الميلادي، فأوردر بعد منتصف الليل يُحسب على اليوم الجديد.',
   'reports.salesByProduct': 'المبيعات حسب المنتج',
-  'reports.salesByProduct.subtitle': 'ترتيب مبيعات المنتجات حسب الإيراد قبل الضريبة والكمية المباعة وحصة الإيراد.',
+  'reports.salesByProduct.subtitle': 'المنتجات الأكثر مبيعاً بالكمية والإيراد ونسبة كل منتج من الإجمالي. الإيراد قبل الضريبة، لأن الضريبة محتسبة على مستوى الأوردر لا على مستوى الصنف.',
   'reports.salesByPaymentMethod': 'المبيعات حسب طريقة الدفع',
-  'reports.salesByPaymentMethod.subtitle': 'التفصيل المالي وتوزيع الطلبات حسب طريقة الدفع لمطابقة الحسابات والرسوم.',
+  'reports.salesByPaymentMethod.subtitle': 'توزيع المبيعات حسب طريقة الدفع، لمطابقة التحصيل مع منصّات التوصيل وشركات الدفع.',
 
   'reports.code.salesOverTime': 'تقرير · SLS-01',
   'reports.code.salesByHour': 'تقرير · SLS-02',
@@ -174,5 +176,84 @@ export const reportsAr: TranslationDictionary = {
   'reports.empty.missingDateRangeSubtitle': 'اختر نطاقاً زمنياً لتوليد تحليل التقرير.',
   'reports.empty.noDataTitle': 'لا توجد بيانات',
   'reports.empty.noDataSubtitle': 'لم يتم العثور على سجلات تطابق المحددات والأنماط المحددة.',
-}
 
+  // Reports Catalogue Keys
+  'reports.catalog.title': 'دليل التقارير',
+  'reports.catalog.subtitle': 'المرجع الدائم والشامل لكافة التقارير التحليلية والتشغيلية في النظام.',
+  'reports.catalog.totalReports': '{{count}} تقارير عبر {{modules}} أقسام',
+  'reports.catalog.nav.all': 'جميع الأقسام',
+  'reports.catalog.section.answers': 'ماذا يجيب التقرير',
+  'reports.catalog.section.reads': 'البيانات ومصدر القراءة',
+  'reports.catalog.section.decision': 'القرار التشغيلي المدفوع',
+  'reports.catalog.section.limitations': '⚠ محددات وتنبيهات هامة',
+  'reports.catalog.actions.openReport': 'فتح التقرير',
+  'reports.catalog.backToCatalog': 'دليل التقارير',
+  'reports.catalog.module.inventory': 'المخزون',
+  'reports.catalog.module.inventoryDesc': 'تقييم المخزون اللحظي، وحدود إعادة التموين، وتتبع تكاليف الشراء.',
+  'reports.catalog.module.losses': 'الخسائر والهدر',
+  'reports.catalog.module.lossesDesc': 'تشخيص أسباب الهدر المسجل مقارنة بعجز الجرد المادي غير المفسر.',
+  'reports.catalog.module.sales': 'المبيعات والإيرادات',
+  'reports.catalog.module.salesDesc': 'الاتجاهات اليومية، وأوقات الذروة، وترتيب المنتجات، ومطابقة طرق الدفع.',
+  'reports.catalog.type.currentState': 'موقف لحظي',
+  'reports.catalog.type.dateRanged': 'سجل تاريخي',
+
+  // Stock Valuation Catalogue
+  'reports.catalog.stockValuation.answers': 'كم تبلغ القيمة المالية للمخزون الموجود على الرفوف حالياً.',
+  'reports.catalog.stockValuation.reads': 'كمية رصيد المخزون × متوسط التكلفة المشتق من الدفعات المفتوحة فقط (D2)، مع مجاميع فرعية لكل مستودع وإجمالي عام.',
+  'reports.catalog.stockValuation.decision': 'إقفال الفترة المالية، وتغطية التأمين، واكتشاف السيولة النقدية المحتجزة في المخزون الراكد.',
+  'reports.catalog.stockValuation.limitations': 'تقييم المخزون لحظي فقط — يعرض القيمة "الآن"، ولا يمكن استعراضه بأثر رجعي لتاريخ سابق (مثل 30 يونيو) لأن الدفعات المستهلكة تختفي من الحساب.',
+
+  // Low Stock Catalogue
+  'reports.catalog.lowStock.answers': 'ما هي المواد التي يجب طلبها وشراؤها اليوم لتفادي النقص.',
+  'reports.catalog.lowStock.reads': 'كمية الرصيد الحالي مقارنة بالحد الأدنى لكل مادة بوحدة العرض، بصف مستقل لكل (مادة × مستودع) دون تجميع بين المستودعات.',
+  'reports.catalog.lowStock.decision': 'إصدار أمر الشراء الفوري أو تحويل المخزون بين الفروع.',
+  'reports.catalog.lowStock.limitations': 'قائمة إجرائية تنفيذية وليست تقريراً تقليدياً؛ تعتمد على تحديد حد أدنى دقيق لكل مادة، وتُظهر العجز حسب كل مستودع على حدة.',
+
+  // Shrinkage Catalogue
+  'reports.catalog.shrinkage.answers': 'ما هي المواد التي فُقدت دون وجود أي مستند يفسر اختفاءها.',
+  'reports.catalog.shrinkage.reads': 'حركات دفتر الأستاذ المرتبطة بمستندات الجرد المادي (reference_type = PHYSICAL_COUNT) خلال النطاق الزمني المحدد، موقّعة بقيم سالبة (عجز) أو موجبة (زيادة).',
+  'reports.catalog.shrinkage.decision': 'بدء تحقيق داخلي لمعرفة ما إذا كان الفارق سرقة، أو زيادة في حجم الحصص، أو نقصاً في الاستلام، أو هدراً غير مسجل.',
+  'reports.catalog.shrinkage.limitations': 'لا يحمل العجز سبباً تصنيفياً مقصوداً. تصنيف العجز كهالك يلغي الفارق رياضياً وتلقائياً (D89). أي عجز لا يظهر إلا بعد إتمام الجرد الفعلي.',
+
+  // Waste Analysis Catalogue
+  'reports.catalog.wasteAnalysis.answers': 'ما هي المواد التي أُتلفت عمداً وسُجلت رسمياً، ولأي سبب، وكم كلفت.',
+  'reports.catalog.wasteAnalysis.reads': 'حركات دفتر الأستاذ الناتجة عن مستندات الهالك (reference_type = WASTE_DOCUMENT) مجمعة حسب (المادة، السبب) وبقيم موجبة تمثل الخسارة.',
+  'reports.catalog.wasteAnalysis.decision': 'تغيير قرارات الشراء أو ممارسات التخزين أو تصحيح كميات التحضير في المطبخ حسب السبب.',
+  'reports.catalog.wasteAnalysis.limitations': 'يعكس فقط ما تم إثباته بمستندات هالك رسمية؛ والتلف غير المسجل يظهر فقط كعجز في الجرد.',
+
+  // Loss Comparison Catalogue
+  'reports.catalog.lossComparison.answers': 'هل الخسائر ناتجة عن مشكلة تشغيلية في التخزين أم مشكلة في الرقابة والتحكم.',
+  'reports.catalog.lossComparison.reads': 'كلا نوعي الخسائر (الهالك المسجل وعجز الجرد) جنباً إلى جنب لكل مادة، بما في ذلك المواد السليمة التي ليس بها خسائر.',
+  'reports.catalog.lossComparison.decision': 'تشخيص سبب الخسارة: نسبة هالك عالية تعني مشكلة تخزين/شراء، ونسبة عجز عالية تعني خروج مخزون دون مستند ورقابة.',
+  'reports.catalog.lossComparison.limitations': 'يدمج اتفاقيتي إشارة مختلفتين في نفس الصف (الهالك كمقدار موجب والعجز موقّع)؛ وقد يكون الإجمالي سالباً عند وجود فائض جرد يفوق الهالك.',
+
+  // Purchase Price Drift Catalogue
+  'reports.catalog.purchasePriceDrift.answers': 'ما هي المواد التي ارتفعت تكلفة شرائها عن السابق، وبأي نسبة.',
+  'reports.catalog.purchasePriceDrift.reads': 'دفعات الشراء الفعلية لمقارنة أول وآخر سعر شراء للمادة بوحدة العرض خلال الفترة، ومرتبة بالنسبة المئوية.',
+  'reports.catalog.purchasePriceDrift.decision': 'إعادة تسعير قائمة الطعام، أو التفاوض مع الموردين، أو استبدال المورد.',
+  'reports.catalog.purchasePriceDrift.limitations': 'مرتّب بالنسبة المئوية لا بالقيمة المالية. عدد مرات الشراء يفسر الدلالة: شراء واحد لا يُظهر انحرافاً، مرتان قد تكون عارضة، و12 مرة تعكس اتجاهاً مؤكداً.',
+
+  // Sales Over Time Catalogue
+  'reports.catalog.salesOverTime.answers': 'كم تبلغ مبيعاتنا اليومية، وما هو نمط حركتها عبر الأيام.',
+  'reports.catalog.salesOverTime.reads': 'الطلبات المكتملة والمغلقة مجمعة حسب تاريخ اليوم مع فصل المجموع الفرعي والضريبة والإجمالي ومتوسط قيمة الطلب.',
+  'reports.catalog.salesOverTime.decision': 'تخطيط جداول الموظفين وتوزيع النوبات، وتحديد توقيت إطلاق العروض الترويجية.',
+  'reports.catalog.salesOverTime.limitations': 'قد لا يتطابق مجموع (المجموع الفرعي + الضريبة) تماماً مع (إجمالي المبلغ) بسبب التدوير (تُحفظ المكونات بدقة 6 خانات والإجمالي مقرب لخانتين). الأيام بدون مبيعات لا تظهر.',
+
+  // Sales By Hour Catalogue
+  'reports.catalog.salesByHour.answers': 'متى تكون أوقات وساعات الذروة الفعلية للطلبات والإيرادات.',
+  'reports.catalog.salesByHour.reads': 'الطلبات المكتملة مجمعة حسب ساعات اليوم (24 نافذة ساعية).',
+  'reports.catalog.salesByHour.decision': 'ضبط مواعيد بدء وانتهاء نوبات العمل، وتوقيت التجهيز والإعداد في المطبخ.',
+  'reports.catalog.salesByHour.limitations': 'تعتمد الساعات على اليوم الميلادي والتقويم الفعلي (الطلبات بعد منتصف الليل تُنسب لليوم التالي).',
+
+  // Sales By Product Catalogue
+  'reports.catalog.salesByProduct.answers': 'ما هي الأصناف والمنتجات الأكثر والأقل مبيعاً من حيث الكمية والإيراد وحصة كل منتج.',
+  'reports.catalog.salesByProduct.reads': 'مجموع بنود الطلبات المكتملة لكل منتج وحصة كل منتج من إجمالي الإيراد.',
+  'reports.catalog.salesByProduct.decision': 'هندسة وتعديل قائمة الطعام، والتركيز التسويقي على الأصناف الأكثر ربحية، وإلغاء الأصناف الراكدة.',
+  'reports.catalog.salesByProduct.limitations': 'مبيعات المنتجات محسوبة قبل الضريبة — ولن يتطابق إجمالي التقرير مع تقرير المبيعات اليومية، والفرق بينهما هو مبلغ الضريبة بالضبط.',
+
+  // Sales By Payment Method Catalogue
+  'reports.catalog.salesByPaymentMethod.answers': 'كيف تصلنا أموال المبيعات وتتوزع على طرق الدفع المختلفة.',
+  'reports.catalog.salesByPaymentMethod.reads': 'الطلبات المكتملة مجمعة حسب طريقة الدفع (نقد، بطاقة، محفظة، منصات توصيل).',
+  'reports.catalog.salesByPaymentMethod.decision': 'مطابقة التحصيل وكشوف حساب منصات التوصيل ومراجعة رسوم معالجة البطاقات.',
+  'reports.catalog.salesByPaymentMethod.limitations': 'يجمع نفس طلبات تقرير المبيعات اليومية لنفس الفلاتر ويجب أن يتطابق إجماليهما تماماً.',
+}

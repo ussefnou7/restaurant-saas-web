@@ -5,6 +5,9 @@ export type AssetDisposalReason = 'DAMAGED' | 'LOST' | 'OBSOLETE' | 'SOLD'
 export interface AssetResponse {
   id: number
   branchId: number
+  branchName?: string | null
+  branchNameEn?: string | null
+  branchNameAr?: string | null
   name: string
   nameAr?: string
   category: AssetCategory
@@ -44,6 +47,9 @@ export interface AssetDisposalListItemResponse {
   assetNameAr?: string | null
   category: AssetCategory
   branchId: number
+  branchName?: string | null
+  branchNameEn?: string | null
+  branchNameAr?: string | null
   assetLineId: number
   assetLineLabel?: string | null
   unitCost: string
@@ -73,6 +79,9 @@ export interface AssetMaintenanceListItemResponse {
   assetNameAr?: string | null
   category: AssetCategory
   branchId: number
+  branchName?: string | null
+  branchNameEn?: string | null
+  branchNameAr?: string | null
   assetLineId: number
   assetLineLabel?: string | null
   cost: string

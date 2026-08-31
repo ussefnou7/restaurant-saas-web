@@ -1,4 +1,5 @@
 import { Pencil } from 'lucide-react'
+import { Button } from '../ui/Button'
 import { IconActionButton } from '../ui/RowActions'
 import { IconPause, IconPlay, IconTrash } from '../ui/icons'
 
@@ -26,32 +27,9 @@ export function EntityOverviewActions({
   onToggleStatus,
 }: EntityOverviewActionsProps) {
   return (
-    <div className="entity-overview__actions">
-      <div className="action-icon-group">
-        <IconActionButton
-          className="action-btn action-btn--icon action-btn--icon-edit"
-          label={editLabel}
-          onClick={onEdit}
-        >
-          <Pencil size={16} aria-hidden />
-        </IconActionButton>
-
-        {showDelete && onDelete ? (
-          <IconActionButton
-            className="action-btn action-btn--icon action-btn--icon-delete"
-            label={deleteLabel ?? ''}
-            onClick={onDelete}
-          >
-            <IconTrash />
-          </IconActionButton>
-        ) : null}
-      </div>
-
-      <button
-        type="button"
-        className={`action-btn action-btn--status${
-          active ? ' action-btn--deactivate' : ' action-btn--activate'
-        }`}
+    <>
+      <Button
+        variant={active ? 'cancelDoc' : 'primary'}
         onClick={onToggleStatus}
         disabled={statusBusy}
         aria-label={statusLabel}
@@ -59,7 +37,25 @@ export function EntityOverviewActions({
       >
         {active ? <IconPause /> : <IconPlay />}
         <span>{statusLabel}</span>
-      </button>
-    </div>
+      </Button>
+
+      {showDelete && onDelete ? (
+        <IconActionButton
+          className="action-btn action-btn--icon action-btn--delete-danger"
+          label={deleteLabel ?? ''}
+          onClick={onDelete}
+        >
+          <IconTrash />
+        </IconActionButton>
+      ) : null}
+
+      <IconActionButton
+        className="action-btn action-btn--icon"
+        label={editLabel}
+        onClick={onEdit}
+      >
+        <Pencil size={20} aria-hidden />
+      </IconActionButton>
+    </>
   )
 }

@@ -7,7 +7,7 @@ import { useNotify } from '../../components/ui/NotificationContext'
 import { useTranslation } from '../../i18n/useTranslation'
 import * as inventoryService from '../../services/inventoryService'
 import * as menuService from '../../services/menuService'
-import * as uomService from '../../services/uomService'
+import { useUomLookup } from '../../hooks/useUomLookup'
 import type { MaterialResponse, UomResponse } from '../../types/inventory'
 import type { Product, RecipeItemRequest, RecipeItemView } from '../../types/menu'
 import { translateApiError } from '../../utils/errors'
@@ -39,12 +39,13 @@ export function RecipeVersionFormModal({
   onSuccess,
 }: RecipeVersionFormModalProps) {
   const { t, locale } = useTranslation()
+  const { activeUoms } = useUomLookup()
   const notify = useNotify()
 
   const [rows, setRows] = useState<EditableRecipeRow[]>([])
   const [savedSnapshot, setSavedSnapshot] = useState('')
   const [materials, setMaterials] = useState<MaterialResponse[]>([])
-  const [uoms, setUoms] = useState<UomResponse[]>([])
+  const uoms = activeUoms as unknown as UomResponse[]
   const [lookupsLoading, setLookupsLoading] = useState(false)
   const [error, setError] = useState('')
   const [formError, setFormError] = useState('')
@@ -58,12 +59,8 @@ export function RecipeVersionFormModal({
     setLookupsLoading(true)
     setError('')
     try {
-      const [materialList, uomList] = await Promise.all([
-        inventoryService.getMaterials({ active: true }),
-        uomService.getTenantUoms(),
-      ])
+      const materialList = await inventoryService.getMaterials({ active: true })
       setMaterials(materialList)
-      setUoms(uomList)
     } catch (err) {
       setError(translateApiError(err, t).message)
     } finally {

@@ -12,6 +12,7 @@ import {
   Th,
 } from '../../../components/ui/Table'
 import type { Locale } from '../../../i18n/types'
+import { useUomLookup } from '../../../hooks/useUomLookup'
 import type {
   PhysicalCountLineResponse,
   PostFreezeMaterialMovementResponse,
@@ -67,6 +68,7 @@ export function PhysicalCountReconcileView({
   onDelete,
   t,
 }: PhysicalCountReconcileViewProps) {
+  const { uomSymbol } = useUomLookup()
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [movements, setMovements] = useState<PostFreezeMovementsResponse | null>(null)
 
@@ -324,7 +326,7 @@ export function PhysicalCountReconcileView({
                   <tbody>
                     {varianceLines.map(({ line, display }) => {
                       if (!display) return null
-                      const uomDisplay = getPhysicalCountUomDisplay(line.uomSymbol, locale, t)
+                      const uomDisplay = getPhysicalCountUomDisplay(uomSymbol(line.uomId), locale, t)
                       return (
                         <tr key={line.id}>
                           <td>
@@ -396,7 +398,8 @@ function ReconcileLineRow({
   locale,
   t,
 }: ReconcileLineRowProps) {
-  const uomDisplay = getPhysicalCountUomDisplay(line.uomSymbol, locale, t)
+  const { uomSymbol } = useUomLookup()
+  const uomDisplay = getPhysicalCountUomDisplay(uomSymbol(line.uomId), locale, t)
 
   if (!display) {
     return (
@@ -514,6 +517,7 @@ function AfterCountMovementsWarning({
   locale: Locale
   t: (key: string, params?: Record<string, string | number>) => string
 }) {
+  const { uomSymbol } = useUomLookup()
   if (movements.length === 0) return null
 
   return (
@@ -524,7 +528,7 @@ function AfterCountMovementsWarning({
       </div>
       <ul className="physical-count-reconcile-confirm__after-count-list">
         {movements.map((movement) => {
-          const uomDisplay = getPhysicalCountUomDisplay(movement.uomSymbol, locale, t)
+          const uomDisplay = getPhysicalCountUomDisplay(uomSymbol(movement.uomId), locale, t)
           return (
             <li
               key={`${movement.referenceType ?? 'movement'}-${movement.referenceId ?? movement.createdAt}-${movement.materialId}-${movement.direction}`}
@@ -659,8 +663,9 @@ function PostFreezeMaterialMovement({
   locale: Locale
   t: (key: string, params?: Record<string, string | number>) => string
 }) {
+  const { uomSymbol } = useUomLookup()
   const materialName = getMaterialDisplayName(material, locale)
-  const uomDisplay = getPhysicalCountUomDisplay(material.uomSymbol, locale, t)
+  const uomDisplay = getPhysicalCountUomDisplay(uomSymbol(material.uomId), locale, t)
   const formatQuantity = (value: string) => `${formatPhysicalCountQuantity(value)} ${uomDisplay.label}`
 
   return (
@@ -793,8 +798,9 @@ function PostFreezeMovementRow({
   t: (key: string, params?: Record<string, string | number>) => string
   tone?: 'included' | 'after-count'
 }) {
+  const { uomSymbol } = useUomLookup()
   const materialName = getMaterialDisplayName(row, locale)
-  const uomDisplay = getPhysicalCountUomDisplay(row.uomSymbol, locale, t)
+  const uomDisplay = getPhysicalCountUomDisplay(uomSymbol(row.uomId), locale, t)
   const quantity = `${formatPhysicalCountQuantity(row.quantity)} ${uomDisplay.label}`
   const direction = t(`inventory.physicalCounts.postFreeze.direction.${row.direction}`)
   const source = formatMovementSource(row, t)
@@ -859,6 +865,7 @@ interface PhysicalCountReconciledViewProps {
 }
 
 export function PhysicalCountReconciledView({ count, locale, t }: PhysicalCountReconciledViewProps) {
+  const { uomSymbol } = useUomLookup()
   const totalVarianceValue = useMemo(() => sumLineVarianceValues(count.lines), [count.lines])
   const hasEstimatedValues = useMemo(
     () => count.lines.some(hasEstimatedVarianceValue),
@@ -890,7 +897,7 @@ export function PhysicalCountReconciledView({ count, locale, t }: PhysicalCountR
               const display = getLineVarianceDisplay(line)
               const variance = display?.variance ?? line.variance
               const varianceValue = display?.varianceValue ?? line.varianceValue
-              const uomDisplay = getPhysicalCountUomDisplay(line.uomSymbol, locale, t)
+              const uomDisplay = getPhysicalCountUomDisplay(uomSymbol(line.uomId), locale, t)
 
               return (
                 <TableRow key={line.id}>

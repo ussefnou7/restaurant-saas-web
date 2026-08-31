@@ -1,11 +1,16 @@
 import type { TranslationDictionary } from '../../types'
 
 export const ordersEn: TranslationDictionary = {
+  'orders.title': 'Orders',
   'orders.hub.title': 'Orders',
-  'orders.hub.subtitle': 'Review completed orders and incoming order requests',
+  'orders.hub.subtitle': 'Review completed orders and incoming delivery requests',
 
   'orders.tabs.orders': 'Orders',
   'orders.tabs.orderRequests': 'Order Requests',
+  'orders.orderRequests.title': 'Order Requests',
+  'orders.requests.title': 'Order Requests',
+  'orders.requests.detailTitle': 'Order Request Details',
+  'orders.detail.screenTitle': 'Order Details',
 
   'orders.list.title': 'Orders',
   'orders.list.customerTitle': 'Orders for {{name}}',

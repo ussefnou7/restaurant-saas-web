@@ -1,6 +1,7 @@
 import type { TranslationDictionary } from '../../types'
 
 export const customersAr: TranslationDictionary = {
+  'customers.title': 'العملاء',
   'customers.tabs.customers': 'العملاء',
   'customers.list.title': 'العملاء',
   'customers.list.loading': 'جاري تحميل العملاء…',

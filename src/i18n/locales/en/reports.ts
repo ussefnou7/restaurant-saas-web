@@ -1,6 +1,8 @@
 import type { TranslationDictionary } from '../../types'
 
 export const reportsEn: TranslationDictionary = {
+  'reports.title': 'Reports',
+  'reports.catalogue.title': 'Reports Catalogue',
   'reports.hub.title': 'Reports',
   'reports.hub.subtitle': 'Inventory reports for stock value and replenishment attention',
 
@@ -22,17 +24,17 @@ export const reportsEn: TranslationDictionary = {
   'reports.empty.subtitle': 'Adjust the filters and refresh the report.',
 
   'reports.stockValuation': 'Stock Valuation',
-  'reports.stockValuation.subtitle': 'Inventory value by material and storage location.',
+  'reports.stockValuation.subtitle': 'Current stock value by material and warehouse, at moving average cost derived from open batches. For period close and spotting capital tied up in inventory.',
   'reports.lowStock': 'Low Stock',
-  'reports.lowStock.subtitle': 'Materials below minimum quantity by storage location.',
+  'reports.lowStock.subtitle': 'Materials below their minimum, listed separately per warehouse. For deciding what to order today.',
   'reports.shrinkage': 'Shrinkage Analysis',
-  'reports.shrinkage.subtitle': 'Materials with unexplainable physical count shortfalls and their financial impact.',
+  'reports.shrinkage.subtitle': 'Materials with unexplained shortfalls at physical count, and what they cost. Positive figures are surpluses, which usually point to a wrong recipe or a rushed count.',
   'reports.wasteAnalysis': 'Waste Analysis',
-  'reports.wasteAnalysis.subtitle': 'Track deliberate inventory write-offs by cause and financial impact.',
+  'reports.wasteAnalysis.subtitle': 'Wasted and spoiled materials broken down by reason, with their cost. The reason is what turns the number into a purchasing or storage decision.',
   'reports.lossComparison': 'Loss Comparison',
-  'reports.lossComparison.subtitle': 'Side-by-side analysis of waste and shrinkage to diagnose root causes.',
+  'reports.lossComparison.subtitle': 'Recorded waste against unexplained shrinkage, per material. The ratio between them tells you whether the problem is storage or control.',
   'reports.purchasePriceDrift': 'Purchase Price Drift',
-  'reports.purchasePriceDrift.subtitle': 'Track material purchase cost variations over time to drive re-pricing and negotiation.',
+  'reports.purchasePriceDrift.subtitle': 'How purchase prices moved between the first and last invoice in the period, sorted by percentage. The purchase count shows whether a change is a trend or a one-off.',
 
   'reports.filters.dateFrom': 'From Date',
   'reports.filters.dateTo': 'To Date',
@@ -113,13 +115,13 @@ export const reportsEn: TranslationDictionary = {
   'reports.salesHub.title': 'Sales Reports',
   'reports.salesHub.subtitle': 'Sales performance, hourly patterns, product ranking, and payment breakdown.',
   'reports.salesOverTime': 'Sales Over Time',
-  'reports.salesOverTime.subtitle': 'Daily breakdown of completed orders, subtotal, tax, revenue, and average order value.',
+  'reports.salesOverTime.subtitle': 'Daily sales with order count, totals, and average order value. Days with no sales are omitted rather than shown as zero.',
   'reports.salesByHour': 'Sales By Hour',
-  'reports.salesByHour.subtitle': 'Hourly distribution of orders and revenue across operating hours.',
+  'reports.salesByHour.subtitle': 'Sales by hour of day, for finding the real peaks. Hours follow the calendar day, so an order after midnight counts to the new day.',
   'reports.salesByProduct': 'Sales By Product',
-  'reports.salesByProduct.subtitle': 'Product sales ranking by pre-tax revenue, quantity sold, and revenue share.',
+  'reports.salesByProduct.subtitle': 'Products by quantity sold, revenue, and share of the total. Revenue is pre-tax — tax is held at order level, not line level.',
   'reports.salesByPaymentMethod': 'Sales By Payment Method',
-  'reports.salesByPaymentMethod.subtitle': 'Financial breakdown and order count distribution by payment method.',
+  'reports.salesByPaymentMethod.subtitle': 'Sales split by payment method, for reconciling collections against delivery platforms and card processors.',
 
   'reports.code.salesOverTime': 'REPORT · SLS-01',
   'reports.code.salesByHour': 'REPORT · SLS-02',
@@ -174,5 +176,84 @@ export const reportsEn: TranslationDictionary = {
   'reports.empty.missingDateRangeSubtitle': 'Choose a date range to generate the report analysis.',
   'reports.empty.noDataTitle': 'No report data',
   'reports.empty.noDataSubtitle': 'No records found matching the specified parameters.',
-}
 
+  // Reports Catalogue Keys
+  'reports.catalog.title': 'Reports Catalogue',
+  'reports.catalog.subtitle': 'Standing product reference for all analytical and operational reports across the system.',
+  'reports.catalog.totalReports': '{{count}} reports across {{modules}} modules',
+  'reports.catalog.nav.all': 'All Modules',
+  'reports.catalog.section.answers': 'What it answers',
+  'reports.catalog.section.reads': 'What it reads',
+  'reports.catalog.section.decision': 'What decision it drives',
+  'reports.catalog.section.limitations': '⚠ Limitations & Caveats',
+  'reports.catalog.actions.openReport': 'Open report',
+  'reports.catalog.backToCatalog': 'Reports Catalogue',
+  'reports.catalog.module.inventory': 'Inventory',
+  'reports.catalog.module.inventoryDesc': 'Live valuation, replenishment thresholds, and supplier cost movements.',
+  'reports.catalog.module.losses': 'Losses & Waste',
+  'reports.catalog.module.lossesDesc': 'Root-cause diagnosis of logged kitchen waste vs unexplained physical count shrinkage.',
+  'reports.catalog.module.sales': 'Sales & Revenue',
+  'reports.catalog.module.salesDesc': 'Daily trends, peak hour distribution, menu ranking, and payment settlement.',
+  'reports.catalog.type.currentState': 'Current State',
+  'reports.catalog.type.dateRanged': 'Historical Ledger',
+
+  // Stock Valuation Catalogue
+  'reports.catalog.stockValuation.answers': 'How much money is sitting on the shelves right now.',
+  'reports.catalog.stockValuation.reads': 'StockBalance quantity × average cost, where average derives from open batches only (D2). Aggregates per warehouse and across warehouses.',
+  'reports.catalog.stockValuation.decision': 'Period close, insurance cover, and spotting capital locked in slow-moving stock.',
+  'reports.catalog.stockValuation.limitations': 'Stock Valuation is live-only — answers "now", never "as of 30 June". Batches consumed since have vanished from the figure.',
+
+  // Low Stock Catalogue
+  'reports.catalog.lowStock.answers': 'What materials need to be ordered today to prevent shortages.',
+  'reports.catalog.lowStock.reads': 'StockBalance.quantity against minimumQuantity per (material × warehouse) in display UOM, never aggregated across warehouses.',
+  'reports.catalog.lowStock.decision': 'Placing immediate purchase orders or initiating inter-branch transfers.',
+  'reports.catalog.lowStock.limitations': 'Action list rather than standard report. Requires accurate minimum thresholds configured per warehouse.',
+
+  // Shrinkage Catalogue
+  'reports.catalog.shrinkage.answers': 'What went missing from inventory that no document explains.',
+  'reports.catalog.shrinkage.reads': 'Ledger rows with reference_type = PHYSICAL_COUNT grouped by material over the date range. Signed: negative is shortage, positive is surplus.',
+  'reports.catalog.shrinkage.decision': 'Driving an investigation into potential theft, over-portioning, short delivery, or unrecorded waste.',
+  'reports.catalog.shrinkage.limitations': 'Shrinkage has no reason code by design. Classifying gap as waste would zero variance by construction (D89). Discrepancies between counts remain hidden until counted.',
+
+  // Waste Analysis Catalogue
+  'reports.catalog.wasteAnalysis.answers': 'What was deliberately thrown away, why, and what it cost.',
+  'reports.catalog.wasteAnalysis.reads': 'Ledger rows with reference_type = WASTE_DOCUMENT grouped by (material, reason) as positive loss magnitudes.',
+  'reports.catalog.wasteAnalysis.decision': 'Adjusting purchasing quantities, storage practices, recipe portioning, or vendor quality based on specific reasons.',
+  'reports.catalog.wasteAnalysis.limitations': 'Reflects only logged waste documents; unlogged spoilage will only surface later as count shrinkage.',
+
+  // Loss Comparison Catalogue
+  'reports.catalog.lossComparison.answers': 'Whether inventory losses stem from storage/handling issues or control/theft issues.',
+  'reports.catalog.lossComparison.reads': 'Both loss types (waste and shrinkage) side by side per material, including clean materials with zero losses.',
+  'reports.catalog.lossComparison.decision': 'Diagnosing root causes: high waste points to storage/purchasing; high shrinkage points to control and missing documentation.',
+  'reports.catalog.lossComparison.limitations': 'Uses different sign conventions in the same row (waste positive, shrinkage signed). Total (waste − shrinkage) can go negative when surplus exceeds waste.',
+
+  // Purchase Price Drift Catalogue
+  'reports.catalog.purchasePriceDrift.answers': 'Which materials cost more than they used to, and by how much.',
+  'reports.catalog.purchasePriceDrift.reads': 'Stock batches from purchase invoices, comparing first and last purchase price per display UOM, sorted by change percentage.',
+  'reports.catalog.purchasePriceDrift.decision': 'Menu re-pricing, supplier contract renegotiation, or switching suppliers.',
+  'reports.catalog.purchasePriceDrift.limitations': 'Sorted by percentage, not money. Purchase count gates interpretation: 1 purchase is 0% drift, 2 may be noise, 12 is a confirmed trend.',
+
+  // Sales Over Time Catalogue
+  'reports.catalog.salesOverTime.answers': 'How much is sold daily, and what is the sales trend over time.',
+  'reports.catalog.salesOverTime.reads': 'Completed orders grouped by date, separating subtotal, tax amount, total amount, order count, and average order value.',
+  'reports.catalog.salesOverTime.decision': 'Staffing and shift planning, promotional campaign scheduling, and revenue forecasting.',
+  'reports.catalog.salesOverTime.limitations': 'subtotal + taxAmount will not exactly equal totalAmount due to decimal rounding (components stored at 6 decimals, total rounded to 2). Days with no sales are omitted.',
+
+  // Sales By Hour Catalogue
+  'reports.catalog.salesByHour.answers': 'When the actual peak rush hours are across operating days.',
+  'reports.catalog.salesByHour.reads': 'Completed orders aggregated by hour of the day across 24 hourly windows.',
+  'reports.catalog.salesByHour.decision': 'Shift start and end times, kitchen prep scheduling, and station staffing.',
+  'reports.catalog.salesByHour.limitations': 'Hours follow calendar days; orders finalized after midnight count toward the new calendar day.',
+
+  // Sales By Product Catalogue
+  'reports.catalog.salesByProduct.answers': 'Which products are actually selling, ranked by units, revenue, and share.',
+  'reports.catalog.salesByProduct.reads': 'Sum of completed order line totals per product, with each product\'s share of total revenue in scope.',
+  'reports.catalog.salesByProduct.decision': 'Menu engineering, marketing focus on high-margin items, and trimming slow-moving products.',
+  'reports.catalog.salesByProduct.limitations': 'Sales by Product is pre-tax — its total will not match Sales Over Time, and the difference is exactly the tax.',
+
+  // Sales By Payment Method Catalogue
+  'reports.catalog.salesByPaymentMethod.answers': 'How money is arriving across different payment methods (cash, card, wallet, delivery aggregators).',
+  'reports.catalog.salesByPaymentMethod.reads': 'Completed orders grouped by payment method (CASH, CARD, WALLET, AGGREGATOR).',
+  'reports.catalog.salesByPaymentMethod.decision': 'Reconciling collections against delivery platform statements and auditing card processor fees.',
+  'reports.catalog.salesByPaymentMethod.limitations': 'Aggregates the same orders over the same filters as Sales Over Time, so grand totals must match identically.',
+}

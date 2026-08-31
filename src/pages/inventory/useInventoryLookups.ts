@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import * as branchService from '../../services/branchService'
 import * as inventoryService from '../../services/inventoryService'
 import type { BranchResponse } from '../../types/branch'
-import type { MaterialCategoryResponse, UomResponse } from '../../types/inventory'
+import type { MaterialCategoryResponse } from '../../types/inventory'
 
 export function useInventoryLookups(options?: {
   includeBranches?: boolean
@@ -10,7 +10,6 @@ export function useInventoryLookups(options?: {
   forCatalog?: boolean
 }) {
   const [categories, setCategories] = useState<MaterialCategoryResponse[]>([])
-  const [uoms, setUoms] = useState<UomResponse[]>([])
   const [branches, setBranches] = useState<BranchResponse[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -26,12 +25,8 @@ export function useInventoryLookups(options?: {
         ? inventoryService.getGlobalMaterialCategories({ active: true })
         : inventoryService.getMaterialCategories({ active: true })
 
-      const [categoryData, uomData] = await Promise.all([
-        loadCategories,
-        inventoryService.getUoms(true),
-      ])
+      const categoryData = await loadCategories
       setCategories(categoryData)
-      setUoms(uomData)
 
       if (includeBranches) {
         const branchData = await branchService.getBranches()
@@ -39,7 +34,6 @@ export function useInventoryLookups(options?: {
       }
     } catch {
       setCategories([])
-      setUoms([])
       if (includeBranches) setBranches([])
     } finally {
       setLoading(false)
@@ -50,5 +44,10 @@ export function useInventoryLookups(options?: {
     void reload()
   }, [reload])
 
-  return { categories, uoms, branches, loading, reload }
+  return {
+    categories,
+    branches,
+    loading,
+    reload,
+  }
 }

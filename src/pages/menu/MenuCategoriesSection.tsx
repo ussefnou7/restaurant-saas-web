@@ -22,6 +22,7 @@ import { useTranslation } from '../../i18n/useTranslation'
 import * as menuService from '../../services/menuService'
 import type { MenuCategory } from '../../types/menu'
 import { translateApiError } from '../../utils/errors'
+import { getLocalizedMenuCategoryName } from '../../utils/menuDisplay'
 import { useMenuCategories } from './useMenuCategories'
 import { formatMenuNumber } from './menuNumberUtils'
 import { MenuCategoryFormModal } from './MenuCategoryFormModal'
@@ -80,11 +81,12 @@ export function MenuCategoriesSection() {
     try {
       await menuService.updateMenuCategory(category.id, {
         name: category.name,
+        nameAr: category.nameAr ?? null,
         sortOrder: category.sortOrder,
-        active: !category.active,
+        active: !category.isActive,
       })
       notify.success(
-        category.active ? t('menu.toast.deactivateSuccess') : t('menu.toast.activateSuccess'),
+        category.isActive ? t('menu.toast.deactivateSuccess') : t('menu.toast.activateSuccess'),
       )
       await refreshCategories()
     } catch {
@@ -133,16 +135,17 @@ export function MenuCategoriesSection() {
               <TableBody>
                 {categories.map((category) => {
                   const busy = rowActionId === category.id
+                  const categoryName = getLocalizedMenuCategoryName(category, locale)
 
                   return (
                     <TableRow key={category.id}>
-                      <Td column="entity">{category.name}</Td>
+                      <Td column="entity">{categoryName}</Td>
                       <Td dir="ltr" className="table-cell--numeric">{formatMenuNumber(category.sortOrder, locale)}</Td>
                       <StopPropagationCell column="status">
                         <StatusToggle
-                          active={category.active}
+                          active={category.isActive}
                           disabled={busy}
-                          entityName={category.name}
+                          entityName={categoryName}
                           onToggle={() => void handleToggleStatus(category)}
                         />
                       </StopPropagationCell>
@@ -188,7 +191,9 @@ export function MenuCategoriesSection() {
       <ConfirmModal
         open={deleteOpen}
         title={t('menu.categories.deleteConfirm.title')}
-        message={t('menu.categories.deleteConfirm.message', { name: deleting?.name ?? '' })}
+        message={t('menu.categories.deleteConfirm.message', {
+          name: deleting ? getLocalizedMenuCategoryName(deleting, locale) : '',
+        })}
         confirmLabel={t('menu.categories.deleteConfirm.confirm')}
         loading={deleteLoading}
         onClose={() => {

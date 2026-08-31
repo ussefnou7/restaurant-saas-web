@@ -25,6 +25,11 @@ export interface TranslatedApiError {
   fieldErrors?: Record<string, string>
 }
 
+export interface ApiErrorDetails {
+  errorCode: string
+  params?: Record<string, unknown>
+}
+
 type TranslateFn = (key: string, values?: Record<string, string | number>) => string
 
 function extractApiErrorBody(error: unknown): ApiErrorResponse | null {
@@ -193,6 +198,21 @@ export function translateApiError(error: unknown, t: TranslateFn): TranslatedApi
 export function getApiErrorCode(error: unknown): string | undefined {
   const code = extractApiErrorBody(error)?.errorCode
   return typeof code === 'string' && code.trim() ? code : undefined
+}
+
+/**
+ * Return safe, machine-readable API failure metadata for control flow.
+ * The backend's English debug message is deliberately excluded (D12).
+ */
+export function getApiErrorDetails(error: unknown): ApiErrorDetails {
+  const body = extractApiErrorBody(error)
+  return {
+    errorCode:
+      typeof body?.errorCode === 'string' && body.errorCode.trim()
+        ? body.errorCode
+        : 'GENERIC_ERROR',
+    ...(body?.params ? { params: body.params } : {}),
+  }
 }
 
 export function isForbiddenError(error: unknown): boolean {

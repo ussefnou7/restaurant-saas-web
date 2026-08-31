@@ -1,6 +1,7 @@
 import type { TranslationDictionary } from '../../types'
 
 export const branchDetailsEn: TranslationDictionary = {
+  'branchDetails.title': 'Branch Details',
   'branchDetails.tabs.overview': 'Overview',
   'branchDetails.tabs.employees': 'Employees',
   'branchDetails.tabs.inventory': 'Inventory',
