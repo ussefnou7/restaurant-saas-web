@@ -16,6 +16,7 @@ import {
   Td,
   Th,
 } from '../../components/ui/Table'
+import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 import { useTranslation } from '../../i18n/useTranslation'
 import * as branchService from '../../services/branchService'
 import * as orderService from '../../services/orderService'
@@ -27,6 +28,7 @@ import { formatDateTime } from '../../utils/format'
 import {
   formatDisplayAmount,
   getCancellationStageLabel,
+  getOrderTypeLabel,
   getPaymentMethodLabel,
 } from '../../utils/orderDisplay'
 
@@ -47,6 +49,8 @@ export function OrderDetailPage() {
   const [branches, setBranches] = useState<BranchResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+
+  useDocumentTitle(orderId ? t('orders.detail.title', { id: orderId }) : undefined)
 
   const loadOrder = useCallback(async () => {
     if (!orderId) return
@@ -81,28 +85,6 @@ export function OrderDetailPage() {
 
   const overview = order ? (
     <div className="orders-detail">
-      <header className="orders-detail__header">
-        <div className="orders-detail__header-main">
-          <h1 className="orders-detail__title">{t('orders.detail.title', { id: order.id })}</h1>
-          <p className="orders-detail__meta" dir="ltr">
-            {formatDateTime(order.orderDate)}
-          </p>
-          <div className="orders-detail__badges">
-            <OrderTypeBadge orderType={order.orderType} />
-            <OrderSourceBadge
-              source={order.orderSource}
-              aggregatorName={order.aggregatorName}
-            />
-            <OrderStatusBadge status={order.status} />
-            {order.status === 'CANCELLED' && order.cancellationStage ? (
-              <Badge variant="warning">
-                {getCancellationStageLabel(order.cancellationStage, t)}
-              </Badge>
-            ) : null}
-          </div>
-        </div>
-      </header>
-
       <DetailsCard title={t('orders.detail.infoTitle')}>
         <div className="orders-detail-info">
           <InfoItem
@@ -176,8 +158,38 @@ export function OrderDetailPage() {
     </div>
   ) : null
 
+  const orderTitle = order ? t('orders.detail.title', { id: order.id }) : ''
+  const orderSubtitle = order
+    ? [
+        order.orderDate ? formatDateTime(order.orderDate) : '',
+        order.orderType ? getOrderTypeLabel(order.orderType, t) : '',
+        resolveBranchName(order),
+      ]
+        .filter(Boolean)
+        .join(' · ')
+    : undefined
+
+  const orderBadges = order ? (
+    <div className="orders-detail__badges">
+      <OrderTypeBadge orderType={order.orderType} />
+      <OrderSourceBadge
+        source={order.orderSource}
+        aggregatorName={order.aggregatorName}
+      />
+      <OrderStatusBadge status={order.status} />
+      {order.status === 'CANCELLED' && order.cancellationStage ? (
+        <Badge variant="warning">
+          {getCancellationStageLabel(order.cancellationStage, t)}
+        </Badge>
+      ) : null}
+    </div>
+  ) : undefined
+
   return (
     <EntityDetailScreen
+      title={order ? orderTitle : undefined}
+      subtitle={orderSubtitle}
+      badge={orderBadges}
       backTo="/orders/list"
       backLabel={t('orders.detail.back')}
       loading={loading}

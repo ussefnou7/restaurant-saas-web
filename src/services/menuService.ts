@@ -30,9 +30,29 @@ function toSearchParams(params: Record<string, string | number | boolean | undef
   return query ? `?${query}` : ''
 }
 
+type RawMenuCategory = MenuCategory & {
+  name_ar?: string | null
+}
+
+type RawProduct = Product & {
+  menu_category_name_ar?: string | null
+}
+
+function normalizeProduct(product: RawProduct): Product {
+  return {
+    ...product,
+    menuCategoryNameAr: product.menuCategoryNameAr ?? product.menu_category_name_ar ?? null,
+  }
+}
+
 export async function getMenuCategories(): Promise<MenuCategory[]> {
-  const response = await api.get<MenuCategory[]>('/api/menu/categories')
-  return response.data
+  const response = await api.get<RawMenuCategory[]>('/api/menu/categories')
+  const data = Array.isArray(response.data) ? response.data : []
+  return data.map((category) => ({
+    ...category,
+    nameAr: category.nameAr ?? category.name_ar ?? null,
+    isActive: category.isActive !== false,
+  }))
 }
 
 export async function createMenuCategory(payload: CreateMenuCategoryRequest): Promise<MenuCategory> {
@@ -60,17 +80,19 @@ export async function getProducts(params: ProductListParams = {}): Promise<Produ
       excludeProductId: params.excludeProductId,
     })}`,
   )
-  return response.data
+  const data = Array.isArray(response.data) ? response.data : []
+  return data.map(normalizeProduct)
 }
 
 export async function getProduct(id: number | string): Promise<Product> {
   const response = await api.get<Product>(`/api/menu/products/${id}`)
-  return response.data
+  return normalizeProduct(response.data)
 }
 
 export async function getProductVariants(parentProductId: number | string): Promise<Product[]> {
   const response = await api.get<Product[]>(`/api/menu/products/${parentProductId}/variants`)
-  return response.data
+  const data = Array.isArray(response.data) ? response.data : []
+  return data.map(normalizeProduct)
 }
 
 export async function createProduct(payload: CreateProductRequest): Promise<Product> {

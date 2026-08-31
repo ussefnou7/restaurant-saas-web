@@ -22,7 +22,6 @@ import {
 } from '../../components/hub/ModuleHubPage'
 import { useTranslation } from '../../i18n/useTranslation'
 import {
-  canManageInventoryStock,
   canViewInventorySetup,
   canViewInventoryStock,
 } from '../../utils/inventoryAccess'
@@ -33,7 +32,6 @@ export function InventoryHubPage() {
   const { t } = useTranslation()
   const canView = canViewInventorySetup()
   const canViewStock = canViewInventoryStock()
-  const canManageStock = canManageInventoryStock()
   const userPermissions = useMemo(() => buildInventoryHubUserPermissions(), [])
 
   if (!canView) return <InventoryAccessDenied />
@@ -68,7 +66,7 @@ export function InventoryHubPage() {
     })
   }
 
-  if (canManageStock) {
+  if (canViewStock) {
     cards.push({
       id: 'order-consumption',
       icon: RotateCcw,

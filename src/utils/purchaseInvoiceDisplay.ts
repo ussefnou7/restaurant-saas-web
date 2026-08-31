@@ -85,18 +85,6 @@ export function calcNetLineTotal(lineSubtotal: number, discountAmount: number): 
   return roundMoney(Math.max(0, lineSubtotal - discount))
 }
 
-export function calcLineTotalWithAdjustments(
-  quantity: number,
-  unitCost: number,
-  lineDiscount: number,
-  lineTax: number,
-): number {
-  const lineSubtotal = calcLineSubtotal(quantity, unitCost)
-  const discount = Number.isFinite(lineDiscount) ? lineDiscount : 0
-  const tax = Number.isFinite(lineTax) ? lineTax : 0
-  return roundMoney(lineSubtotal - discount + tax)
-}
-
 export function calcFormInvoiceTotals(
   lineTotals: number[],
   invoiceDiscount: number,

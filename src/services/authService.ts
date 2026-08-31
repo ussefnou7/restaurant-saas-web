@@ -6,6 +6,8 @@ const ACCESS_TOKEN_KEY = 'accessToken'
 const AUTH_USER_KEY = 'authUser'
 const TENANT_CODE_KEY = 'tenantCode'
 
+// Re-exported so existing importers of this module keep working; the literal
+// itself lives in `authEvents` to stay a single source of truth.
 export { AUTH_SESSION_CHANGED_EVENT }
 
 export function notifyAuthSessionChanged(): void {

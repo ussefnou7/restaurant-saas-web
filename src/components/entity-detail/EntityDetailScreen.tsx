@@ -3,8 +3,12 @@ import { LoadingState } from '../ui/LoadingState'
 import { EntityDetailLayout } from './EntityDetailLayout'
 
 export interface EntityDetailScreenProps {
-  backTo: string
-  backLabel: string
+  title?: ReactNode
+  subtitle?: ReactNode
+  badge?: ReactNode
+  actions?: ReactNode
+  backTo?: string
+  backLabel?: string
   loading?: boolean
   loadingMessage?: string
   notFound?: boolean
@@ -17,6 +21,10 @@ export interface EntityDetailScreenProps {
 }
 
 export function EntityDetailScreen({
+  title,
+  subtitle,
+  badge,
+  actions,
   backTo,
   backLabel,
   loading = false,
@@ -39,7 +47,11 @@ export function EntityDetailScreen({
 
   if (notFound) {
     return (
-      <EntityDetailLayout backTo={backTo} backLabel={backLabel} title={notFoundTitle}>
+      <EntityDetailLayout
+        backTo={backTo}
+        backLabel={backLabel}
+        title={notFoundTitle}
+      >
         <p className="entity-detail-page__not-found">{notFoundMessage}</p>
       </EntityDetailLayout>
     )
@@ -48,13 +60,16 @@ export function EntityDetailScreen({
   return (
     <EntityDetailLayout
       className="entity-detail-page--standard"
+      title={title}
+      subtitle={subtitle}
+      badge={badge}
+      actions={actions}
       backTo={backTo}
       backLabel={backLabel}
-      hideHeader
+      hideHeader={!title}
+      headerFields={overview}
     >
       {error ? <div className="page-error-banner">{error}</div> : null}
-
-      {overview ? <section className="entity-detail-screen__overview">{overview}</section> : null}
 
       {modules ? <div className="entity-detail-screen__modules">{modules}</div> : null}
 

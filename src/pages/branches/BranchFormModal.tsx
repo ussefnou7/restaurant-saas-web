@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { FieldGrid, FormField, FormInput, FormTextarea } from '../../components/fields'
 import { Modal } from '../../components/ui/Modal'
 import { TenantCodeInput } from '../../components/ui/TenantCodeInput'
+import { useTranslation } from '../../i18n/useTranslation'
 import * as branchService from '../../services/branchService'
 import type { BranchResponse } from '../../types/branch'
 
@@ -17,6 +18,7 @@ interface BranchFormModalProps {
 
 const emptyForm = {
   name: '',
+  nameAr: '',
   code: '',
   phone: '',
   address: '',
@@ -24,6 +26,7 @@ const emptyForm = {
 }
 
 export function BranchFormModal({ open, mode, branch, onClose, onSuccess }: BranchFormModalProps) {
+  const { t } = useTranslation()
   const [form, setForm] = useState(emptyForm)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -42,6 +45,7 @@ export function BranchFormModal({ open, mode, branch, onClose, onSuccess }: Bran
     if (branch) {
       setForm({
         name: branch.name,
+        nameAr: branch.nameAr ?? '',
         code: branch.code,
         phone: branch.phone ?? '',
         address: branch.address ?? '',
@@ -70,6 +74,7 @@ export function BranchFormModal({ open, mode, branch, onClose, onSuccess }: Bran
     try {
       const payload = {
         name: form.name.trim(),
+        nameAr: form.nameAr.trim() || null,
         code: form.code.trim(),
         phone: form.phone.trim() || undefined,
         address: form.address.trim() || undefined,
@@ -136,6 +141,17 @@ export function BranchFormModal({ open, mode, branch, onClose, onSuccess }: Bran
               onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
               placeholder="Downtown Branch"
               required
+              disabled={saving}
+            />
+          </FormField>
+
+          <FormField label={t('branchDetails.fields.nameAr')} htmlFor="branchNameAr">
+            <FormInput
+              id="branchNameAr"
+              type="text"
+              value={form.nameAr}
+              onChange={(event) => setForm((prev) => ({ ...prev, nameAr: event.target.value }))}
+              placeholder={t('branchDetails.placeholders.nameAr')}
               disabled={saving}
             />
           </FormField>

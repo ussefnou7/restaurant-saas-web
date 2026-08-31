@@ -1,5 +1,6 @@
 import { Download, FileText, RefreshCw } from 'lucide-react'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Button } from '../../../components/ui/Button'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import {
@@ -10,6 +11,7 @@ import {
 } from '../../../components/ui/ListPage'
 import { LoadingRows } from '../../../components/ui/LoadingRows'
 import { SelectFilter } from '../../../components/ui/SelectFilter'
+import { getReportCatalogEntry } from '../../../data/reportsCatalog'
 import { useTranslation } from '../../../i18n/useTranslation'
 import * as inventoryService from '../../../services/inventoryService'
 import * as reportService from '../../../services/reportService'
@@ -18,6 +20,8 @@ import type { ReportFilters, StockValuationRow } from '../../../types/reports'
 import { translateApiError } from '../../../utils/errors'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { exportCsv, exportPdf } from '../../../utils/reportExport'
+
+const reportMeta = getReportCatalogEntry('stock-valuation')!
 
 function formatMoneyNumber(value: number): string {
   return value.toLocaleString(undefined, {
@@ -201,7 +205,11 @@ export function StockValuationReport() {
       <div className="report-header-block">
         <div className="report-header-block__top">
           <div className="report-header-block__title-group">
-            <h1 className="report-header-block__title">{t('reports.stockValuation')}</h1>
+            <h1 className="report-header-block__title">{t(reportMeta.titleKey)}</h1>
+            <span className="report-header-block__code-badge">{t(reportMeta.codeKey)}</span>
+            <Link to="/reports" className="report-header-block__catalog-link">
+              {t('reports.catalog.backToCatalog')}
+            </Link>
           </div>
           <div className="reports-page__actions">
             <Button variant="secondary" onClick={loadRows} disabled={loadingRows}>
@@ -218,7 +226,7 @@ export function StockValuationReport() {
             </Button>
             <Button
               variant="secondary"
-              onClick={() => exportPdf(exportColumns, rows, 'stock-valuation', t('reports.stockValuation'))}
+              onClick={() => exportPdf(exportColumns, rows, 'stock-valuation', t(reportMeta.titleKey))}
               disabled={loadingRows || rows.length === 0}
             >
               <FileText size={16} />
@@ -227,6 +235,7 @@ export function StockValuationReport() {
           </div>
         </div>
 
+        <p className="report-header-block__subtitle">{t(reportMeta.descriptionKey)}</p>
         <p className="report-header-block__method">{methodLine}</p>
         <p className="report-header-block__filter-sentence">{filterSentence}</p>
       </div>
@@ -374,7 +383,7 @@ export function StockValuationReport() {
                             </tr>
                           )
                         })}
-                        <tr style={{ background: 'var(--color-surface-hover, #f8fafc)', fontWeight: 600 }}>
+                        <tr style={{ background: 'var(--color-surface-hover)', fontWeight: 600 }}>
                           <td colSpan={5} style={{ fontStyle: 'italic' }}>
                             {locale === 'ar' ? `المجموع الفرعي — ${group.warehouseName}` : `Subtotal — ${group.warehouseName}`}
                           </td>

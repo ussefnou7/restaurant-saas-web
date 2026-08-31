@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -7,9 +7,7 @@ import {
   CheckCircle,
   Loader2,
   Pencil,
-  Plus,
   Send,
-  Trash2,
   Undo2,
   X,
   XCircle,
@@ -22,18 +20,26 @@ import { ListPage } from '../../../components/ui/ListPage'
 import { IconActionButton } from '../../../components/ui/RowActions'
 import { useNotify } from '../../../components/ui/NotificationContext'
 import { DetailField } from '../../../components/fields'
-import { DocumentHeader, DocumentLinesCard } from '../../../components/layout/DocumentLayout'
+import { DocumentHeader } from '../../../components/layout/DocumentLayout'
+import { SchemaDocumentLinesCard } from '../../../components/layout/DocumentLayout/SchemaDocumentLinesCard'
+import {
+  createPurchaseReturnLineSchema,
+  type PurchaseReturnLineFormState,
+} from '../../../schemas/purchaseReturnLineSchema'
+import { useDocumentLines, type LineOpResult } from '../../../hooks/useDocumentLines'
+import { useUomLookup } from '../../../hooks/useUomLookup'
 import { PurchaseInvoiceFormStatusPill } from '../purchase-invoices/PurchaseInvoiceFormStatusPill'
 import { useTranslation } from '../../../i18n/useTranslation'
-import { useUomLookup } from '../../../hooks/useUomLookup'
-import type { Locale } from '../../../i18n/types'
 import * as purchaseInvoiceService from '../../../services/purchaseInvoiceService'
 import * as purchaseReturnService from '../../../services/purchaseReturnService'
 import type { PurchaseInvoiceResponse } from '../../../types/purchaseInvoice'
 import type { UomResponse } from '../../../types/inventory'
 import type {
+  PurchaseReturnLineResponse,
+  PurchaseReturnLineRequest,
   PurchaseReturnReason,
   PurchaseReturnResponse,
+  PurchaseReturnUpdateLineRequest,
   ReturnableLineResponse,
 } from '../../../types/purchaseReturn'
 import { translateApiError } from '../../../utils/errors'
@@ -44,10 +50,8 @@ import {
   canUnpostPurchaseReturns,
   canViewPurchaseInvoices,
 } from '../../../utils/inventoryPurchaseAccess'
-import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { notifyStockBalancesRefresh } from '../../../utils/inventoryStockRefresh'
 import { getPurchaseReturnReasonLabel } from '../../../utils/purchaseInvoiceDisplay'
-import { convertUomQuantity, getLocalizedUomSymbol } from '../../../utils/inventoryUom'
 import { PurchaseInvoiceAccessDenied } from '../purchase-invoices/PurchaseInvoiceAccessDenied'
 
 const RETURN_REASONS: PurchaseReturnReason[] = [
@@ -67,18 +71,10 @@ type HeaderFormState = {
   notes: string
 }
 
-type LineFormState = {
-  originalLineId: string
-  quantity: string
-  uomId: string
-  notes: string
-}
-
 type FieldErrors = {
   originalInvoiceId?: string
   returnDate?: string
   reason?: string
-  lineError?: string
 }
 
 function emptyHeader(): HeaderFormState {
@@ -90,26 +86,14 @@ function emptyHeader(): HeaderFormState {
   }
 }
 
-function emptyLineForm(): LineFormState {
+function emptyLineForm(): PurchaseReturnLineFormState {
   return {
     originalLineId: '',
     quantity: '',
     uomId: '',
+    unitCost: '',
     notes: '',
   }
-}
-
-function quantityInOriginalLineUom(
-  quantity: number,
-  selectedUomId: number,
-  originalUomId: number,
-  uoms: UomResponse[],
-): number | null {
-  if (selectedUomId === originalUomId) return quantity
-  const fromUom = uoms.find((u) => u.id === selectedUomId)
-  const toUom = uoms.find((u) => u.id === originalUomId)
-  if (!fromUom || !toUom) return null
-  return convertUomQuantity(quantity, fromUom, toUom)
 }
 
 function toDateInputValue(value?: string | null): string {
@@ -126,6 +110,26 @@ function mapReturnToHeader(purchaseReturn: PurchaseReturnResponse): HeaderFormSt
   }
 }
 
+function mapReturnLineToForm(
+  line: PurchaseReturnLineResponse,
+  uomSymbolFn?: (id: number | string) => string,
+): PurchaseReturnLineFormState {
+  const cachedSymbol = uomSymbolFn?.(line.uomId)
+  return {
+    id: line.id,
+    originalLineId: String(line.originalLineId),
+    quantity: String(line.quantity),
+    uomId: String(line.uomId),
+    unitCost: String(line.unitCost),
+    lineTotal: line.lineTotal,
+    notes: line.notes ?? '',
+    materialName: line.materialName,
+    materialNameAr: line.materialNameAr,
+    materialCode: line.materialCode,
+    uomSymbol: cachedSymbol && cachedSymbol !== '—' ? cachedSymbol : line.uomSymbol ?? line.uomCode ?? undefined,
+  }
+}
+
 function formatDisplayAmount(value?: number | null): string {
   if (value === null || value === undefined) return '-'
   return `${formatMoney(value)} ج.م`
@@ -138,75 +142,6 @@ function formatInvoiceOption(invoice: PurchaseInvoiceResponse): string {
   return `${number} · ${supplier} · ${date}`
 }
 
-function formatReturnableLineLabel(
-  line: ReturnableLineResponse,
-  locale: Locale,
-  uoms: UomResponse[],
-  placeholder: string,
-): string {
-  const material = getInventoryLocalizedName(
-    {
-      name: line.materialName ?? '',
-      code: line.materialCode ?? undefined,
-    },
-    locale,
-  )
-  const uomLabel = resolveUomDisplayLabel(line.uomId, line.uomSymbol, locale, uoms, placeholder)
-  return `${material} · ${line.returnableQuantity}${uomLabel ? ` ${uomLabel}` : ''}`.trim()
-}
-
-/**
- * Resolves a unit for display. The symbolAr → symbol → code chain is not
- * re-implemented here: it lives in getLocalizedUomSymbol and is used by every
- * call site (D111/D3). Terminates in the placeholder, never in an empty string.
- */
-function resolveUomDisplayLabel(
-  uomId: number | undefined,
-  fallbackSymbol: string | null | undefined,
-  locale: Locale,
-  uoms: UomResponse[],
-  placeholder: string,
-): string {
-  const uom = uomId != null ? uoms.find((item) => item.id === uomId) : undefined
-  if (uom) {
-    return (
-      getLocalizedUomSymbol(uom, locale) ||
-      getInventoryLocalizedName(uom, locale) ||
-      placeholder
-    )
-  }
-  return fallbackSymbol?.trim() || placeholder
-}
-
-function formatQuantityWithUomLabel(
-  quantity: number | string | null | undefined,
-  uomId: number | undefined,
-  fallbackSymbol: string | null | undefined,
-  locale: Locale,
-  uoms: UomResponse[],
-  empty: string,
-): string {
-  if (quantity == null || quantity === '') return empty
-  const uomLabel = resolveUomDisplayLabel(uomId, fallbackSymbol, locale, uoms, empty)
-  return uomLabel ? `${quantity} ${uomLabel}` : String(quantity)
-}
-
-function getMaxReturnQuantity(
-  returnableLines: ReturnableLineResponse[],
-  purchaseReturn: PurchaseReturnResponse,
-  originalLineId: number,
-  excludeLineId?: number,
-): number {
-  const returnable = returnableLines.find((line) => line.originalLineId === originalLineId)
-  if (!returnable) return 0
-
-  const draftForSameLine = purchaseReturn.lines
-    .filter((line) => line.id !== excludeLineId)
-    .filter((line) => line.originalLineId === originalLineId)
-    .reduce((sum, line) => sum + line.quantity, 0)
-
-  return Math.max(0, returnable.returnableQuantity - draftForSameLine)
-}
 
 function scrollToFirstError() {
   requestAnimationFrame(() => {
@@ -240,7 +175,6 @@ function PrFormField({ label, htmlFor, required, error, children }: PrFormFieldP
 
 function PurchaseReturnForm({ mode }: { mode: FormMode }) {
   const { t, locale } = useTranslation()
-  const { uoms: cachedUoms, resolveMiss } = useUomLookup()
   const navigate = useNavigate()
   const notify = useNotify()
   const { id } = useParams<{ id: string }>()
@@ -249,31 +183,15 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
   const canUnpost = canUnpostPurchaseReturns()
   const canUncomplete = canUncompletePurchaseReturns()
 
+  const { uoms: cachedUoms, uomSymbol } = useUomLookup()
   const [purchaseReturn, setPurchaseReturn] = useState<PurchaseReturnResponse | null>(null)
   const [header, setHeader] = useState<HeaderFormState>(emptyHeader)
   const [postedInvoices, setPostedInvoices] = useState<PurchaseInvoiceResponse[]>([])
-  // Display resolution uses the full cached set (D111): a line referencing a
-  // since-deactivated unit still has to render its name.
   const uoms = cachedUoms as unknown as UomResponse[]
   const [returnableLines, setReturnableLines] = useState<ReturnableLineResponse[]>([])
-  // Resolve-on-miss: a line may reference a unit the cache has never seen (D111).
-  // Each unknown id is fetched once; the cache dedupes concurrent requests.
-  useEffect(() => {
-    const known = new Set(uoms.map((u) => u.id))
-    const referenced = new Set<number>()
-    for (const line of purchaseReturn?.lines ?? []) {
-      if (line.uomId != null) referenced.add(Number(line.uomId))
-    }
-    for (const line of returnableLines) {
-      if (line.uomId != null) referenced.add(Number(line.uomId))
-    }
-    for (const uomId of referenced) {
-      if (uomId && !known.has(uomId)) void resolveMiss(uomId)
-    }
-  }, [purchaseReturn?.lines, returnableLines, uoms, resolveMiss])
-
   const [lookupsLoading, setLookupsLoading] = useState(false)
   const [returnableLoading, setReturnableLoading] = useState(false)
+  const [returnableLoadedForId, setReturnableLoadedForId] = useState<string | null>(null)
   const [loading, setLoading] = useState(mode !== 'create')
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
@@ -286,11 +204,6 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
 
   const [isEditingHeader, setIsEditingHeader] = useState(false)
   const [headerSaving, setHeaderSaving] = useState(false)
-  const [editingLineId, setEditingLineId] = useState<string | null>(null)
-  const [editLineForm, setEditLineForm] = useState<LineFormState | null>(null)
-  const [lineSaving, setLineSaving] = useState(false)
-  const [addingLine, setAddingLine] = useState(false)
-  const [newLineForm, setNewLineForm] = useState<LineFormState | null>(null)
 
   const isCreate = mode === 'create'
   const persistedId = purchaseReturn != null ? String(purchaseReturn.id) : id
@@ -301,6 +214,16 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
     !headerFieldsEnabled || headerSaving || lookupsLoading || actionLoading
   const showDraftLineActions = isDraft && canManage
   const originalInvoiceLocked = persistedId != null
+  const startEditLineRef = useRef<(line: PurchaseReturnLineFormState) => void>(() => undefined)
+  const deleteLineRef = useRef<(lineId: number) => void>(() => undefined)
+  const handleSchemaEditLine = useCallback(
+    (line: PurchaseReturnLineFormState) => startEditLineRef.current(line),
+    [],
+  )
+  const handleSchemaDeleteLine = useCallback(
+    (line: PurchaseReturnLineFormState) => deleteLineRef.current(line.id!),
+    [],
+  )
 
   const isHeaderDirty = useMemo(() => {
     if (!purchaseReturn) return false
@@ -312,6 +235,127 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
       header.notes !== initial.notes
     )
   }, [purchaseReturn, header])
+
+  const schema = useMemo(
+    () =>
+      // Schema actions run only from user events; refs dispatch to the current controller.
+      // eslint-disable-next-line react-hooks/refs
+      createPurchaseReturnLineSchema({
+        lookups: { returnableLines, uoms },
+        locale,
+        t,
+        handlers: {
+          onEditLine: handleSchemaEditLine,
+          onDeleteLine: handleSchemaDeleteLine,
+        },
+      }),
+    [returnableLines, uoms, locale, t, handleSchemaEditLine, handleSchemaDeleteLine],
+  )
+
+  const initialLineForms = useMemo(
+    () => (purchaseReturn?.lines ?? []).map((l) => mapReturnLineToForm(l, uomSymbol)),
+    [purchaseReturn?.lines, uomSymbol],
+  )
+
+  const lineController = useDocumentLines<
+    PurchaseReturnLineFormState,
+    { returnableLines: ReturnableLineResponse[]; uoms: UomResponse[] }
+  >({
+    schema,
+    initialLines: initialLineForms,
+    linesReady: !loading,
+    lookups: { returnableLines, uoms },
+    locale,
+    t,
+    onAddLine: async (payload) => {
+      if (!persistedId) throw new Error('Purchase return must be persisted before adding a line')
+      const updated = await purchaseReturnService.addPurchaseReturnLine(
+        persistedId,
+        payload as PurchaseReturnLineRequest,
+      )
+      setPurchaseReturn(updated)
+      return updated.lines.map((l) => mapReturnLineToForm(l, uomSymbol))
+    },
+    onUpdateLine: async (lineId, payload) => {
+      if (!persistedId) throw new Error('Purchase return must be persisted before updating a line')
+      const updated = await purchaseReturnService.updatePurchaseReturnLine(
+        persistedId,
+        lineId,
+        payload as PurchaseReturnUpdateLineRequest,
+      )
+      setPurchaseReturn(updated)
+      return updated.lines.map((l) => mapReturnLineToForm(l, uomSymbol))
+    },
+    onDeleteLine: async (lineId) => {
+      if (!persistedId) throw new Error('Purchase return must be persisted before deleting a line')
+      const updated = await purchaseReturnService.deletePurchaseReturnLine(persistedId, lineId)
+      setPurchaseReturn(updated)
+      return updated.lines.map((l) => mapReturnLineToForm(l, uomSymbol))
+    },
+  })
+
+  const {
+    lines,
+    editingLineId,
+    editLineForm,
+    addingLine,
+    newLineForm,
+    lineSaving,
+    fieldErrors: lineFieldErrors,
+    startAddLine,
+    startEditLine,
+    cancelLineAction,
+    updateFormValue,
+    saveNewLine,
+    saveEditLine,
+    deleteLine,
+  } = lineController
+
+  const availableReturnableLines = useMemo(
+    () =>
+      returnableLines.filter(
+        (candidate) =>
+          !lines.some(
+            (existing) =>
+              String(existing.originalLineId) === String(candidate.originalLineId),
+          ),
+      ),
+    [returnableLines, lines],
+  )
+  const addUnavailable =
+    persistedId != null &&
+    (returnableLoading ||
+      returnableLoadedForId !== String(persistedId) ||
+      availableReturnableLines.length === 0)
+
+  const handleLineResult = useCallback(
+    (result: LineOpResult<PurchaseReturnLineFormState>, successKey: string) => {
+      if (result.ok) {
+        notify.success(t(successKey))
+        return
+      }
+      switch (result.kind) {
+        case 'validation':
+        case 'api':
+          return
+        default: {
+          const exhaustive: never = result
+          return exhaustive
+        }
+      }
+    },
+    [notify, t],
+  )
+
+  useEffect(() => {
+    startEditLineRef.current = startEditLine
+    deleteLineRef.current = (lineId) => {
+      if (!persistedId || !isDraft || isEditingHeader) return
+      void deleteLine(lineId).then((result) => {
+        handleLineResult(result, 'inventory.purchaseReturn.toast.lineDeleteSuccess')
+      })
+    }
+  }, [startEditLine, persistedId, isDraft, isEditingHeader, deleteLine, handleLineResult])
 
   function handleEditButtonClick() {
     if (!isEditingHeader) {
@@ -362,18 +406,25 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
     }
   }, [])
 
-  const loadReturnableLines = useCallback(async () => {
-    if (!persistedId || !isDraft) {
+  const loadReturnableLines = useCallback(async (targetId?: string) => {
+    const resolvedId = targetId ?? persistedId
+    if (!resolvedId || !isDraft) {
       setReturnableLines([])
-      return
+      setReturnableLoadedForId(null)
+      return []
     }
+    setReturnableLoadedForId(null)
     setReturnableLoading(true)
     try {
-      const data = await purchaseReturnService.getReturnableLines(persistedId)
+      const data = await purchaseReturnService.getReturnableLines(resolvedId)
       setReturnableLines(data)
+      setReturnableLoadedForId(String(resolvedId))
+      return data
     } catch (err) {
       setReturnableLines([])
+      setReturnableLoadedForId(String(resolvedId))
       notify.error(translateApiError(err, t).message)
+      return []
     } finally {
       setReturnableLoading(false)
     }
@@ -387,10 +438,6 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
       setPurchaseReturn(data)
       setHeader(mapReturnToHeader(data))
       setIsEditingHeader(false)
-      setEditingLineId(null)
-      setEditLineForm(null)
-      setAddingLine(false)
-      setNewLineForm(null)
     } catch (err) {
       setPurchaseReturn(null)
       setError(translateApiError(err, t).message)
@@ -412,18 +459,8 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
   useEffect(() => {
     if (!canView || !persistedId || !isDraft) return
     void loadReturnableLines()
-  }, [canView, persistedId, isDraft, loadReturnableLines, purchaseReturn?.lines.length])
+  }, [canView, persistedId, isDraft, loadReturnableLines])
 
-  const selectedReturnableLine = newLineForm?.originalLineId
-    ? returnableLines.find((line) => String(line.originalLineId) === newLineForm.originalLineId)
-    : null
-
-  const availableReturnableLines = returnableLines.filter(
-    (line) =>
-      !purchaseReturn?.lines.some(
-        (existing) => existing.originalLineId === line.originalLineId,
-      ),
-  )
 
   function validateHeader(): FieldErrors {
     const errors: FieldErrors = {}
@@ -437,42 +474,6 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
       errors.reason = t('inventory.purchaseReturn.validation.reasonRequired')
     }
     return errors
-  }
-
-  function validateLineForm(form: LineFormState, requireOriginalLine = true): string | null {
-    if (requireOriginalLine && !form.originalLineId) {
-      return t('inventory.purchaseReturn.validation.lineRequired')
-    }
-    const quantity = Number(form.quantity)
-    if (!form.quantity.trim() || Number.isNaN(quantity) || quantity <= 0) {
-      return t('inventory.purchaseReturn.validation.returnQuantityRequired')
-    }
-    if (!form.uomId) {
-      return t('inventory.purchase.validation.uomRequired')
-    }
-    if (purchaseReturn && form.originalLineId) {
-      const returnable = returnableLines.find(
-        (line) => line.originalLineId === Number(form.originalLineId),
-      )
-      if (returnable) {
-        const maxQty = getMaxReturnQuantity(
-          returnableLines,
-          purchaseReturn,
-          Number(form.originalLineId),
-          editingLineId ? Number(editingLineId) : undefined,
-        )
-        const quantityInOriginalUom = quantityInOriginalLineUom(
-          quantity,
-          Number(form.uomId),
-          returnable.uomId,
-          uoms,
-        )
-        if (quantityInOriginalUom != null && quantityInOriginalUom > maxQty) {
-          return t('inventory.purchaseReturn.validation.returnQuantityExceeded')
-        }
-      }
-    }
-    return null
   }
 
   async function handleSaveHeader() {
@@ -545,117 +546,38 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
   async function handleAddItemClick() {
     const doc = await ensureReturnPersisted()
     if (!doc) return
-    setAddingLine(true)
-    setNewLineForm(emptyLineForm())
-    setEditingLineId(null)
-    setEditLineForm(null)
-    setFieldErrors({})
-    setReturnableLoading(true)
-    try {
-      const lines = await purchaseReturnService.getReturnableLines(String(doc.id))
-      setReturnableLines(lines)
-    } catch (err) {
-      setReturnableLines([])
-      notify.error(translateApiError(err, t).message)
-    } finally {
-      setReturnableLoading(false)
-    }
+    const docId = String(doc.id)
+    const candidates =
+      returnableLoadedForId === docId
+        ? returnableLines
+        : await loadReturnableLines(docId)
+    const eligible = candidates.filter(
+      (candidate) =>
+        !doc.lines.some(
+          (existing) => existing.originalLineId === candidate.originalLineId,
+        ),
+    )
+    if (eligible.length === 0) return
+    startAddLine(emptyLineForm())
   }
 
   async function handleSaveNewLine() {
-    if (!persistedId || !newLineForm) return
-    const lineError = validateLineForm(newLineForm, true)
-    if (lineError) {
-      setFieldErrors({ lineError })
-      return
-    }
-    setFieldErrors({})
-    setLineSaving(true)
-    try {
-      const updated = await purchaseReturnService.addPurchaseReturnLine(persistedId, {
-        originalLineId: Number(newLineForm.originalLineId),
-        quantity: Number(newLineForm.quantity),
-        uomId: Number(newLineForm.uomId),
-        notes: newLineForm.notes.trim() || null,
-      })
-      setPurchaseReturn(updated)
-      setAddingLine(false)
-      setNewLineForm(null)
-      notify.success(t('inventory.purchaseReturn.toast.lineAddSuccess'))
-    } catch {
-      // API errors are translated and toasted by the global axios interceptor.
-    } finally {
-      setLineSaving(false)
-    }
-  }
-
-  function handleCancelNewLine() {
-    setAddingLine(false)
-    setNewLineForm(null)
-    setFieldErrors({})
-  }
-
-  function handleStartEditLine(line: PurchaseReturnResponse['lines'][number]) {
-    setAddingLine(false)
-    setNewLineForm(null)
-    setEditingLineId(String(line.id))
-    setEditLineForm({
-      originalLineId: String(line.originalLineId),
-      quantity: String(line.quantity),
-      uomId: String(line.uomId),
-      notes: line.notes ?? '',
-    })
-    setFieldErrors({})
+    const result = await saveNewLine((form) => ({
+      originalLineId: Number(form.originalLineId),
+      quantity: Number(form.quantity),
+      uomId: Number(form.uomId),
+      notes: form.notes?.trim() || null,
+    }))
+    handleLineResult(result, 'inventory.purchaseReturn.toast.lineAddSuccess')
   }
 
   async function handleSaveEditLine(lineId: number) {
-    if (!persistedId || !editLineForm) return
-    const lineError = validateLineForm(editLineForm, false)
-    if (lineError) {
-      setFieldErrors({ lineError })
-      return
-    }
-    setFieldErrors({})
-    setLineSaving(true)
-    try {
-      const updated = await purchaseReturnService.updatePurchaseReturnLine(persistedId, lineId, {
-        quantity: Number(editLineForm.quantity),
-        uomId: Number(editLineForm.uomId),
-        notes: editLineForm.notes.trim() || null,
-      })
-      setPurchaseReturn(updated)
-      setEditingLineId(null)
-      setEditLineForm(null)
-      notify.success(t('inventory.purchaseReturn.toast.lineUpdateSuccess'))
-    } catch {
-      // API errors are translated and toasted by the global axios interceptor.
-    } finally {
-      setLineSaving(false)
-    }
-  }
-
-  function handleCancelEditLine() {
-    setEditingLineId(null)
-    setEditLineForm(null)
-    setFieldErrors({})
-  }
-
-  async function handleDeleteLine(lineId: number) {
-    if (!persistedId || !isDraft) return
-    setLineSaving(true)
-    try {
-      const updated = await purchaseReturnService.deletePurchaseReturnLine(persistedId, lineId)
-      setPurchaseReturn(updated)
-      if (editingLineId === String(lineId)) {
-        setEditingLineId(null)
-        setEditLineForm(null)
-      }
-      notify.success(t('inventory.purchaseReturn.toast.lineDeleteSuccess'))
-    } catch {
-      // API errors are translated and toasted by the global axios interceptor.
-    } finally {
-      setLineSaving(false)
-    }
+    const result = await saveEditLine(lineId, (form) => ({
+      quantity: Number(form.quantity),
+      uomId: Number(form.uomId),
+      notes: form.notes?.trim() || null,
+    }))
+    handleLineResult(result, 'inventory.purchaseReturn.toast.lineUpdateSuccess')
   }
 
   async function handleCompleteReturn() {
@@ -749,127 +671,10 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
         (canUnpost && displayStatus === 'POSTED') ||
         (canUncomplete && displayStatus === 'COMPLETE')))
 
-  function renderLineEditRow(
-    form: LineFormState,
-    options: {
-      returnableLine?: ReturnableLineResponse
-      onOriginalLineChange?: (originalLineId: string) => void
-      onChange: (patch: Partial<LineFormState>) => void
-      onSave: () => void
-      onCancel: () => void
-    },
-  ) {
-    const qtyUomDisabled = lineSaving || lookupsLoading || !options.returnableLine
-
-    return (
-      <>
-        <td className="pi-form-lines-table__td pi-form-lines-table__td--material">
-          {options.returnableLine ? (
-            <div className="pi-form-view-line__material">
-              <span className="pi-form-view-line__name">
-                {getInventoryLocalizedName(
-                  {
-                    name: options.returnableLine.materialName ?? '',
-                    code: options.returnableLine.materialCode ?? undefined,
-                  },
-                  locale,
-                )}
-              </span>
-            </div>
-          ) : (
-            <select
-              className="pi-form-line-row__input"
-              value={form.originalLineId}
-              onChange={(e) => options.onOriginalLineChange?.(e.target.value)}
-              disabled={lineSaving || returnableLoading}
-            >
-              <option value="">{t('inventory.purchaseReturn.lines.selectLine')}</option>
-              {availableReturnableLines.map((line) => (
-                <option key={line.originalLineId} value={String(line.originalLineId)}>
-                  {formatReturnableLineLabel(line, locale, uoms, t('common.empty.dash'))}
-                </option>
-              ))}
-            </select>
-          )}
-        </td>
-        <td className="pi-form-lines-table__td pi-form-lines-table__td--num" dir="ltr">
-          {options.returnableLine?.originalQuantity ?? t('common.empty.dash')}
-        </td>
-        <td className="pi-form-lines-table__td pi-form-lines-table__td--num" dir="ltr">
-          {options.returnableLine
-            ? formatQuantityWithUomLabel(
-                options.returnableLine.returnableQuantity,
-                options.returnableLine.uomId,
-                options.returnableLine.uomSymbol,
-                locale,
-                uoms,
-                t('common.empty.dash'),
-              )
-            : t('common.empty.dash')}
-        </td>
-        <td className="pi-form-lines-table__td pi-form-lines-table__td--num" dir="ltr">
-          <input
-            type="number"
-            min={0}
-            step="any"
-            className="pi-form-line-row__input pi-form-line-row__input--ltr return-line__qty-input"
-            value={form.quantity}
-            onChange={(e) => options.onChange({ quantity: e.target.value })}
-            disabled={qtyUomDisabled}
-            aria-label={t('inventory.purchaseReturn.lines.returnQuantity')}
-          />
-        </td>
-        <td className="pi-form-lines-table__td pi-form-lines-table__td--uom">
-          {/*
-            D108: a return is entered in the original invoice line's UOM. The unit is
-            inherited from the selected line and is deliberately not selectable —
-            compatible alternates would pull in conversion and fractional-ledger paths
-            that nothing needs yet (D13).
-          */}
-          <span className="return-line__uom-locked" aria-label={t('inventory.purchaseReturn.lines.uom')}>
-            {resolveUomDisplayLabel(
-              form.uomId ? Number(form.uomId) : options.returnableLine?.uomId,
-              options.returnableLine?.uomSymbol,
-              locale,
-              uoms,
-              t('common.empty.dash'),
-            )}
-          </span>
-        </td>
-        <td className="pi-form-lines-table__td pi-form-lines-table__td--num" dir="ltr">
-          {t('common.empty.dash')}
-        </td>
-        <td className="pi-form-lines-table__td pi-form-lines-table__td--num" dir="ltr">
-          {t('common.empty.dash')}
-        </td>
-        <td className="pi-form-lines-table__td pi-form-lines-table__td--actions">
-          <div className="pi-form-lines-table__row-actions">
-            <IconActionButton
-              className="action-btn action-btn--icon action-btn--confirm"
-              label={t('inventory.purchase.form.save')}
-              onClick={options.onSave}
-              disabled={lineSaving}
-            >
-              <Check size={16} aria-hidden />
-            </IconActionButton>
-            <IconActionButton
-              className="action-btn action-btn--icon action-btn--cancel"
-              label={t('common.cancel')}
-              onClick={options.onCancel}
-              disabled={lineSaving}
-            >
-              <X size={16} aria-hidden />
-            </IconActionButton>
-          </div>
-        </td>
-      </>
-    )
-  }
-
   return (
     <ListPage className="purchase-return-form-page purchase-invoice-form-page purchase-invoice-form-page--redesign">
       {loading ? (
-        <div className="pi-form-header-card" dir="rtl">
+        <div className="pi-form-header-card">
           <div className="pi-form-header-grid">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="pi-form-field">
@@ -899,7 +704,6 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
           <form
             className="pi-form"
             onSubmit={(event: FormEvent) => event.preventDefault()}
-            dir="rtl"
             noValidate
           >
             <DocumentHeader
@@ -1035,7 +839,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                             className="action-btn action-btn--icon"
                             label={t('inventory.purchase.actions.editHeader')}
                             onClick={handleEditButtonClick}
-                            disabled={headerSaving || lineSaving || actionLoading}
+                            disabled={headerSaving || lineSaving || actionLoading || addingLine || editingLineId != null}
                           >
                             <Pencil size={20} aria-hidden />
                           </IconActionButton>
@@ -1219,215 +1023,50 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
               </div>
             </DocumentHeader>
 
-            <DocumentLinesCard title={t('inventory.purchaseReturn.lines.title')}>
-                {(purchaseReturn?.lines.length ?? 0) === 0 && !addingLine ? (
-                  <div className="pi-form-lines__empty">
-                    <p className="pi-form-lines__empty-title">
-                      {t('inventory.purchaseReturn.lines.emptyTitle')}
-                    </p>
-                    <p className="pi-form-lines__empty-hint">
-                      {t('inventory.purchaseReturn.lines.emptyHint')}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="pi-form-lines__table-wrap">
-                    <table
-                      className={`pi-form-lines-table${showDraftLineActions ? ' pi-form-lines-table--draft' : ' pi-form-lines-table--readonly'}`}
-                    >
-                      <thead>
-                        <tr>
-                          <th className="pi-form-lines-table__th">
-                            {t('inventory.purchaseReturn.lines.material')}
-                          </th>
-                          <th className="pi-form-lines-table__th pi-form-lines-table__th--num">
-                            {t('inventory.purchaseReturn.lines.originalQuantity')}
-                          </th>
-                          <th className="pi-form-lines-table__th pi-form-lines-table__th--num">
-                            {t('inventory.purchaseReturn.lines.returnableQuantity')}
-                          </th>
-                          <th className="pi-form-lines-table__th pi-form-lines-table__th--num">
-                            {t('inventory.purchaseReturn.lines.returnQuantity')}
-                          </th>
-                          <th className="pi-form-lines-table__th pi-form-lines-table__th--uom">
-                            {t('inventory.purchaseReturn.lines.uom')}
-                          </th>
-                          <th className="pi-form-lines-table__th pi-form-lines-table__th--num">
-                            {t('inventory.purchaseReturn.lines.unitCost')}
-                          </th>
-                          <th className="pi-form-lines-table__th pi-form-lines-table__th--num">
-                            {t('inventory.purchaseReturn.lines.lineTotal')}
-                          </th>
-                          {showDraftLineActions ? (
-                            <th className="pi-form-lines-table__th pi-form-lines-table__th--actions">
-                              {t('inventory.col.actions')}
-                            </th>
-                          ) : null}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(purchaseReturn?.lines ?? []).map((line) => {
-                          const returnableLine = returnableLines.find(
-                            (item) => item.originalLineId === line.originalLineId,
-                          )
-                          const isEditing = editingLineId === String(line.id) && editLineForm
-
-                          if (isEditing && editLineForm) {
-                            return (
-                              <tr
-                                key={line.id}
-                                className="pi-form-lines-table__row pi-form-lines-table__row--edit"
-                              >
-                                {renderLineEditRow(editLineForm, {
-                                  returnableLine,
-                                  onChange: (patch) =>
-                                    setEditLineForm((prev) => (prev ? { ...prev, ...patch } : prev)),
-                                  onSave: () => void handleSaveEditLine(line.id),
-                                  onCancel: handleCancelEditLine,
-                                })}
-                              </tr>
-                            )
-                          }
-
-                          return (
-                            <tr key={line.id} className="pi-form-lines-table__row">
-                              <td className="pi-form-lines-table__td pi-form-lines-table__td--material">
-                                <div className="pi-form-view-line__material">
-                                  <span className="pi-form-view-line__name">
-                                    {getInventoryLocalizedName(
-                                      {
-                                        name: line.materialName ?? '',
-                                        nameAr: line.materialNameAr ?? undefined,
-                                        code: line.materialCode ?? undefined,
-                                      },
-                                      locale,
-                                    )}
-                                  </span>
-                                </div>
-                              </td>
-                              <td className="pi-form-lines-table__td pi-form-lines-table__td--num" dir="ltr">
-                                {returnableLine?.originalQuantity ?? t('common.empty.dash')}
-                              </td>
-                              <td className="pi-form-lines-table__td pi-form-lines-table__td--num" dir="ltr">
-                                {returnableLine
-                                  ? formatQuantityWithUomLabel(
-                                      returnableLine.returnableQuantity,
-                                      returnableLine.uomId,
-                                      returnableLine.uomSymbol,
-                                      locale,
-                                      uoms,
-                                      t('common.empty.dash'),
-                                    )
-                                  : t('common.empty.dash')}
-                              </td>
-                              <td className="pi-form-lines-table__td pi-form-lines-table__td--num" dir="ltr">
-                                {line.quantity}
-                              </td>
-                              <td className="pi-form-lines-table__td pi-form-lines-table__td--uom">
-                                {resolveUomDisplayLabel(
-                                  line.uomId,
-                                  line.uomSymbol,
-                                  locale,
-                                  uoms,
-                                  t('common.empty.dash'),
-                                )}
-                              </td>
-                              <td className="pi-form-lines-table__td pi-form-lines-table__td--num" dir="ltr">
-                                {formatDisplayAmount(line.unitCost)}
-                              </td>
-                              <td className="pi-form-lines-table__td pi-form-lines-table__td--num" dir="ltr">
-                                {formatDisplayAmount(line.lineTotal)}
-                              </td>
-                              {showDraftLineActions ? (
-                                <td className="pi-form-lines-table__td pi-form-lines-table__td--actions">
-                                  <div className="pi-form-lines-table__row-actions">
-                                    <IconActionButton
-                                      className="action-btn action-btn--icon warehouse-stocks-panel__edit-btn"
-                                      label={t('inventory.purchase.actions.editLine')}
-                                      onClick={() => handleStartEditLine(line)}
-                                      disabled={
-                                        lineSaving ||
-                                        addingLine ||
-                                        editingLineId != null ||
-                                        isEditingHeader
-                                      }
-                                    >
-                                      <Pencil size={16} aria-hidden />
-                                    </IconActionButton>
-                                    <IconActionButton
-                                      className="action-btn action-btn--icon action-btn--cancel"
-                                      label={t('inventory.purchase.lines.delete')}
-                                      onClick={() => void handleDeleteLine(line.id)}
-                                      disabled={
-                                        lineSaving ||
-                                        addingLine ||
-                                        editingLineId != null ||
-                                        isEditingHeader
-                                      }
-                                    >
-                                      <Trash2 size={16} aria-hidden />
-                                    </IconActionButton>
-                                  </div>
-                                </td>
-                              ) : null}
-                            </tr>
-                          )
-                        })}
-                        {addingLine && newLineForm ? (
-                          <tr className="pi-form-lines-table__row pi-form-lines-table__row--edit">
-                            {renderLineEditRow(newLineForm, {
-                              onOriginalLineChange: (originalLineId) => {
-                                const returnable = returnableLines.find(
-                                  (line) => String(line.originalLineId) === originalLineId,
-                                )
-                                setNewLineForm((prev) =>
-                                  prev
-                                    ? {
-                                        ...prev,
-                                        originalLineId,
-                                        quantity: '',
-                                        uomId: returnable ? String(returnable.uomId) : '',
-                                      }
-                                    : prev,
-                                )
-                              },
-                              onChange: (patch) =>
-                                setNewLineForm((prev) => (prev ? { ...prev, ...patch } : prev)),
-                              onSave: () => void handleSaveNewLine(),
-                              onCancel: handleCancelNewLine,
-                              returnableLine: selectedReturnableLine ?? undefined,
-                            })}
-                          </tr>
-                        ) : null}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {fieldErrors.lineError ? (
-                  <p className="pi-form-lines__inline-error">{fieldErrors.lineError}</p>
-                ) : null}
-
-                {showDraftLineActions ? (
-                  <div className="pi-form-lines__footer">
-                    <button
-                      type="button"
-                      className="pi-form-lines__add-btn"
-                      onClick={() => void handleAddItemClick()}
-                      disabled={
-                        lineSaving ||
-                        addingLine ||
-                        editingLineId != null ||
-                        isEditingHeader ||
-                        headerSaving ||
-                        (persistedId != null && (returnableLoading || availableReturnableLines.length === 0))
-                      }
-                    >
-                      <Plus size={16} aria-hidden />
-                      {t('inventory.purchaseReturn.lines.add')}
-                    </button>
-                  </div>
-                ) : null}
-            </DocumentLinesCard>
+            <SchemaDocumentLinesCard
+              title={t('inventory.purchaseReturn.lines.title')}
+              schema={schema}
+              lines={lines}
+              lookups={{ returnableLines, uoms }}
+              viewMode={lineController.viewMode}
+              selectedLineId={lineController.selectedLineId}
+              selectedIndex={lineController.selectedIndex}
+              locale={locale}
+              t={t}
+              showActions={showDraftLineActions}
+              editingLineId={editingLineId}
+              editLineForm={editLineForm}
+              addingLine={addingLine}
+              newLineForm={newLineForm}
+              lineSaving={lineSaving}
+              lineError={lineFieldErrors.lineError}
+              lookupsLoading={returnableLoading || lookupsLoading}
+              interactionLocked={isEditingHeader}
+              addDisabled={addUnavailable}
+              emptyState={
+                <div className="pi-form-lines__empty">
+                  <p className="pi-form-lines__empty-title">
+                    {t('inventory.purchaseReturn.lines.emptyTitle')}
+                  </p>
+                  <p className="pi-form-lines__empty-hint">
+                    {t('inventory.purchaseReturn.lines.emptyHint')}
+                  </p>
+                </div>
+              }
+              onFieldChange={updateFormValue}
+              onSaveLine={(lineId) => {
+                if (lineId != null) {
+                  void handleSaveEditLine(Number(lineId))
+                } else {
+                  void handleSaveNewLine()
+                }
+              }}
+              onCancelLine={cancelLineAction}
+              onStartAddLine={() => void handleAddItemClick()}
+              onStartEditLine={startEditLine}
+              onViewModeChange={lineController.setViewMode}
+              onSelectLine={lineController.selectLine}
+            />
           </form>
         </>
       ) : null}

@@ -1,52 +1,48 @@
 import type { ReactNode } from 'react'
-import { DocumentBackButton } from '../layout/DocumentLayout/DocumentBackButton'
+import { DetailHeader } from './DetailHeader'
 
-interface EntityDetailLayoutProps {
-  backTo: string
-  backLabel?: string
-  title?: string
+export interface EntityDetailLayoutProps {
+  title?: ReactNode
   subtitle?: ReactNode
+  badge?: ReactNode
   headerExtra?: ReactNode
   actions?: ReactNode
+  backTo?: string
+  backLabel?: string
   children: ReactNode
   className?: string
   hideHeader?: boolean
+  headerFields?: ReactNode
 }
 
 export function EntityDetailLayout({
-  backTo,
   title,
   subtitle,
+  badge,
   headerExtra,
   actions,
+  backTo,
   children,
   className,
   hideHeader = false,
+  headerFields,
 }: EntityDetailLayoutProps) {
-  return (
-    <div className={`entity-detail-page${className ? ` ${className}` : ''}`} dir="rtl">
-      <div className="mb-3 flex justify-start">
-        <DocumentBackButton to={backTo} />
-      </div>
+  const renderedBadge = badge ?? headerExtra
+  const showHeader = !hideHeader && title
 
-      {hideHeader ? null : (
-        <header className="entity-detail-page__header entity-detail-page__header--compact">
-          <div className="entity-detail-page__header-main">
-            <div className="entity-detail-page__title-wrap">
-              {title ? <h1 className="entity-detail-page__title">{title}</h1> : null}
-              {subtitle ? (
-                <p className="entity-detail-page__subtitle" dir="ltr">
-                  {subtitle}
-                </p>
-              ) : null}
-            </div>
-            {headerExtra ? (
-              <div className="entity-detail-page__header-extra">{headerExtra}</div>
-            ) : null}
-          </div>
-          {actions ? <div className="entity-detail-page__actions">{actions}</div> : null}
-        </header>
-      )}
+  return (
+    <div className={`entity-detail-page${className ? ` ${className}` : ''}`}>
+      {showHeader ? (
+        <DetailHeader
+          title={title}
+          reference={subtitle}
+          statusBadge={renderedBadge}
+          actions={actions}
+          backTo={backTo}
+        >
+          {headerFields}
+        </DetailHeader>
+      ) : null}
 
       <div className="entity-detail-page__content">{children}</div>
     </div>

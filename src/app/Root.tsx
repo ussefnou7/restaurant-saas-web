@@ -6,6 +6,8 @@ import { useTranslation } from '../i18n/useTranslation'
 import { setApiErrorNotifier } from '../services/api'
 import { translateApiError } from '../utils/errors'
 
+import { DocumentTitleManager } from '../components/DocumentTitleManager'
+
 /** Bridges the axios error interceptor to the notification system + i18n. */
 function ApiErrorNotifierBridge() {
   const { t } = useTranslation()
@@ -24,6 +26,7 @@ function ApiErrorNotifierBridge() {
 export function Root() {
   return (
     <NotificationProvider>
+      <DocumentTitleManager />
       <ApiErrorNotifierBridge />
       <Outlet />
     </NotificationProvider>

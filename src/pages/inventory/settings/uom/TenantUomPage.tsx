@@ -23,6 +23,7 @@ import {
   Th,
 } from '../../../../components/ui/Table'
 import { useTranslation } from '../../../../i18n/useTranslation'
+import { useUomLookup } from '../../../../hooks/useUomLookup'
 import * as uomService from '../../../../services/uomService'
 import type { UomResponse } from '../../../../types/inventory'
 import { translateApiError } from '../../../../utils/errors'
@@ -49,6 +50,7 @@ function ActionSpinner() {
 
 export function TenantUomPage() {
   const { t } = useTranslation()
+  const { invalidateAndRefetch } = useUomLookup()
   const notify = useNotify()
   const canView = canViewInventorySetup()
 
@@ -81,6 +83,7 @@ export function TenantUomPage() {
 
   function handleAddSuccess(created: UomResponse) {
     setUoms((prev) => [...prev, created])
+    void invalidateAndRefetch()
     notify.success('تمت إضافة وحدة القياس بنجاح')
   }
 
@@ -95,10 +98,12 @@ export function TenantUomPage() {
         setUoms((prev) =>
           prev.map((item) => (item.id === updated.id ? { ...item, ...updated, active: false } : item)),
         )
+        void invalidateAndRefetch()
         notify.success('تم تعطيل وحدة القياس')
       } else {
         await uomService.deleteTenantUom(pendingAction.uom.id)
         setUoms((prev) => prev.filter((item) => item.id !== pendingAction.uom.id))
+        void invalidateAndRefetch()
         notify.success('تم حذف وحدة القياس')
       }
       setPendingAction(null)

@@ -14,6 +14,8 @@ export const jobsEn: TranslationDictionary = {
   'jobs.emptyText': 'Create your first job title to start building the HR structure.',
   'jobs.col.job': 'Job',
   'jobs.col.description': 'Description',
+  'jobs.fields.nameAr': 'Arabic Job Name',
+  'jobs.placeholders.nameAr': 'Optional Arabic job name',
   'jobs.loadError': 'Failed to load jobs',
   'jobs.statusError': 'Failed to update job status',
 }

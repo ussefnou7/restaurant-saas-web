@@ -5,8 +5,8 @@ import { EntityAuditFooter } from './EntityAuditFooter'
 import { EntityStatusControl } from './EntityStatusControl'
 
 export interface EntityOverviewPanelProps {
-  title: string
-  active: boolean
+  title?: string
+  active?: boolean
   editing: boolean
   saving?: boolean
   saveError?: string
@@ -43,7 +43,7 @@ export function EntityOverviewPanel({
   savingLabel,
   children,
 }: EntityOverviewPanelProps) {
-  const statusActive = active
+  const statusActive = active ?? false
 
   function renderHeadActions() {
     if (editing) {
@@ -68,12 +68,14 @@ export function EntityOverviewPanel({
         className="entity-overview-card"
         title={title}
         headExtra={
-          <EntityStatusControl
-            active={statusActive}
-            editable={editing}
-            disabled={saving}
-            onChange={onActiveChange}
-          />
+          editing && onActiveChange ? (
+            <EntityStatusControl
+              active={statusActive}
+              editable={editing}
+              disabled={saving}
+              onChange={onActiveChange}
+            />
+          ) : undefined
         }
         actions={renderHeadActions()}
         footer={

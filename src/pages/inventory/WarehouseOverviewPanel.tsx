@@ -283,7 +283,6 @@ export function WarehouseOverviewPanel({
 
   return (
     <EntityOverviewPanel
-      title={t('inventory.warehouses.overview.title')}
       active={statusActive}
       editing={editing}
       saving={disabled}

@@ -1,20 +1,24 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { AlertTriangle, ArrowLeft, ArrowRight, Check, CheckCircle, Loader2, Pencil, Plus, Receipt, Send, Trash2, Undo2, X, XCircle } from 'lucide-react'
+import { AlertTriangle, Check, CheckCircle, Loader2, Pencil, Receipt, Send, Trash2, Undo2, X, XCircle } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
 import { ConfirmModal } from '../../../components/ui/ConfirmModal'
-import { ListPage } from '../../../components/ui/ListPage'
-import { MaterialSelect } from '../../../components/ui/MaterialSelect'
-import { Modal } from '../../../components/ui/Modal'
-import { IconActionButton } from '../../../components/ui/RowActions'
-import { useNotify } from '../../../components/ui/NotificationContext'
-import { PurchaseDocumentReasonModal } from '../../../components/inventory/PurchaseDocumentReasonModal'
 import { DetailField } from '../../../components/fields'
-import { DocumentHeader, DocumentLinesCard } from '../../../components/layout/DocumentLayout'
+import { ListPage } from '../../../components/ui/ListPage'
+import { useNotify } from '../../../components/ui/NotificationContext'
+import { IconActionButton } from '../../../components/ui/RowActions'
+import { Modal } from '../../../components/ui/Modal'
+import { PurchaseDocumentReasonModal } from '../../../components/inventory/PurchaseDocumentReasonModal'
+import { DetailHeader } from '../../../components/entity-detail/DetailHeader'
+import { SchemaDocumentLinesCard } from '../../../components/layout/DocumentLayout/SchemaDocumentLinesCard'
+import {
+  createPurchaseInvoiceLineSchema,
+  type PurchaseInvoiceLineFormState,
+} from '../../../schemas/purchaseInvoiceLineSchema'
+import { useDocumentLines, type LineOpResult } from '../../../hooks/useDocumentLines'
+import { useUomLookup } from '../../../hooks/useUomLookup'
 import { PurchaseInvoiceFormStatusPill } from './PurchaseInvoiceFormStatusPill'
 import { useTranslation } from '../../../i18n/useTranslation'
-import { useUomLookup } from '../../../hooks/useUomLookup'
-import { useUomPickerProps } from '../../../hooks/useUomPickerProps'
 import * as inventoryService from '../../../services/inventoryService'
 import * as purchaseInvoiceService from '../../../services/purchaseInvoiceService'
 import type { MaterialResponse, SupplierResponse, UomResponse, WarehouseResponse } from '../../../types/inventory'
@@ -37,26 +41,9 @@ import {
 } from '../../../utils/inventoryPurchaseAccess'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { notifyStockBalancesRefresh } from '../../../utils/inventoryStockRefresh'
-import {
-  calcLineTotalWithAdjustments,
-} from '../../../utils/purchaseInvoiceDisplay'
-import {
-  getCompatibleUoms,
-  resolveDisplayUomId,
-} from '../../../utils/inventoryUom'
 import { PurchaseInvoiceAccessDenied } from './PurchaseInvoiceAccessDenied'
 
 type FormMode = 'create' | 'edit' | 'view'
-
-type LineFormState = {
-  clientId: string
-  materialId: string
-  quantity: string
-  uomId: string
-  unitCost: string
-  lineDiscount: string
-  lineTax: string
-}
 
 type HeaderFormState = {
   supplierId: string
@@ -73,7 +60,6 @@ type FieldErrors = {
   warehouseId?: string
   invoiceDate?: string
   receiptDate?: string
-  lineError?: string
 }
 
 function toDateInputValue(value?: string | null): string {
@@ -94,15 +80,12 @@ function emptyHeader(): HeaderFormState {
   }
 }
 
-function newLine(): LineFormState {
+function newLine(): PurchaseInvoiceLineFormState {
   return {
-    clientId: crypto.randomUUID(),
     materialId: '',
     quantity: '',
     uomId: '',
     unitCost: '',
-    lineDiscount: '0',
-    lineTax: '0',
   }
 }
 
@@ -119,32 +102,20 @@ function mapInvoiceToHeader(invoice: PurchaseInvoiceResponse): HeaderFormState {
   }
 }
 
-function mapInvoiceLineToForm(line: PurchaseInvoiceLineResponse): LineFormState {
+function mapInvoiceLineToForm(line: PurchaseInvoiceLineResponse): PurchaseInvoiceLineFormState {
   return {
-    clientId: String(line.id),
+    id: line.id,
     materialId: String(line.materialId),
     quantity: String(line.quantity),
     uomId: String(line.uomId),
     unitCost: String(line.unitCost),
-    lineDiscount: '0',
-    lineTax: '0',
+    lineTotal: line.lineTotal,
   }
 }
 
 function formatDisplayAmount(value?: number | null): string {
   if (value === null || value === undefined) return '-'
   return `${formatMoney(value)} ج.م`
-}
-
-function calcLineFormTotal(form: LineFormState): number | null {
-  const qty = Number(form.quantity)
-  const cost = Number(form.unitCost)
-  if (!form.quantity.trim() || !form.unitCost.trim() || qty <= 0 || cost <= 0) return null
-  return calcLineTotalWithAdjustments(qty, cost, Number(form.lineDiscount) || 0, Number(form.lineTax) || 0)
-}
-
-function calcLineFormTotalOrNull(form: LineFormState): number | null {
-  return calcLineFormTotal(form)
 }
 
 function scrollToFirstError() {
@@ -187,8 +158,6 @@ function usePurchaseInvoiceFormMode(): FormMode {
 
 function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
   const { t, locale } = useTranslation()
-  const { uomLabel, uomSymbol, activeUoms } = useUomLookup()
-  const uomPicker = useUomPickerProps()
   const navigate = useNavigate()
   const notify = useNotify()
   const { id } = useParams<{ id: string }>()
@@ -199,13 +168,11 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
 
   const [invoice, setInvoice] = useState<PurchaseInvoiceResponse | null>(null)
   const [header, setHeader] = useState<HeaderFormState>(emptyHeader)
+  const { uoms: cachedUoms } = useUomLookup()
   const [warehouses, setWarehouses] = useState<WarehouseResponse[]>([])
   const [suppliers, setSuppliers] = useState<SupplierResponse[]>([])
   const [materials, setMaterials] = useState<MaterialResponse[]>([])
-  // Options come from the shared cache, not a per-page fetch (D111). Reading a
-  // separate snapshot would make revalidate-on-open a no-op here: the cache would
-  // refresh and this picker would keep showing the list it loaded at mount.
-  const uoms = activeUoms as unknown as UomResponse[]
+  const uoms = cachedUoms as unknown as UomResponse[]
   const [lookupsLoading, setLookupsLoading] = useState(false)
   const [loading, setLoading] = useState(mode !== 'create')
   const [error, setError] = useState('')
@@ -216,11 +183,6 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
 
   const [isEditingHeader, setIsEditingHeader] = useState(false)
   const [headerSaving, setHeaderSaving] = useState(false)
-  const [editingLineId, setEditingLineId] = useState<string | null>(null)
-  const [editLineForm, setEditLineForm] = useState<LineFormState | null>(null)
-  const [lineSaving, setLineSaving] = useState(false)
-  const [addingLine, setAddingLine] = useState(false)
-  const [newLineForm, setNewLineForm] = useState<LineFormState | null>(null)
   const [unpostModalOpen, setUnpostModalOpen] = useState(false)
   const [uncompleteModalOpen, setUncompleteModalOpen] = useState(false)
   const [cancelInvoiceModalOpen, setCancelInvoiceModalOpen] = useState(false)
@@ -237,6 +199,16 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
   const headerFieldsEnabled = !persistedId || isEditingHeader
   const headerInputsDisabled = !headerFieldsEnabled || headerSaving || lookupsLoading || actionLoading
   const showDraftLineActions = isDraft && canManage
+  const startEditLineRef = useRef<(line: PurchaseInvoiceLineFormState) => void>(() => undefined)
+  const deleteLineRef = useRef<(lineId: number) => void>(() => undefined)
+  const handleSchemaEditLine = useCallback(
+    (line: PurchaseInvoiceLineFormState) => startEditLineRef.current(line),
+    [],
+  )
+  const handleSchemaDeleteLine = useCallback(
+    (line: PurchaseInvoiceLineFormState) => deleteLineRef.current(line.id!),
+    [],
+  )
 
   const isHeaderDirty = useMemo(() => {
     if (!invoice) return false
@@ -248,6 +220,110 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
       header.notes !== initial.notes
     )
   }, [invoice, header])
+
+  const schema = useMemo(
+    () =>
+      // Schema actions run only from user events; refs dispatch to the current controller.
+      // eslint-disable-next-line react-hooks/refs
+      createPurchaseInvoiceLineSchema({
+        lookups: { materials, uoms },
+        locale,
+        t,
+        handlers: {
+          onEditLine: handleSchemaEditLine,
+          onDeleteLine: handleSchemaDeleteLine,
+        },
+      }),
+    [materials, uoms, locale, t, handleSchemaEditLine, handleSchemaDeleteLine],
+  )
+
+  const initialLineForms = useMemo(
+    () => (invoice?.lines ?? []).map(mapInvoiceLineToForm),
+    [invoice?.lines],
+  )
+
+  const lineController = useDocumentLines<
+    PurchaseInvoiceLineFormState,
+    { materials: MaterialResponse[]; uoms: UomResponse[] }
+  >({
+    schema,
+    initialLines: initialLineForms,
+    linesReady: !loading,
+    lookups: { materials, uoms },
+    locale,
+    t,
+    onAddLine: async (payload) => {
+      if (!persistedId) throw new Error('Purchase invoice must be persisted before adding a line')
+      const updated = await purchaseInvoiceService.addPurchaseInvoiceLine(
+        persistedId,
+        payload as PurchaseInvoiceLineRequest,
+      )
+      setInvoice(updated)
+      return updated.lines.map(mapInvoiceLineToForm)
+    },
+    onUpdateLine: async (lineId, payload) => {
+      if (!persistedId) throw new Error('Purchase invoice must be persisted before updating a line')
+      const updated = await purchaseInvoiceService.updatePurchaseInvoiceLine(
+        persistedId,
+        lineId,
+        payload as UpdatePurchaseInvoiceLineRequest,
+      )
+      setInvoice(updated)
+      return updated.lines.map(mapInvoiceLineToForm)
+    },
+    onDeleteLine: async (lineId) => {
+      if (!persistedId) throw new Error('Purchase invoice must be persisted before deleting a line')
+      const updated = await purchaseInvoiceService.deletePurchaseInvoiceLine(persistedId, lineId)
+      setInvoice(updated)
+      return updated.lines.map(mapInvoiceLineToForm)
+    },
+  })
+
+  const {
+    lines,
+    editingLineId,
+    editLineForm,
+    addingLine,
+    newLineForm,
+    lineSaving,
+    fieldErrors: lineFieldErrors,
+    startAddLine,
+    startEditLine,
+    cancelLineAction,
+    updateFormValue,
+    saveNewLine,
+    saveEditLine,
+    deleteLine,
+  } = lineController
+
+  const handleLineResult = useCallback(
+    (result: LineOpResult<PurchaseInvoiceLineFormState>, successKey: string) => {
+      if (result.ok) {
+        notify.success(t(successKey))
+        return
+      }
+      switch (result.kind) {
+        case 'validation':
+        case 'api':
+          return
+        default: {
+          const exhaustive: never = result
+          return exhaustive
+        }
+      }
+    },
+    [notify, t],
+  )
+
+  useEffect(() => {
+    startEditLineRef.current = startEditLine
+    deleteLineRef.current = (lineId) => {
+      if (!persistedId || !isDraft || isEditingHeader) return
+      void deleteLine(lineId).then((result) => {
+        handleLineResult(result, 'inventory.purchase.toast.lineDeleteSuccess')
+      })
+    }
+  }, [startEditLine, persistedId, isDraft, isEditingHeader, deleteLine, handleLineResult])
 
   function handleEditButtonClick() {
     if (!isEditingHeader) {
@@ -314,10 +390,6 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
       setInvoice(data)
       setHeader(mapInvoiceToHeader(data))
       setIsEditingHeader(false)
-      setEditingLineId(null)
-      setEditLineForm(null)
-      setAddingLine(false)
-      setNewLineForm(null)
     } catch (err) {
       setInvoice(null)
       setError(translateApiError(err, t).message)
@@ -365,39 +437,6 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
       discountAmount: Number(header.discountAmount) || 0,
       taxAmount: Number(header.taxAmount) || 0,
       notes: header.notes.trim() || null,
-    }
-  }
-
-  function validateLineForm(form: LineFormState, requireMaterial = true): string | null {
-    if (requireMaterial && !form.materialId) {
-      return t('inventory.purchase.validation.fieldRequired')
-    }
-    const quantity = Number(form.quantity)
-    if (!form.quantity.trim() || Number.isNaN(quantity) || quantity <= 0) {
-      return t('inventory.purchase.validation.quantityRequired')
-    }
-    if (!form.uomId) return t('inventory.purchase.validation.uomRequired')
-    const unitCost = Number(form.unitCost)
-    if (form.unitCost.trim() === '' || Number.isNaN(unitCost) || unitCost <= 0) {
-      return t('inventory.purchase.validation.unitCostRequired')
-    }
-    return null
-  }
-
-  function buildAddLinePayload(form: LineFormState): PurchaseInvoiceLineRequest {
-    return {
-      materialId: Number(form.materialId),
-      quantity: Number(form.quantity),
-      uomId: Number(form.uomId),
-      unitCost: Number(form.unitCost),
-    }
-  }
-
-  function buildUpdateLinePayload(form: LineFormState): UpdatePurchaseInvoiceLineRequest {
-    return {
-      quantity: Number(form.quantity),
-      uomId: Number(form.uomId),
-      unitCost: Number(form.unitCost),
     }
   }
 
@@ -457,103 +496,26 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
 
   async function handleAddItemClick() {
     if (!(await ensureInvoicePersisted())) return
-    setAddingLine(true)
-    setNewLineForm(newLine())
-    setEditingLineId(null)
-    setEditLineForm(null)
-    setFieldErrors({})
-  }
-
-  function handleNewLineMaterialChange(materialId: string) {
-    const material = materials.find((m) => String(m.id) === materialId)
-    const defaultUomId = material ? String(resolveDisplayUomId(material)) : ''
-    setNewLineForm((prev) => (prev ? { ...prev, materialId, uomId: defaultUomId } : prev))
+    startAddLine(newLine())
   }
 
   async function handleSaveNewLine() {
-    if (!persistedId || !newLineForm) return
-    const lineError = validateLineForm(newLineForm, true)
-    if (lineError) {
-      setFieldErrors({ lineError })
-      return
-    }
-    setFieldErrors({})
-    setLineSaving(true)
-    try {
-      const updated = await purchaseInvoiceService.addPurchaseInvoiceLine(persistedId, buildAddLinePayload(newLineForm))
-      setInvoice(updated)
-      setAddingLine(false)
-      setNewLineForm(null)
-      notify.success(t('inventory.purchase.toast.lineAddSuccess'))
-    } catch {
-      // API errors are translated and toasted by the global axios interceptor.
-    } finally {
-      setLineSaving(false)
-    }
-  }
-
-  function handleCancelNewLine() {
-    setAddingLine(false)
-    setNewLineForm(null)
-    setFieldErrors({})
-  }
-
-  function handleStartEditLine(line: PurchaseInvoiceLineResponse) {
-    setAddingLine(false)
-    setNewLineForm(null)
-    setEditingLineId(String(line.id))
-    setEditLineForm(mapInvoiceLineToForm(line))
-    setFieldErrors({})
+    const result = await saveNewLine((form) => ({
+      materialId: Number(form.materialId),
+      quantity: Number(form.quantity),
+      uomId: Number(form.uomId),
+      unitCost: Number(form.unitCost),
+    }))
+    handleLineResult(result, 'inventory.purchase.toast.lineAddSuccess')
   }
 
   async function handleSaveEditLine(lineId: number) {
-    if (!persistedId || !editLineForm) return
-    const lineError = validateLineForm(editLineForm, false)
-    if (lineError) {
-      setFieldErrors({ lineError })
-      return
-    }
-    setFieldErrors({})
-    setLineSaving(true)
-    try {
-      const updated = await purchaseInvoiceService.updatePurchaseInvoiceLine(
-        persistedId,
-        lineId,
-        buildUpdateLinePayload(editLineForm),
-      )
-      setInvoice(updated)
-      setEditingLineId(null)
-      setEditLineForm(null)
-      notify.success(t('inventory.purchase.toast.lineUpdateSuccess'))
-    } catch {
-      // API errors are translated and toasted by the global axios interceptor.
-    } finally {
-      setLineSaving(false)
-    }
-  }
-
-  function handleCancelEditLine() {
-    setEditingLineId(null)
-    setEditLineForm(null)
-    setFieldErrors({})
-  }
-
-  async function handleDeleteLine(lineId: number) {
-    if (!persistedId || !isDraft) return
-    setLineSaving(true)
-    try {
-      const updated = await purchaseInvoiceService.deletePurchaseInvoiceLine(persistedId, lineId)
-      setInvoice(updated)
-      if (editingLineId === String(lineId)) {
-        setEditingLineId(null)
-        setEditLineForm(null)
-      }
-      notify.success(t('inventory.purchase.toast.lineDeleteSuccess'))
-    } catch {
-      // API errors are translated and toasted by the global axios interceptor.
-    } finally {
-      setLineSaving(false)
-    }
+    const result = await saveEditLine(lineId, (form) => ({
+      quantity: Number(form.quantity),
+      uomId: Number(form.uomId),
+      unitCost: Number(form.unitCost),
+    }))
+    handleLineResult(result, 'inventory.purchase.toast.lineUpdateSuccess')
   }
 
   async function handleCompleteInvoice() {
@@ -712,150 +674,10 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
         (canUnpost && displayStatus === 'POSTED') ||
         (canUncomplete && displayStatus === 'COMPLETE')))
 
-  function renderLineEditRow(
-    form: LineFormState,
-    options: {
-      materialReadOnly?: PurchaseInvoiceLineResponse
-      onMaterialChange?: (materialId: string) => void
-      onChange: (patch: Partial<LineFormState>) => void
-      onSave: () => void
-      onCancel: () => void
-    },
-  ) {
-    const compatibleUoms = form.uomId
-      ? getCompatibleUoms(uoms, Number(form.uomId))
-      : uoms.filter((u) => u.active)
-
-    return (
-      <>
-        <td className="pi-form-lines-table__td pi-form-lines-table__td--material">
-          {options.materialReadOnly ? (
-            <div className="pi-form-view-line__material">
-              <span className="pi-form-view-line__name">
-                {getInventoryLocalizedName(
-                  {
-                    name: options.materialReadOnly.materialName ?? '',
-                    nameAr: options.materialReadOnly.materialNameAr ?? undefined,
-                    code: options.materialReadOnly.materialCode ?? undefined,
-                  },
-                  locale,
-                )}
-              </span>
-            </div>
-          ) : (
-            <MaterialSelect
-              value={form.materialId}
-              onChange={(materialId) => options.onMaterialChange?.(materialId)}
-              materials={materials}
-              locale={locale}
-              disabled={lineSaving}
-              loading={lookupsLoading}
-              hasError={Boolean(fieldErrors.lineError && !form.materialId)}
-              placeholder={t('inventory.purchase.lines.selectMaterial')}
-              searchPlaceholder={t('common.search')}
-              ariaLabel={t('inventory.purchase.lines.material')}
-            />
-          )}
-        </td>
-        <td className="pi-form-lines-table__td pi-form-lines-table__td--num">
-          <input
-            type="number"
-            min={0}
-            step="any"
-            className="pi-form-line-row__input pi-form-line-row__input--ltr"
-            value={form.quantity}
-            onChange={(e) => options.onChange({ quantity: e.target.value })}
-            disabled={lineSaving}
-            aria-label={t('inventory.purchase.lines.quantity')}
-          />
-        </td>
-        <td className="pi-form-lines-table__td pi-form-lines-table__td--uom">
-          <select
-            {...uomPicker.selectProps}
-            className="pi-form-line-row__input pi-form-line-row__input--uom"
-            value={form.uomId}
-            onChange={(e) => options.onChange({ uomId: e.target.value })}
-            disabled={lineSaving || lookupsLoading || !form.materialId}
-            aria-label={t('inventory.purchase.lines.uom')}
-          >
-            <option value="">{t('inventory.common.selectUom')}</option>
-            {compatibleUoms.map((u) => (
-              <option key={u.id} value={String(u.id)}>
-                {u.symbol ?? getInventoryLocalizedName(u, locale)}
-              </option>
-            ))}
-          </select>
-        </td>
-        <td className="pi-form-lines-table__td pi-form-lines-table__td--num">
-          <input
-            type="number"
-            min={0}
-            step="any"
-            className="pi-form-line-row__input pi-form-line-row__input--ltr"
-            value={form.unitCost}
-            onChange={(e) => options.onChange({ unitCost: e.target.value })}
-            disabled={lineSaving}
-            placeholder="0.00"
-            aria-label={t('inventory.purchase.lines.unitCost')}
-          />
-        </td>
-        <td className="pi-form-lines-table__td pi-form-lines-table__td--num">
-          <input
-            type="number"
-            min={0}
-            step="any"
-            className="pi-form-line-row__input pi-form-line-row__input--ltr"
-            value={form.lineDiscount}
-            onChange={(e) => options.onChange({ lineDiscount: e.target.value })}
-            disabled={lineSaving}
-            placeholder="0.00"
-            aria-label={t('inventory.purchase.lines.lineDiscount')}
-          />
-        </td>
-        <td className="pi-form-lines-table__td pi-form-lines-table__td--num">
-          <input
-            type="number"
-            min={0}
-            step="any"
-            className="pi-form-line-row__input pi-form-line-row__input--ltr"
-            value={form.lineTax}
-            onChange={(e) => options.onChange({ lineTax: e.target.value })}
-            disabled={lineSaving}
-            placeholder="0.00"
-            aria-label={t('inventory.purchase.lines.lineTax')}
-          />
-        </td>
-        <td className="pi-form-lines-table__td pi-form-lines-table__td--num" dir="ltr">
-          {formatDisplayAmount(calcLineFormTotalOrNull(form))}
-        </td>
-        <td className="pi-form-lines-table__td pi-form-lines-table__td--actions">
-          <div className="pi-form-lines-table__row-actions">
-            <IconActionButton
-              className="action-btn action-btn--icon action-btn--confirm"
-              label={t('inventory.purchase.form.save')}
-              onClick={options.onSave}
-              disabled={lineSaving}
-            >
-              <Check size={16} aria-hidden />
-            </IconActionButton>
-            <IconActionButton
-              className="action-btn action-btn--icon action-btn--cancel"
-              label={t('common.cancel')}
-              onClick={options.onCancel}
-              disabled={lineSaving}
-            >
-              <X size={16} aria-hidden />
-            </IconActionButton>
-          </div>
-        </td>
-      </>
-    )
-  }
-
   return (
     <ListPage className="purchase-invoice-form-page purchase-invoice-form-page--redesign">
       {loading ? (
-        <div className="pi-form-header-card" dir="rtl">
+        <div className="pi-form-header-card">
           <div className="pi-form-header-grid">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="pi-form-field">
@@ -886,12 +708,13 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
             id="pi-invoice-form"
             className="pi-form"
             onSubmit={(event: FormEvent) => event.preventDefault()}
-            dir="rtl"
             noValidate
           >
-            <DocumentHeader
+            <DetailHeader
               title={pageTitle}
               statusBadge={<PurchaseInvoiceFormStatusPill status={displayStatus} />}
+              onBack={handleBackToListClick}
+              backDisabled={headerSaving || lineSaving || actionLoading}
               actions={
                 !loading && showFormActions ? (
                   <>
@@ -1023,23 +846,13 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                             className="action-btn action-btn--icon"
                             label={t('inventory.purchase.actions.editHeader')}
                             onClick={handleEditButtonClick}
-                            disabled={headerSaving || lineSaving || actionLoading}
+                            disabled={headerSaving || lineSaving || actionLoading || addingLine || editingLineId != null}
                           >
                             <Pencil size={20} aria-hidden />
                           </IconActionButton>
                         )
                       ) : null}
 
-                      <span className="pi-form-topbar__actions-divider" aria-hidden />
-
-                      <IconActionButton
-                        className="action-btn action-btn--icon action-btn--header-back"
-                        label={t('inventory.purchase.form.backToList')}
-                        onClick={handleBackToListClick}
-                        disabled={headerSaving || lineSaving || actionLoading}
-                      >
-                        {locale === 'ar' ? <ArrowRight size={20} aria-hidden /> : <ArrowLeft size={20} aria-hidden />}
-                      </IconActionButton>
                       {!persistedId ? (
                         <Button
                           variant="primary"
@@ -1277,174 +1090,48 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                     </div>
                   </div>
                 ) : null}
-            </DocumentHeader>
+            </DetailHeader>
 
-            <DocumentLinesCard title={t('inventory.purchase.lines.title')}>
-                {(invoice?.lines.length ?? 0) === 0 && !addingLine ? (
-                  <div className="pi-form-lines__empty">
-                    <Receipt className="pi-form-lines__empty-icon" size={40} strokeWidth={1.25} aria-hidden="true" />
-                    <p className="pi-form-lines__empty-title">{t('inventory.purchase.lines.emptyTitle')}</p>
-                    <p className="pi-form-lines__empty-hint">{t('inventory.purchase.lines.emptyHint')}</p>
-                  </div>
-                ) : (
-                  <div className="pi-form-lines__table-wrap">
-                    <table
-                      className={`pi-form-lines-table${showDraftLineActions ? ' pi-form-lines-table--draft' : ' pi-form-lines-table--readonly'}`}
-                    >
-                      <colgroup>
-                        <col className="pi-form-lines-table__col pi-form-lines-table__col--material" />
-                        <col className="pi-form-lines-table__col pi-form-lines-table__col--qty" />
-                        <col className="pi-form-lines-table__col pi-form-lines-table__col--uom" />
-                        <col className="pi-form-lines-table__col pi-form-lines-table__col--cost" />
-                        <col className="pi-form-lines-table__col pi-form-lines-table__col--discount" />
-                        <col className="pi-form-lines-table__col pi-form-lines-table__col--tax" />
-                        <col className="pi-form-lines-table__col pi-form-lines-table__col--total" />
-                        {showDraftLineActions ? (
-                          <col className="pi-form-lines-table__col pi-form-lines-table__col--actions" />
-                        ) : null}
-                      </colgroup>
-                      <thead>
-                        <tr>
-                          <th className="pi-form-lines-table__th">
-                            {t('inventory.purchase.lines.material')}
-                          </th>
-                          <th className="pi-form-lines-table__th pi-form-lines-table__th--num">
-                            {t('inventory.purchase.lines.quantity')}
-                          </th>
-                          <th className="pi-form-lines-table__th pi-form-lines-table__th--uom">
-                            {t('inventory.purchase.lines.uom')}
-                          </th>
-                          <th className="pi-form-lines-table__th pi-form-lines-table__th--num">
-                            {t('inventory.purchase.lines.unitCost')}
-                          </th>
-                          <th className="pi-form-lines-table__th pi-form-lines-table__th--num">
-                            {t('inventory.purchase.lines.lineDiscount')}
-                          </th>
-                          <th className="pi-form-lines-table__th pi-form-lines-table__th--num">
-                            {t('inventory.purchase.lines.lineTax')}
-                          </th>
-                          <th className="pi-form-lines-table__th pi-form-lines-table__th--num">
-                            {t('inventory.purchase.lines.lineTotal')}
-                          </th>
-                          {showDraftLineActions ? (
-                            <th className="pi-form-lines-table__th pi-form-lines-table__th--actions">
-                              {t('inventory.col.actions')}
-                            </th>
-                          ) : null}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(invoice?.lines ?? []).map((line) =>
-                          editingLineId === String(line.id) && editLineForm ? (
-                            <tr key={line.id} className="pi-form-lines-table__row pi-form-lines-table__row--edit">
-                              {renderLineEditRow(editLineForm, {
-                                materialReadOnly: line,
-                                onChange: (patch) =>
-                                  setEditLineForm((prev) => (prev ? { ...prev, ...patch } : prev)),
-                                onSave: () => void handleSaveEditLine(line.id),
-                                onCancel: handleCancelEditLine,
-                              })}
-                            </tr>
-                          ) : (
-                            <tr key={line.id} className="pi-form-lines-table__row">
-                              <td className="pi-form-lines-table__td pi-form-lines-table__td--material">
-                                <div className="pi-form-view-line__material">
-                                  <span className="pi-form-view-line__name">
-                                    {getInventoryLocalizedName(
-                                      {
-                                        name: line.materialName ?? '',
-                                        nameAr: line.materialNameAr ?? undefined,
-                                        code: line.materialCode ?? undefined,
-                                      },
-                                      locale,
-                                    )}
-                                  </span>
-                                </div>
-                              </td>
-                              <td className="pi-form-lines-table__td pi-form-lines-table__td--num" dir="ltr">
-                                {line.quantity}
-                              </td>
-                              <td className="pi-form-lines-table__td pi-form-lines-table__td--uom">
-                                {uomSymbol(line.uomId) !== '—'
-                                  ? uomSymbol(line.uomId)
-                                  : uomLabel(line.uomId) !== '—'
-                                    ? uomLabel(line.uomId)
-                                    : line.uomSymbol ??
-                                      line.uomName ??
-                                      line.uomCode ??
-                                      t('common.empty.dash')}
-                              </td>
-                              <td className="pi-form-lines-table__td pi-form-lines-table__td--num" dir="ltr">
-                                {formatDisplayAmount(line.unitCost)}
-                              </td>
-                              <td className="pi-form-lines-table__td pi-form-lines-table__td--num">
-                                {t('common.empty.dash')}
-                              </td>
-                              <td className="pi-form-lines-table__td pi-form-lines-table__td--num">
-                                {t('common.empty.dash')}
-                              </td>
-                              <td className="pi-form-lines-table__td pi-form-lines-table__td--num" dir="ltr">
-                                {formatDisplayAmount(line.lineTotal)}
-                              </td>
-                              {showDraftLineActions ? (
-                                <td className="pi-form-lines-table__td pi-form-lines-table__td--actions">
-                                  <div className="pi-form-lines-table__row-actions">
-                                    <IconActionButton
-                                      className="action-btn action-btn--icon warehouse-stocks-panel__edit-btn"
-                                      label={t('inventory.purchase.actions.editLine')}
-                                      onClick={() => handleStartEditLine(line)}
-                                      disabled={lineSaving || addingLine || editingLineId != null || isEditingHeader}
-                                    >
-                                      <Pencil size={16} aria-hidden />
-                                    </IconActionButton>
-                                    <IconActionButton
-                                      className="action-btn action-btn--icon action-btn--cancel"
-                                      label={t('inventory.purchase.lines.delete')}
-                                      onClick={() => void handleDeleteLine(line.id)}
-                                      disabled={lineSaving || addingLine || editingLineId != null || isEditingHeader}
-                                    >
-                                      <Trash2 size={16} aria-hidden />
-                                    </IconActionButton>
-                                  </div>
-                                </td>
-                              ) : null}
-                            </tr>
-                          ),
-                        )}
-                        {addingLine && newLineForm ? (
-                          <tr className="pi-form-lines-table__row pi-form-lines-table__row--edit">
-                            {renderLineEditRow(newLineForm, {
-                              onMaterialChange: handleNewLineMaterialChange,
-                              onChange: (patch) =>
-                                setNewLineForm((prev) => (prev ? { ...prev, ...patch } : prev)),
-                              onSave: () => void handleSaveNewLine(),
-                              onCancel: handleCancelNewLine,
-                            })}
-                          </tr>
-                        ) : null}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {fieldErrors.lineError ? (
-                  <p className="pi-form-lines__inline-error">{fieldErrors.lineError}</p>
-                ) : null}
-
-                {showDraftLineActions ? (
-                  <div className="pi-form-lines__footer">
-                    <button
-                      type="button"
-                      className="pi-form-lines__add-btn"
-                      onClick={() => void handleAddItemClick()}
-                      disabled={lineSaving || addingLine || editingLineId != null || isEditingHeader || headerSaving}
-                    >
-                      <Plus size={16} aria-hidden="true" />
-                      {t('inventory.purchase.lines.add')}
-                    </button>
-                  </div>
-                ) : null}
-            </DocumentLinesCard>
+            <SchemaDocumentLinesCard
+              title={t('inventory.purchase.lines.title')}
+              schema={schema}
+              lines={lines}
+              lookups={{ materials, uoms }}
+              viewMode={lineController.viewMode}
+              selectedLineId={lineController.selectedLineId}
+              selectedIndex={lineController.selectedIndex}
+              locale={locale}
+              t={t}
+              showActions={showDraftLineActions}
+              editingLineId={editingLineId}
+              editLineForm={editLineForm}
+              addingLine={addingLine}
+              newLineForm={newLineForm}
+              lineSaving={lineSaving}
+              lineError={lineFieldErrors.lineError}
+              lookupsLoading={lookupsLoading}
+              interactionLocked={isEditingHeader}
+              emptyState={
+                <div className="pi-form-lines__empty">
+                  <Receipt className="pi-form-lines__empty-icon" size={40} strokeWidth={1.25} aria-hidden="true" />
+                  <p className="pi-form-lines__empty-title">{t('inventory.purchase.lines.emptyTitle')}</p>
+                  <p className="pi-form-lines__empty-hint">{t('inventory.purchase.lines.emptyHint')}</p>
+                </div>
+              }
+              onFieldChange={updateFormValue}
+              onSaveLine={(lineId) => {
+                if (lineId != null) {
+                  void handleSaveEditLine(Number(lineId))
+                } else {
+                  void handleSaveNewLine()
+                }
+              }}
+              onCancelLine={cancelLineAction}
+              onStartAddLine={() => void handleAddItemClick()}
+              onStartEditLine={startEditLine}
+              onViewModeChange={lineController.setViewMode}
+              onSelectLine={lineController.selectLine}
+            />
           </form>
         </>
       ) : null}

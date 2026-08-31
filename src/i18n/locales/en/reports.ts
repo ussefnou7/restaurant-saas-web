@@ -1,6 +1,8 @@
 import type { TranslationDictionary } from '../../types'
 
 export const reportsEn: TranslationDictionary = {
+  'reports.title': 'Reports',
+  'reports.catalogue.title': 'Reports Catalogue',
   'reports.hub.title': 'Reports',
   'reports.hub.subtitle': 'Inventory reports for stock value and replenishment attention',
 

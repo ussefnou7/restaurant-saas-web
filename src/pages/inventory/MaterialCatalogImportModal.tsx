@@ -17,8 +17,9 @@ import {
   Th,
 } from '../../components/ui/Table'
 import { useTranslation } from '../../i18n/useTranslation'
+import { useUomLookup } from '../../hooks/useUomLookup'
 import * as inventoryService from '../../services/inventoryService'
-import type { ImportMaterialsResponse, MaterialCatalogResponse } from '../../types/inventory'
+import type { ImportMaterialsResponse, MaterialCatalogResponse, UomResponse } from '../../types/inventory'
 import { translateApiError } from '../../utils/errors'
 import { canManageInventorySetup } from '../../utils/inventoryAccess'
 import { getInventoryLocalizedName } from '../../utils/inventoryDisplay'
@@ -48,7 +49,9 @@ export function MaterialCatalogImportModal({
   const uomPicker = useUomPickerProps()
   const notify = useNotify()
   const canManage = canManageInventorySetup()
-  const { categories, uoms } = useInventoryLookups({ forCatalog: true })
+  const { categories } = useInventoryLookups({ forCatalog: true })
+  const { activeUoms } = useUomLookup()
+  const uoms = activeUoms as unknown as UomResponse[]
 
   const [items, setItems] = useState<MaterialCatalogResponse[]>([])
   const [loading, setLoading] = useState(false)

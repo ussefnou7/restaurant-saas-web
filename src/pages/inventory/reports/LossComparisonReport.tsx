@@ -1,6 +1,6 @@
 import { AlertCircle, ArrowLeft, Download, FileText, Filter, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Button } from '../../../components/ui/Button'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import {
@@ -9,6 +9,7 @@ import {
   ListPage,
 } from '../../../components/ui/ListPage'
 import { LoadingRows } from '../../../components/ui/LoadingRows'
+import { getReportCatalogEntry } from '../../../data/reportsCatalog'
 import { useTranslation } from '../../../i18n/useTranslation'
 import * as inventoryService from '../../../services/inventoryService'
 import * as reportService from '../../../services/reportService'
@@ -17,6 +18,8 @@ import type { LossComparisonRow, ReportFilters } from '../../../types/reports'
 import { translateApiError } from '../../../utils/errors'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { exportCsv, exportPdf } from '../../../utils/reportExport'
+
+const reportMeta = getReportCatalogEntry('loss-comparison')!
 
 function formatMagnitudeMoney(value: number): string {
   return Math.abs(value).toLocaleString(undefined, {
@@ -328,11 +331,14 @@ export function LossComparisonReport() {
           <div className="report-header-block">
             <div className="report-header-block__top">
               <div className="report-header-block__title-group">
-                <h1 className="report-header-block__title">{t('reports.lossComparison')}</h1>
-                <span className="report-header-block__code-badge">{t('reports.code.lossComparison')}</span>
+                <h1 className="report-header-block__title">{t(reportMeta.titleKey)}</h1>
+                <span className="report-header-block__code-badge">{t(reportMeta.codeKey)}</span>
+                <Link to="/reports" className="report-header-block__catalog-link">
+                  {t('reports.catalog.backToCatalog')}
+                </Link>
               </div>
             </div>
-            <p className="report-header-block__method">{t('reports.lossComparison.subtitle')}</p>
+            <p className="report-header-block__subtitle">{t(reportMeta.descriptionKey)}</p>
           </div>
 
           <form className="report-filter-form" onSubmit={handleApplyFilters}>
@@ -440,8 +446,11 @@ export function LossComparisonReport() {
       <div className="report-header-block">
         <div className="report-header-block__top">
           <div className="report-header-block__title-group">
-            <h1 className="report-header-block__title">{t('reports.lossComparison')}</h1>
-            <span className="report-header-block__code-badge">{t('reports.code.lossComparison')}</span>
+            <h1 className="report-header-block__title">{t(reportMeta.titleKey)}</h1>
+            <span className="report-header-block__code-badge">{t(reportMeta.codeKey)}</span>
+            <Link to="/reports" className="report-header-block__catalog-link">
+              {t('reports.catalog.backToCatalog')}
+            </Link>
           </div>
           <div className="reports-page__actions">
             <Button variant="secondary" onClick={handleEditFilters}>
@@ -462,7 +471,7 @@ export function LossComparisonReport() {
             </Button>
             <Button
               variant="secondary"
-              onClick={() => exportPdf(exportColumns, rows, 'loss-comparison-report', t('reports.lossComparison'))}
+              onClick={() => exportPdf(exportColumns, rows, 'loss-comparison-report', t(reportMeta.titleKey))}
               disabled={loadingRows || rows.length === 0}
             >
               <FileText size={16} />
@@ -471,6 +480,7 @@ export function LossComparisonReport() {
           </div>
         </div>
 
+        <p className="report-header-block__subtitle">{t(reportMeta.descriptionKey)}</p>
         <p className="report-header-block__method">
           {t('reports.method.period', { dateFrom: urlDateFrom, dateTo: urlDateTo })}
         </p>
@@ -544,7 +554,7 @@ export function LossComparisonReport() {
 
                 {cleanRows.length > 0 && (
                   <>
-                    <tr style={{ background: 'var(--color-surface-hover, #f8fafc)' }}>
+                    <tr style={{ background: 'var(--color-surface-hover)' }}>
                       <td colSpan={6} style={{ padding: '8px 16px', textAlign: 'center' }}>
                         <Button
                           variant="secondary"

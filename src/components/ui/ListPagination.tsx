@@ -21,7 +21,7 @@ export function ListPagination({
   disabled = false,
   translationPrefix = 'orders.pagination',
 }: ListPaginationProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
 
   if (totalElements === 0) return null
 
@@ -29,6 +29,10 @@ export function ListPagination({
   const to = Math.min((page + 1) * pageSize, totalElements)
   const canGoPrev = page > 0
   const canGoNext = page < totalPages - 1
+
+  const isRtl = locale === 'ar'
+  const PrevIcon = isRtl ? ChevronRight : ChevronLeft
+  const NextIcon = isRtl ? ChevronLeft : ChevronRight
 
   return (
     <div className="list-pagination">
@@ -44,7 +48,7 @@ export function ListPagination({
           onClick={() => onPageChange(page - 1)}
           aria-label={t(`${translationPrefix}.prev`)}
         >
-          <ChevronLeft size={16} aria-hidden />
+          <PrevIcon size={16} aria-hidden />
           {t(`${translationPrefix}.prev`)}
         </Button>
         <span className="list-pagination__page">
@@ -59,7 +63,7 @@ export function ListPagination({
           aria-label={t(`${translationPrefix}.next`)}
         >
           {t(`${translationPrefix}.next`)}
-          <ChevronRight size={16} aria-hidden />
+          <NextIcon size={16} aria-hidden />
         </Button>
       </div>
     </div>

@@ -1,7 +1,8 @@
 import type { TranslationDictionary } from '../../types'
 
 export const commonAr: TranslationDictionary = {
-  'common.appName': 'تطبيق المطعم',
+  'common.appName': 'ريستورو',
+  'common.notFound': 'الصفحة غير موجودة',
 
   'common.active': 'نشط',
   'common.inactive': 'غير نشط',
@@ -36,8 +37,16 @@ export const commonAr: TranslationDictionary = {
   'common.loading': 'جاري التحميل…',
   'common.deleting': 'جاري الحذف…',
   'common.confirm': 'تأكيد',
+  'common.confirmDelete': 'هل أنت متأكد من حذف هذا العنصر؟',
   'common.close': 'إغلاق',
+  'common.back': 'رجوع',
   'common.add': 'إضافة',
+  'common.next': 'التالي',
+  'common.of': 'من',
+  'common.prev': 'السابق',
+  'common.view': 'العرض',
+  'common.unsavedChanges': 'لديك تغييرات غير محفوظة في البند. هل تريد المغادرة دون حفظ؟',
+  'common.requiredField': 'هذا الحقل مطلوب',
   'common.noResults': 'لا توجد نتائج',
   'common.tryAdjustFilters': 'جرّب تعديل البحث أو عوامل التصفية.',
 
@@ -46,6 +55,7 @@ export const commonAr: TranslationDictionary = {
   'common.language.label': 'اللغة',
 
   'common.empty.dash': '—',
+  'common.uomPlaceholder': '—',
   'common.fields.code': 'الرمز',
   'common.retry': 'إعادة المحاولة',
   'common.moreActions': 'المزيد من الإجراءات',

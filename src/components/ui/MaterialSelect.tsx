@@ -27,6 +27,7 @@ interface MaterialSelectProps {
   placeholder: string
   searchPlaceholder: string
   ariaLabel: string
+  clearLabel?: string
 }
 
 const MATERIAL_SELECT_Z_INDEX = 10001
@@ -43,6 +44,7 @@ export function MaterialSelect({
   placeholder,
   searchPlaceholder,
   ariaLabel,
+  clearLabel,
 }: MaterialSelectProps) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
@@ -189,6 +191,22 @@ export function MaterialSelect({
                 />
               </div>
               <ul id={listId} className="pi-material-select__list" role="listbox" aria-label={ariaLabel}>
+                {value && clearLabel ? (
+                  <li role="presentation">
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected="false"
+                      className="pi-material-select__option"
+                      onClick={() => {
+                        onChange('')
+                        closeSelect()
+                      }}
+                    >
+                      {clearLabel}
+                    </button>
+                  </li>
+                ) : null}
                 {filtered.length === 0 ? (
                   <li className="pi-material-select__empty" role="presentation">
                     —

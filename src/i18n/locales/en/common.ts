@@ -1,7 +1,8 @@
 import type { TranslationDictionary } from '../../types'
 
 export const commonEn: TranslationDictionary = {
-  'common.appName': 'Restaurant App',
+  'common.appName': 'Restoro',
+  'common.notFound': 'Page Not Found',
 
   'common.active': 'Active',
   'common.inactive': 'Inactive',
@@ -36,8 +37,16 @@ export const commonEn: TranslationDictionary = {
   'common.loading': 'Loading…',
   'common.deleting': 'Deleting…',
   'common.confirm': 'Confirm',
+  'common.confirmDelete': 'Are you sure you want to delete this item?',
   'common.close': 'Close',
+  'common.back': 'Back',
   'common.add': 'Add',
+  'common.next': 'Next',
+  'common.of': 'of',
+  'common.prev': 'Previous',
+  'common.view': 'View',
+  'common.unsavedChanges': 'You have unsaved line changes. Leave without saving?',
+  'common.requiredField': 'This field is required',
   'common.noResults': 'No results found',
   'common.tryAdjustFilters': 'Try adjusting your search or filters.',
 
@@ -46,6 +55,7 @@ export const commonEn: TranslationDictionary = {
   'common.language.label': 'Language',
 
   'common.empty.dash': '—',
+  'common.uomPlaceholder': '—',
   'common.fields.code': 'Code',
   'common.retry': 'Retry',
   'common.moreActions': 'More actions',

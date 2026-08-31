@@ -25,6 +25,7 @@ export function setApiErrorNotifier(notifier: ApiErrorNotifier | null): void {
 }
 
 const AUTH_USER_KEY = 'authUser'
+const TENANT_CODE_KEY = 'tenantCode'
 
 function getTenantIdHeader(): string | null {
   const raw = localStorage.getItem(AUTH_USER_KEY)
@@ -68,8 +69,8 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('accessToken')
-      localStorage.removeItem('authUser')
-      localStorage.removeItem('tenantCode')
+      localStorage.removeItem(AUTH_USER_KEY)
+      localStorage.removeItem(TENANT_CODE_KEY)
       // Lets the UOM lookup cache drop the previous tenant's entry on session loss.
       window.dispatchEvent(new Event(AUTH_SESSION_CHANGED_EVENT))
       if (!window.location.pathname.startsWith('/login')) {

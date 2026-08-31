@@ -29,6 +29,6 @@ export const layoutAr: TranslationDictionary = {
   'layout.nav.leaveTypes': 'أنواع الإجازة',
 
   'layout.sidebar.aria': 'التنقل الرئيسي',
-  'layout.appName': 'تطبيق المطعم',
+  'layout.appName': 'ريستورو',
   'layout.logout': 'تسجيل الخروج',
 }

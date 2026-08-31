@@ -36,7 +36,7 @@ import {
   formatDecimalString,
   getAssetCategoryLabel,
 } from '../../utils/assetDisplay'
-import { getLocalizedBranchName } from '../../utils/branchDisplay'
+import { getLocalizedBranchName, resolveBranchName } from '../../utils/branchDisplay'
 import { translateApiError } from '../../utils/errors'
 import { formatDate } from '../../utils/format'
 import { getInventoryLocalizedName } from '../../utils/inventoryDisplay'
@@ -224,7 +224,7 @@ export function AssetMaintenanceListPage() {
         <ListPageStates
           loading={loading}
           loadingMessage={t('assets.maintenanceList.loading')}
-          loadingColumns={7}
+          loadingColumns={8}
           showEmpty={showEmpty}
           emptyTitle={t('assets.maintenanceList.empty.title')}
           emptyDescription={t('assets.maintenanceList.empty.description')}
@@ -239,6 +239,7 @@ export function AssetMaintenanceListPage() {
                   <Th column="entity">{t('assets.columns.name')}</Th>
                   <Th>{t('assets.lines.label')}</Th>
                   <Th>{t('assets.columns.category')}</Th>
+                  <Th>{t('assets.form.branch')}</Th>
                   <Th className="table-cell--numeric">{t('assets.maintenance.cost')}</Th>
                   <Th column="date">{t('assets.maintenance.maintenanceDate')}</Th>
                   <Th>{t('assets.maintenance.vendor')}</Th>
@@ -253,6 +254,7 @@ export function AssetMaintenanceListPage() {
                     </Td>
                     <Td>{formatAssetLineLabel(row.assetLineLabel ?? undefined, row.assetLineId, t)}</Td>
                     <Td>{getAssetCategoryLabel(row.category, t)}</Td>
+                    <Td>{resolveBranchName(row.branchId, branches, locale, row)}</Td>
                     <Td dir="ltr" className="table-cell--numeric">{formatDecimalString(row.cost)}</Td>
                     <Td column="date" dir="ltr">{formatDate(row.maintenanceDate)}</Td>
                     <Td>{row.vendor?.trim() || t('assets.common.notAvailable')}</Td>

@@ -14,6 +14,8 @@ export const jobsAr: TranslationDictionary = {
   'jobs.emptyText': 'أنشئ أول مسمى وظيفي لبدء بناء هيكل الموارد البشرية.',
   'jobs.col.job': 'الوظيفة',
   'jobs.col.description': 'الوصف',
+  'jobs.fields.nameAr': 'اسم الوظيفة بالعربي',
+  'jobs.placeholders.nameAr': 'اسم الوظيفة بالعربي - اختياري',
   'jobs.loadError': 'فشل تحميل الوظائف',
   'jobs.statusError': 'فشل تحديث حالة الوظيفة',
 }

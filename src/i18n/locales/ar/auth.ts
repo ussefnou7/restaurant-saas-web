@@ -1,7 +1,8 @@
 import type { TranslationDictionary } from '../../types'
 
 export const authAr: TranslationDictionary = {
-  'auth.login.title': 'تطبيق المطعم',
+  'auth.login.title': 'ريستورو',
+  'auth.login.screenTitle': 'تسجيل الدخول',
   'auth.login.subtitle': 'سجّل الدخول إلى حساب مطعمك',
   'auth.login.tenantCode': 'رمز المطعم',
   'auth.login.tenantCodePlaceholder': 'رمز-المطعم',

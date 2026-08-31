@@ -1,9 +1,15 @@
 import { CalendarDays, Clock, CreditCard, UtensilsCrossed } from 'lucide-react'
 import { ModuleHubPage } from '../../../components/hub/ModuleHubPage'
+import { getReportCatalogEntry } from '../../../data/reportsCatalog'
 import { useTranslation } from '../../../i18n/useTranslation'
 
 export function SalesReportsHub() {
   const { t } = useTranslation()
+
+  const salesOverTime = getReportCatalogEntry('sales-over-time')!
+  const salesByHour = getReportCatalogEntry('sales-by-hour')!
+  const salesByProduct = getReportCatalogEntry('sales-by-product')!
+  const salesByPaymentMethod = getReportCatalogEntry('sales-by-payment-method')!
 
   return (
     <ModuleHubPage
@@ -17,32 +23,32 @@ export function SalesReportsHub() {
       cardsLabel={t('hubs.section.reports')}
       cards={[
         {
-          id: 'sales-over-time',
+          id: salesOverTime.id,
           icon: CalendarDays,
-          title: t('reports.salesOverTime'),
-          description: t('reports.salesOverTime.subtitle'),
-          to: '/sales/reports/sales-over-time',
+          title: t(salesOverTime.titleKey),
+          description: t(salesOverTime.descriptionKey),
+          to: salesOverTime.route,
         },
         {
-          id: 'sales-by-hour',
+          id: salesByHour.id,
           icon: Clock,
-          title: t('reports.salesByHour'),
-          description: t('reports.salesByHour.subtitle'),
-          to: '/sales/reports/sales-by-hour',
+          title: t(salesByHour.titleKey),
+          description: t(salesByHour.descriptionKey),
+          to: salesByHour.route,
         },
         {
-          id: 'sales-by-product',
+          id: salesByProduct.id,
           icon: UtensilsCrossed,
-          title: t('reports.salesByProduct'),
-          description: t('reports.salesByProduct.subtitle'),
-          to: '/sales/reports/sales-by-product',
+          title: t(salesByProduct.titleKey),
+          description: t(salesByProduct.descriptionKey),
+          to: salesByProduct.route,
         },
         {
-          id: 'sales-by-payment-method',
+          id: salesByPaymentMethod.id,
           icon: CreditCard,
-          title: t('reports.salesByPaymentMethod'),
-          description: t('reports.salesByPaymentMethod.subtitle'),
-          to: '/sales/reports/sales-by-payment-method',
+          title: t(salesByPaymentMethod.titleKey),
+          description: t(salesByPaymentMethod.descriptionKey),
+          to: salesByPaymentMethod.route,
         },
       ]}
     />

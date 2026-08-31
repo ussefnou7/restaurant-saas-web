@@ -1,6 +1,8 @@
 import type { TranslationDictionary } from '../../types'
 
 export const reportsAr: TranslationDictionary = {
+  'reports.title': 'التقارير',
+  'reports.catalogue.title': 'دليل التقارير',
   'reports.hub.title': 'التقارير',
   'reports.hub.subtitle': 'تقارير المخزون لقيمة الرصيد والتنبيه لنقص المواد',
 

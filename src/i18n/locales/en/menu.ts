@@ -1,6 +1,10 @@
 import type { TranslationDictionary } from '../../types'
 
 export const menuEn: TranslationDictionary = {
+  'menu.categories.title': 'Menu Categories',
+  'menu.products.title': 'Menu Products',
+  'menu.products.new': 'New Product',
+  'menu.products.edit': 'Edit Product',
   'menu.tabs.categories': 'Categories',
   'menu.tabs.products': 'Products',
 
@@ -10,6 +14,7 @@ export const menuEn: TranslationDictionary = {
   'menu.col.actions': 'Actions',
 
   'menu.fields.name': 'Name',
+  'menu.fields.nameAr': 'Name (Arabic)',
   'menu.fields.sortOrder': 'Sort Order',
   'menu.fields.category': 'Category',
   'menu.fields.sellingPrice': 'Selling Price',

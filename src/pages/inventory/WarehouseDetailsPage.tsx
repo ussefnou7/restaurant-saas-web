@@ -4,19 +4,23 @@ import {
   EntityDetailScreen,
   EntityOverviewActions,
 } from '../../components/entity-detail'
+import { StatusBadge } from '../../components/ui/StatusBadge'
+import type { TranslationKey } from '../../i18n/types'
 import { useTranslation } from '../../i18n/useTranslation'
 import * as branchService from '../../services/branchService'
 import * as inventoryService from '../../services/inventoryService'
 import type { BranchResponse } from '../../types/branch'
 import type { WarehouseResponse } from '../../types/inventory'
+import { getLocalizedBranchName } from '../../utils/branchDisplay'
 import { translateApiError } from '../../utils/errors'
 import { canManageInventorySetup, canViewInventorySetup } from '../../utils/inventoryAccess'
+import { getInventoryLocalizedName } from '../../utils/inventoryDisplay'
 import { InventoryAccessDenied } from './InventoryAccessDenied'
 import { WarehouseOverviewPanel } from './WarehouseOverviewPanel'
 import { WarehouseStocksPanel } from './WarehouseStocksPanel'
 
 export function WarehouseDetailsPage() {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const { warehouseId } = useParams<{ warehouseId: string }>()
   const canView = canViewInventorySetup()
   const canManage = canManageInventorySetup()
@@ -87,6 +91,14 @@ export function WarehouseDetailsPage() {
 
   if (!canView) return <InventoryAccessDenied />
 
+  const warehouseName = warehouse ? getInventoryLocalizedName(warehouse, locale) : ''
+  const typeLabel = warehouse ? t(`inventory.warehouses.types.${warehouse.type}` as TranslationKey) : ''
+  const branchName = warehouse
+    ? warehouse.branchName || (warehouse.branchId ? getLocalizedBranchName(branches.find((b) => b.id === warehouse.branchId), locale) : '')
+    : ''
+  const subtitle = warehouse
+    ? [warehouse.code, typeLabel, branchName].filter(Boolean).join(' · ')
+    : ''
   const overviewActions =
     warehouse && canManage && !isEditing ? (
       <EntityOverviewActions
@@ -106,6 +118,10 @@ export function WarehouseDetailsPage() {
 
   return (
     <EntityDetailScreen
+      title={warehouse ? warehouseName : undefined}
+      subtitle={warehouse ? subtitle : undefined}
+      badge={warehouse ? <StatusBadge active={warehouse.active} /> : undefined}
+      actions={overviewActions}
       backTo="/inventory/warehouses"
       backLabel={t('inventory.warehouses.details.back')}
       loading={loading}
@@ -122,7 +138,6 @@ export function WarehouseDetailsPage() {
             editing={isEditing}
             onCancel={handleCancelEdit}
             onSaved={handleSaved}
-            toolbarActions={overviewActions}
           />
         ) : null
       }

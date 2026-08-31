@@ -15,6 +15,7 @@ interface MenuQuickAddCategoryModalProps {
 
 const emptyForm = {
   name: '',
+  nameAr: '',
   sortOrder: '0',
 }
 
@@ -56,6 +57,7 @@ export function MenuQuickAddCategoryModal({
     try {
       const created = await menuService.createMenuCategory({
         name: form.name.trim(),
+        nameAr: form.nameAr.trim() || null,
         sortOrder,
         active: true,
       })
@@ -96,6 +98,15 @@ export function MenuQuickAddCategoryModal({
               onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
               disabled={saving}
               required
+            />
+          </FormField>
+          <FormField label={t('menu.fields.nameAr')} htmlFor="menu-quick-category-name-ar">
+            <FormInput
+              id="menu-quick-category-name-ar"
+              value={form.nameAr}
+              onChange={(e) => setForm((prev) => ({ ...prev, nameAr: e.target.value }))}
+              disabled={saving}
+              dir="rtl"
             />
           </FormField>
           <FormField label={t('menu.fields.sortOrder')} htmlFor="menu-quick-category-sort">

@@ -7,6 +7,7 @@ import { useUomPickerProps } from '../../hooks/useUomPickerProps'
 import { useTranslation } from '../../i18n/useTranslation'
 import type { Locale } from '../../i18n/types'
 import type { MaterialResponse, UomResponse } from '../../types/inventory'
+import { getLocalizedUomSymbol } from '../../utils/inventoryUom'
 import type { EditableRecipeRow } from './recipeFormUtils'
 
 interface RecipeIngredientsEditorProps {
@@ -40,7 +41,7 @@ export function RecipeIngredientsEditor({
     .filter((uom) => uom.active)
     .map((uom) => ({
       value: String(uom.id),
-      label: uom.symbol ?? uom.code ?? uom.name,
+      label: getLocalizedUomSymbol(uom, locale) ?? uom.name,
     }))
 
   return (

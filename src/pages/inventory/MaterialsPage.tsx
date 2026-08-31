@@ -18,6 +18,7 @@ import { PageHeader } from '../../components/ui/PageHeader'
 import { SelectFilter } from '../../components/ui/SelectFilter'
 import { TableRowActions } from '../../components/ui/TableRowActions'
 import {
+  ClickableTableRow,
   DataTable,
   StopPropagationCell,
   TableBody,
@@ -27,15 +28,15 @@ import {
   Th,
 } from '../../components/ui/Table'
 import { useTranslation } from '../../i18n/useTranslation'
+import { useUomLookup } from '../../hooks/useUomLookup'
 import * as inventoryService from '../../services/inventoryService'
-import type { MaterialResponse } from '../../types/inventory'
+import type { MaterialResponse, UomResponse } from '../../types/inventory'
 import { translateApiError } from '../../utils/errors'
 import { canManageInventorySetup, canViewInventorySetup } from '../../utils/inventoryAccess'
 import { displayArabicName, getInventoryLocalizedName } from '../../utils/inventoryDisplay'
 import { getDisplayUomLabel, getStockUomLabel } from '../../utils/inventoryUom'
 import { InventoryAccessDenied } from './InventoryAccessDenied'
 import { MaterialCatalogImportModal } from './MaterialCatalogImportModal'
-import { MaterialFormModal } from './MaterialFormModal'
 import { useInventoryLookups } from './useInventoryLookups'
 
 type StatusFilter = 'all' | 'active' | 'inactive'
@@ -47,7 +48,9 @@ export function MaterialsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const canView = canViewInventorySetup()
   const canManage = canManageInventorySetup()
-  const { categories, uoms } = useInventoryLookups()
+  const { categories } = useInventoryLookups()
+  const { activeUoms } = useUomLookup()
+  const uoms = activeUoms as unknown as UomResponse[]
 
   const [catalogModalOpen, setCatalogModalOpen] = useState(false)
   const [materials, setMaterials] = useState<MaterialResponse[]>([])
@@ -57,9 +60,6 @@ export function MaterialsPage() {
   const [categoryId, setCategoryId] = useState('')
   const [uomId, setUomId] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
-  const [modalOpen, setModalOpen] = useState(false)
-  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create')
-  const [editing, setEditing] = useState<MaterialResponse | null>(null)
   const [rowActionId, setRowActionId] = useState<number | null>(null)
 
   const loadMaterials = useCallback(async () => {
@@ -96,15 +96,11 @@ export function MaterialsPage() {
   }, [searchParams, setSearchParams])
 
   function openCreate() {
-    setModalMode('create')
-    setEditing(null)
-    setModalOpen(true)
+    navigate('/inventory/materials/new')
   }
 
   function openEdit(material: MaterialResponse) {
-    setModalMode('edit')
-    setEditing(material)
-    setModalOpen(true)
+    navigate(`/inventory/materials/${material.id}?edit=true`)
   }
 
   async function handleToggleStatus(material: MaterialResponse) {
@@ -124,15 +120,6 @@ export function MaterialsPage() {
     } finally {
       setRowActionId(null)
     }
-  }
-
-  function handleFormSuccess() {
-    notify.success(
-      modalMode === 'create'
-        ? t('inventory.toast.createSuccess')
-        : t('inventory.toast.updateSuccess'),
-    )
-    void loadMaterials()
   }
 
   if (!canView) return <InventoryAccessDenied />
@@ -238,7 +225,10 @@ export function MaterialsPage() {
                     : t('inventory.common.custom')
 
                   return (
-                    <TableRow key={material.id}>
+                    <ClickableTableRow
+                      key={material.id}
+                      onClick={() => navigate(`/inventory/materials/${material.id}`)}
+                    >
                       <Td column="entity">
                         <EntityCell
                           name={getInventoryLocalizedName(material, locale)}
@@ -284,7 +274,7 @@ export function MaterialsPage() {
                           />
                         </StopPropagationCell>
                       ) : null}
-                    </TableRow>
+                    </ClickableTableRow>
                   )
                 })}
               </TableBody>
@@ -297,15 +287,6 @@ export function MaterialsPage() {
         open={catalogModalOpen}
         onClose={() => setCatalogModalOpen(false)}
         onImported={() => void loadMaterials()}
-      />
-
-      <MaterialFormModal
-        open={modalOpen}
-        mode={modalMode}
-        material={editing}
-        categories={categories}
-        onClose={() => setModalOpen(false)}
-        onSuccess={handleFormSuccess}
       />
     </ListPage>
   )

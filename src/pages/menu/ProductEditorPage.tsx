@@ -11,6 +11,7 @@ import { useTranslation } from '../../i18n/useTranslation'
 import * as menuService from '../../services/menuService'
 import type { Product } from '../../types/menu'
 import { translateApiError } from '../../utils/errors'
+import { getLocalizedMenuCategoryName } from '../../utils/menuDisplay'
 import { useMenuCategories } from './useMenuCategories'
 import { formatMenuPrice, parseNonNegativeNumber } from './menuNumberUtils'
 import { ProductAddOnsTab } from './tabs/ProductAddOnsTab'
@@ -155,7 +156,7 @@ export function ProductEditorPage() {
 
   useEffect(() => {
     if (!isCreate || form.menuCategoryId || categories.length === 0) return
-    const firstActive = categories.find((category) => category.isActive)
+    const firstActive = categories.find((category) => category.isActive !== false) ?? categories[0]
     if (!firstActive) return
     const timer = window.setTimeout(() => {
       setForm((current) => ({
@@ -169,12 +170,12 @@ export function ProductEditorPage() {
   const categoryOptions = useMemo(
     () =>
       categories
-        .filter((category) => category.isActive || String(category.id) === form.menuCategoryId)
+        .filter((category) => category.isActive !== false || String(category.id) === form.menuCategoryId)
         .map((category) => ({
           value: String(category.id),
-          label: category.name,
+          label: getLocalizedMenuCategoryName(category, locale),
         })),
-    [categories, form.menuCategoryId],
+    [categories, form.menuCategoryId, locale],
   )
 
   const parentProductOptions = useMemo(

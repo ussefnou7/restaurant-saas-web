@@ -1,6 +1,6 @@
 import { AlertCircle, ArrowLeft, Download, FileText, Filter, RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Button } from '../../../components/ui/Button'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import {
@@ -9,6 +9,7 @@ import {
   ListPage,
 } from '../../../components/ui/ListPage'
 import { LoadingRows } from '../../../components/ui/LoadingRows'
+import { getReportCatalogEntry } from '../../../data/reportsCatalog'
 import { useTranslation } from '../../../i18n/useTranslation'
 import * as inventoryService from '../../../services/inventoryService'
 import * as reportService from '../../../services/reportService'
@@ -17,6 +18,8 @@ import type { ReportFilters, ShrinkageRow } from '../../../types/reports'
 import { translateApiError } from '../../../utils/errors'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { exportCsv, exportPdf } from '../../../utils/reportExport'
+
+const reportMeta = getReportCatalogEntry('shrinkage')!
 
 function formatMoneyNumber(value: number, includePlus = true): string {
   const absolute = Math.abs(value).toLocaleString(undefined, {
@@ -257,10 +260,16 @@ export function ShrinkageReport() {
       <ListPage className="reports-page">
         <div className="report-filter-screen">
           <div className="report-header-block">
-            <div className="report-header-block__title-group">
-              <h1 className="report-header-block__title">{t('reports.shrinkage')}</h1>
+            <div className="report-header-block__top">
+              <div className="report-header-block__title-group">
+                <h1 className="report-header-block__title">{t(reportMeta.titleKey)}</h1>
+                <span className="report-header-block__code-badge">{t(reportMeta.codeKey)}</span>
+                <Link to="/reports" className="report-header-block__catalog-link">
+                  {t('reports.catalog.backToCatalog')}
+                </Link>
+              </div>
             </div>
-            <p className="report-header-block__method">{t('reports.shrinkage.subtitle')}</p>
+            <p className="report-header-block__subtitle">{t(reportMeta.descriptionKey)}</p>
           </div>
 
           <form className="report-filter-form" onSubmit={handleApplyFilters}>
@@ -378,7 +387,11 @@ export function ShrinkageReport() {
       <div className="report-header-block">
         <div className="report-header-block__top">
           <div className="report-header-block__title-group">
-            <h1 className="report-header-block__title">{t('reports.shrinkage')}</h1>
+            <h1 className="report-header-block__title">{t(reportMeta.titleKey)}</h1>
+            <span className="report-header-block__code-badge">{t(reportMeta.codeKey)}</span>
+            <Link to="/reports" className="report-header-block__catalog-link">
+              {t('reports.catalog.backToCatalog')}
+            </Link>
           </div>
           <div className="reports-page__actions">
             <Button variant="secondary" onClick={handleEditFilters}>
@@ -399,7 +412,7 @@ export function ShrinkageReport() {
             </Button>
             <Button
               variant="secondary"
-              onClick={() => exportPdf(exportColumns, rows, 'shrinkage-report', t('reports.shrinkage'))}
+              onClick={() => exportPdf(exportColumns, rows, 'shrinkage-report', t(reportMeta.titleKey))}
               disabled={loadingRows || rows.length === 0}
             >
               <FileText size={16} />
@@ -408,6 +421,7 @@ export function ShrinkageReport() {
           </div>
         </div>
 
+        <p className="report-header-block__subtitle">{t(reportMeta.descriptionKey)}</p>
         <p className="report-header-block__method">
           {t('reports.method.period', { dateFrom: urlDateFrom, dateTo: urlDateTo })}
         </p>

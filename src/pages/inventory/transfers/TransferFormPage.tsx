@@ -64,9 +64,9 @@ function getStatusVariant(status: string): 'muted' | 'warning' | 'success' | 'da
 function TransferFormInner({ mode, transfer }: { mode: FormMode; transfer: InventoryTransferResponse | null }) {
   const { t, locale } = useTranslation()
   const uomPicker = useUomPickerProps()
-  const { activeUoms } = useUomLookup()
   const navigate = useNavigate()
   const notify = useNotify()
+  const { activeUoms, loading: uomLoading, uomLabel, uomSymbol } = useUomLookup()
   const [warehouses, setWarehouses] = useState<WarehouseResponse[]>([])
   const [materials, setMaterials] = useState<MaterialResponse[]>([])
   // Options come from the shared cache, not a per-page fetch (D111).
@@ -205,6 +205,20 @@ function TransferFormInner({ mode, transfer }: { mode: FormMode; transfer: Inven
     }
   }
 
+  function resolveUomDisplay(
+    uomId: number | string | null | undefined,
+    fallbackSymbol?: string | null,
+    fallbackCode?: string | null,
+  ): string {
+    const symbol = uomSymbol(uomId)
+    if (symbol !== '—') return symbol
+
+    const label = uomLabel(uomId)
+    if (label !== '—') return label
+
+    return fallbackSymbol ?? fallbackCode ?? '—'
+  }
+
   const warehouseOptions = warehouses.map((w) => ({
     value: String(w.id),
     label: getInventoryLocalizedName(w, locale),
@@ -305,7 +319,7 @@ function TransferFormInner({ mode, transfer }: { mode: FormMode; transfer: Inven
                       <Td dir="ltr" className="table-cell--numeric">{line.requestedQuantity}</Td>
                       <Td dir="ltr" className="table-cell--numeric">{line.dispatchedQuantity ?? <span className="text-muted">—</span>}</Td>
                       <Td dir="ltr" className="table-cell--numeric">{line.receivedQuantity ?? <span className="text-muted">—</span>}</Td>
-                      <Td>{line.uomSymbol ?? line.uomCode}</Td>
+                      <Td>{resolveUomDisplay(line.uomId, line.uomSymbol, line.uomCode)}</Td>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -392,7 +406,7 @@ function TransferFormInner({ mode, transfer }: { mode: FormMode; transfer: Inven
                   const selectedMat = materials.find((m) => String(m.id) === line.materialId)
                   const uomOptions = uoms.map((u) => ({
                     value: String(u.id),
-                    label: `${u.symbol ?? u.code} — ${u.name}`,
+                    label: `${resolveUomDisplay(u.id, u.symbol, u.code)} — ${getInventoryLocalizedName(u, locale)}`,
                   }))
                   return (
                     <TableRow key={line.clientId}>
@@ -427,14 +441,20 @@ function TransferFormInner({ mode, transfer }: { mode: FormMode; transfer: Inven
                           {...uomPicker.selectProps}
                           value={line.uomId}
                           onChange={(e) => updateLine(line.clientId, 'uomId', e.target.value)}
-                          disabled={saving || lookupLoading}
+                          disabled={saving || lookupLoading || uomLoading}
                         >
                           <option value="">{t('inventory.common.selectUom')}</option>
                           {uomOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                         </FormSelect>
-                        {selectedMat?.stockUomSymbol ? (
+                        {selectedMat ? (
                           <span className="transfer-form__stock-hint" dir="ltr">
-                            {t('inventory.purchase.lines.stockUomHint', { uom: selectedMat.stockUomSymbol ?? selectedMat.stockUomCode ?? '' })}
+                            {t('inventory.purchase.lines.stockUomHint', {
+                              uom: resolveUomDisplay(
+                                selectedMat.stockUomId ?? selectedMat.defaultUomId,
+                                selectedMat.stockUomSymbol,
+                                selectedMat.stockUomCode,
+                              ),
+                            })}
                           </span>
                         ) : null}
                       </Td>

@@ -3,6 +3,7 @@ import { FieldGrid, FormField, FormInput, FormSelect, FormTextarea } from '../..
 import { Button } from '../../components/ui/Button'
 import { Modal } from '../../components/ui/Modal'
 import { useTranslation } from '../../i18n/useTranslation'
+import { useUomLookup } from '../../hooks/useUomLookup'
 import * as inventoryService from '../../services/inventoryService'
 import * as inventoryStockService from '../../services/inventoryStockService'
 import type { MaterialResponse, UomResponse, WarehouseResponse } from '../../types/inventory'
@@ -13,11 +14,11 @@ import {
   getTransactionTypeLabel,
   toLocalDateTimeInputValue,
 } from '../../utils/inventoryStockDisplay'
-import { useUomLookup } from '../../hooks/useUomLookup'
 import { useUomPickerProps } from '../../hooks/useUomPickerProps'
 import {
   getCompatibleUoms,
   getDisplayUomLabel,
+  getLocalizedUomSymbol,
   resolveDisplayUomId,
 } from '../../utils/inventoryUom'
 
@@ -58,7 +59,7 @@ export function ManualTransactionModal({
 }: ManualTransactionModalProps) {
   const { t, locale } = useTranslation()
   const uomPickerProps = useUomPickerProps()
-  const { activeUoms } = useUomLookup()
+  const { activeUoms, loading: uomLoading } = useUomLookup()
   const [form, setForm] = useState<FormState>(emptyForm)
   const [warehouses, setWarehouses] = useState<WarehouseResponse[]>([])
   const [materials, setMaterials] = useState<MaterialResponse[]>([])
@@ -144,12 +145,14 @@ export function ManualTransactionModal({
 
   const uomOptions = useMemo(
     () =>
-      compatibleUoms.map((u) => ({
-        value: String(u.id),
-        label: u.symbol
-          ? `${getInventoryLocalizedName(u, locale)} (${u.symbol})`
-          : getInventoryLocalizedName(u, locale),
-      })),
+      compatibleUoms.map((u) => {
+        const symbol = getLocalizedUomSymbol(u, locale)
+        const name = getInventoryLocalizedName(u, locale)
+        return {
+          value: String(u.id),
+          label: symbol ? `${name} (${symbol})` : name,
+        }
+      }),
     [compatibleUoms, locale],
   )
 
@@ -219,7 +222,7 @@ export function ManualTransactionModal({
             type="submit"
             form="manual-transaction-form"
             variant="primary"
-            disabled={saving || lookupsLoading}
+            disabled={saving || lookupsLoading || uomLoading}
           >
             {saving ? t('branches.actions.saving') : t('common.save')}
           </Button>
@@ -316,7 +319,7 @@ export function ManualTransactionModal({
               {...uomPickerProps.selectProps}
               value={form.uomId}
               onChange={(e) => setForm((prev) => ({ ...prev, uomId: e.target.value }))}
-              disabled={saving || lookupsLoading || !form.materialId}
+              disabled={saving || lookupsLoading || uomLoading || !form.materialId}
             >
               <option value="">{t('inventory.common.selectUom')}</option>
               {uomOptions.map((opt) => (

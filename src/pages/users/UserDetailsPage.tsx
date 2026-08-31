@@ -8,6 +8,7 @@ import {
   useEntityDetailTab,
 } from '../../components/entity-detail'
 import { ConfirmModal } from '../../components/ui/ConfirmModal'
+import { StatusBadge } from '../../components/ui/StatusBadge'
 import { useTranslation } from '../../i18n/useTranslation'
 import * as userService from '../../services/userService'
 import type { UserResponse } from '../../types/user'
@@ -18,7 +19,7 @@ import { UserPermissionsPanel } from './UserPermissionsPanel'
 const TAB_PERMISSIONS = 'permissions'
 
 export function UserDetailsPage() {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const navigate = useNavigate()
   const { userId } = useParams<{ userId: string }>()
 
@@ -120,9 +121,24 @@ export function UserDetailsPage() {
       />
     ) : null
 
+  const roleName = user?.role
+    ? (locale === 'ar' ? (user.role.nameAr || user.role.name) : (user.role.nameEn || user.role.name))
+    : ''
+  const branchName = user
+    ? (locale === 'ar' ? (user.branchNameAr || user.branchName) : (user.branchNameEn || user.branchName))
+    : ''
+
+  const subtitle = user
+    ? [`@${user.username}`, roleName, branchName].filter(Boolean).join(' · ')
+    : undefined
+
   return (
     <>
       <EntityDetailScreen
+        title={user ? user.fullName : undefined}
+        subtitle={subtitle}
+        badge={user ? <StatusBadge active={user.active} /> : undefined}
+        actions={overviewActions}
         backTo="/users"
         backLabel={t('users.details.backToList')}
         loading={loading}
@@ -138,7 +154,6 @@ export function UserDetailsPage() {
               editing={isEditing}
               onCancel={handleCancelEdit}
               onSaved={handleSaved}
-              toolbarActions={overviewActions}
             />
           ) : null
         }
