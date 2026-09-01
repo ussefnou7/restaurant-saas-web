@@ -90,9 +90,9 @@ export function WarehouseStocksPanel({ warehouseId }: WarehouseStocksPanelProps)
     if (sym !== '—') return sym
     const lbl = uomLabel(stock.uomId)
     if (lbl !== '—') return lbl
-    // uomSymbol survives the D111 cut only because the Flutter app needs it (O42); the cache is
-    // still the source of truth here, and this is the last resort before a dash.
-    return stock.uomSymbol?.trim() || '—'
+    // No row-level fallback left: the API sends uomId alone (D111 phase 3). A dash here means the
+    // cache has not resolved the id yet, not that the unit is unknown.
+    return '—'
   }
 
   const [stocks, setStocks] = useState<WarehouseStockResponse[]>([])

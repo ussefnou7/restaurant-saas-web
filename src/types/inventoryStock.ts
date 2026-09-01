@@ -87,10 +87,9 @@ export type WarehouseStockResponse = {
   materialName: string
   materialNameAr?: string | null
   warehouseId: number
+  /** The unit only; resolve the name from the UOM lookup cache (D111 phase 3). */
   uomId?: number | null
   displayUomId?: number | null
-  /** Still sent for the Flutter app, which cannot resolve ids (O42). Prefer the cache. */
-  uomSymbol?: string | null
   openingBalance?: number
   quantity: number
   averageCost?: number

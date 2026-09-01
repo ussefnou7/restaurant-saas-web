@@ -14,9 +14,8 @@ export type PurchaseInvoiceLineResponse = {
   categoryNameAr?: string | null
   quantity: number
   returnedQuantity?: number | null
+  /** The unit only; resolve the name from the UOM lookup cache (D111 phase 3). */
   uomId: number
-  /** Still sent for the Flutter app, which cannot resolve ids (O42). Prefer the cache. */
-  uomSymbol?: string | null
   unitCost: number
   lineTotal: number
   notes?: string | null
