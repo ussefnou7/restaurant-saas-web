@@ -43,7 +43,7 @@ export function RecipeIngredientsReadOnly({ items, emptyMessage }: RecipeIngredi
                   ? uomSymbol(item.uomId)
                   : uomLabel(item.uomId) !== '—'
                     ? uomLabel(item.uomId)
-                    : item.uomName || t('common.empty.dash')}
+                    : t('common.empty.dash')}
               </Td>
             </TableRow>
           ))}

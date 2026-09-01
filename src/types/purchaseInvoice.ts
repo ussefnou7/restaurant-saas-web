@@ -14,11 +14,8 @@ export type PurchaseInvoiceLineResponse = {
   categoryNameAr?: string | null
   quantity: number
   returnedQuantity?: number | null
+  /** The unit only; resolve the name from the UOM lookup cache (D111 phase 3). */
   uomId: number
-  uomCode?: string | null
-  uomName?: string | null
-  uomNameAr?: string | null
-  uomSymbol?: string | null
   unitCost: number
   lineTotal: number
   notes?: string | null

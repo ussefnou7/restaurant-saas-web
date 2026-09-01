@@ -90,7 +90,9 @@ export function WarehouseStocksPanel({ warehouseId }: WarehouseStocksPanelProps)
     if (sym !== '—') return sym
     const lbl = uomLabel(stock.uomId)
     if (lbl !== '—') return lbl
-    return stock.uomSymbol?.trim() || stock.uomNameAr?.trim() || stock.uomName || '—'
+    // No row-level fallback left: the API sends uomId alone (D111 phase 3). A dash here means
+    // resolve-on-miss has not landed yet, not that the unit is unknown.
+    return '—'
   }
 
   const [stocks, setStocks] = useState<WarehouseStockResponse[]>([])

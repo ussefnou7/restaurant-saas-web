@@ -87,11 +87,9 @@ export type WarehouseStockResponse = {
   materialName: string
   materialNameAr?: string | null
   warehouseId: number
+  /** The unit only; resolve the name from the UOM lookup cache (D111 phase 3). */
   uomId?: number | null
   displayUomId?: number | null
-  uomName: string
-  uomNameAr?: string | null
-  uomSymbol?: string | null
   openingBalance?: number
   quantity: number
   averageCost?: number
