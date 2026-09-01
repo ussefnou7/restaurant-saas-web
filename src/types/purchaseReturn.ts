@@ -51,8 +51,8 @@ export type ReturnableLineResponse = {
   materialId: number
   materialCode?: string | null
   materialName?: string | null
+  /** The unit only; resolve the name from the UOM lookup cache (D111 phase 3). */
   uomId: number
-  uomSymbol?: string | null
   unitCost: number
   originalQuantity: number
   returnedQuantity: number
