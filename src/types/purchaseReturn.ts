@@ -17,9 +17,8 @@ export type PurchaseReturnLineResponse = {
   materialName?: string | null
   materialNameAr?: string | null
   quantity: number
+  /** The unit only; resolve the name from the UOM lookup cache (D111 phase 3). */
   uomId: number
-  uomCode?: string | null
-  uomSymbol?: string | null
   unitCost: number
   lineTotal: number
   notes?: string | null

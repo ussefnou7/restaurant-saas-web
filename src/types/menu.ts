@@ -64,8 +64,8 @@ export type RecipeItemView = {
   materialId: number
   materialName: string
   quantity: number
+  /** The unit only; resolve the name from the UOM lookup cache (D111 phase 3). */
   uomId: number
-  uomName: string
 }
 
 export type Recipe = {

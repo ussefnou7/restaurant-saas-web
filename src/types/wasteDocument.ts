@@ -33,8 +33,8 @@ export interface WasteLineResponse {
   materialCode: string
   materialName: string
   materialNameAr: string
+  /** The unit only; resolve the name from the UOM lookup cache (D111 phase 3). */
   uomId: number
-  uomSymbol: string
   quantity: number
   notes: string | null
 }

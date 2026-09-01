@@ -126,7 +126,8 @@ function mapReturnLineToForm(
     materialName: line.materialName,
     materialNameAr: line.materialNameAr,
     materialCode: line.materialCode,
-    uomSymbol: cachedSymbol && cachedSymbol !== '—' ? cachedSymbol : line.uomSymbol ?? line.uomCode ?? undefined,
+    // The API sends uomId alone (D111 phase 3); the cache is the only source of the symbol.
+    uomSymbol: cachedSymbol && cachedSymbol !== '—' ? cachedSymbol : undefined,
   }
 }
 
