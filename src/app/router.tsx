@@ -90,6 +90,8 @@ import { TablesListPage } from '../pages/tables/TablesListPage'
 import { UserDetailsPage } from '../pages/users/UserDetailsPage'
 import { UsersPage } from '../pages/users/UsersPage'
 import { EmployeeDetailsPage } from '../pages/hr/employees/EmployeeDetailsPage'
+import { ExpensesListPage } from '../pages/expenses/ExpensesListPage'
+import { ExpenseCategoriesPage } from '../pages/expenses/ExpenseCategoriesPage'
 
 export const router = createBrowserRouter([
   {
@@ -381,6 +383,18 @@ export const router = createBrowserRouter([
                   { path: 'new', element: <PurchaseReturnCreatePage />, handle: { titleKey: 'inventory.purchaseReturns.new' } },
                   { path: ':id', element: <PurchaseReturnViewPage />, handle: { titleKey: 'inventory.purchaseReturns.details' } },
                 ],
+              },
+            ],
+          },
+          {
+            path: 'expenses',
+            handle: { titleKey: 'expenses.title' },
+            children: [
+              { index: true, element: <ExpensesListPage /> },
+              {
+                path: 'categories',
+                element: <ExpenseCategoriesPage />,
+                handle: { titleKey: 'expenses.categories.title' },
               },
             ],
           },

@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import type { LucideIcon } from 'lucide-react'
 import {
+  Banknote,
   Boxes,
   BriefcaseBusiness,
   Landmark,
@@ -14,6 +15,7 @@ import { LanguageSwitcher } from '../components/ui/LanguageSwitcher'
 import { useTranslation } from '../i18n/useTranslation'
 import type { TranslationKey } from '../i18n/types'
 import { authService } from '../services/authService'
+import { canViewExpenses } from '../utils/expenseAccess'
 
 type TopNavItem = {
   id: string
@@ -28,6 +30,7 @@ const topNavItems: TopNavItem[] = [
   { id: 'inventory', labelKey: 'layout.nav.inventory', path: '/inventory', icon: Boxes },
   { id: 'assets', labelKey: 'layout.nav.assets', path: '/assets', icon: Landmark },
   { id: 'purchase', labelKey: 'layout.nav.purchase', path: '/purchase', icon: ShoppingCart },
+  { id: 'expenses', labelKey: 'layout.nav.expenses', path: '/expenses', icon: Banknote },
   { id: 'hr', labelKey: 'layout.nav.hr', path: '/hr', icon: BriefcaseBusiness },
   { id: 'admin', labelKey: 'layout.nav.management', path: '/admin', icon: Shield },
 ]
@@ -52,6 +55,8 @@ function isNavItemActive(pathname: string, item: TopNavItem): boolean {
       return pathname.startsWith('/assets')
     case 'purchase':
       return pathname.startsWith('/purchase')
+    case 'expenses':
+      return pathname.startsWith('/expenses')
     case 'hr':
       return pathname.startsWith('/hr')
     case 'admin':
@@ -77,6 +82,11 @@ export function ClientLayout() {
     navigate('/login')
   }
 
+  const visibleNavItems = topNavItems.filter((item) => {
+    if (item.id === 'expenses') return canViewExpenses()
+    return true
+  })
+
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -84,7 +94,7 @@ export function ClientLayout() {
           <h1 className="sidebar-title">{t('layout.appName')}</h1>
         </div>
         <nav className="sidebar-nav sidebar-nav--flat" aria-label={t('layout.sidebar.aria')}>
-          {topNavItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const Icon = item.icon
             const active = isNavItemActive(pathname, item)
             return (

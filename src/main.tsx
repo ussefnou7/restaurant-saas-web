@@ -6,6 +6,7 @@ import { UomLookupProvider } from './contexts/UomLookupProvider'
 import { LocaleProvider } from './i18n/LocaleProvider'
 import './App.css'
 import './styles/list-system.css'
+import './styles/datepicker.css'
 import './styles/sidebar-polish.css'
 import './styles/entity-details.css'
 import './styles/fields.css'
@@ -18,6 +19,7 @@ import './styles/orders.css'
 import './styles/devices.css'
 import './styles/tables.css'
 import './styles/reports.css'
+import './styles/expenses.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
