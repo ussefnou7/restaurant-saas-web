@@ -24,6 +24,7 @@ import { permissionsAr } from './permissions'
 import { reportsAr } from './reports'
 import { tablesAr } from './tables'
 import { userDetailsAr } from './userDetails'
+import { expensesAr } from './expenses'
 import { usersAr } from './users'
 
 export const ar = mergeMessages(
@@ -52,5 +53,6 @@ export const ar = mergeMessages(
   orderConsumptionAr,
   tablesAr,
   reportsAr,
+  expensesAr,
   errorsAr,
 )

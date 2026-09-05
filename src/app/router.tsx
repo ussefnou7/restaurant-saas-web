@@ -56,8 +56,6 @@ import { AdminMaterialCatalogPage } from '../pages/inventory/admin/AdminMaterial
 import { AdminMaterialCategoriesPage } from '../pages/inventory/admin/AdminMaterialCategoriesPage'
 import { AdminUomsPage } from '../pages/inventory/admin/AdminUomsPage'
 import { InventorySeedPage } from '../pages/inventory/admin/InventorySeedPage'
-import { TransfersPage } from '../pages/inventory/transfers/TransfersPage'
-import { TransferCreatePage, TransferViewPage } from '../pages/inventory/transfers/TransferFormPage'
 import { PhysicalCountsPage } from '../pages/inventory/physical-counts/PhysicalCountsPage'
 import { PhysicalCountCreatePage, PhysicalCountViewPage } from '../pages/inventory/physical-counts/PhysicalCountFormPage'
 import { WasteDocumentCreatePage } from '../pages/inventory/waste-documents/WasteDocumentCreatePage'
@@ -274,15 +272,6 @@ export const router = createBrowserRouter([
                     toPrefix="/purchase/purchase-returns"
                   />
                 ),
-              },
-              {
-                path: 'transfers',
-                handle: { titleKey: 'inventory.transfers.title' },
-                children: [
-                  { index: true, element: <TransfersPage /> },
-                  { path: 'new', element: <TransferCreatePage />, handle: { titleKey: 'inventory.transfers.new' } },
-                  { path: ':id', element: <TransferViewPage />, handle: { titleKey: 'inventory.transfers.details' } },
-                ],
               },
               {
                 path: 'physical-counts',

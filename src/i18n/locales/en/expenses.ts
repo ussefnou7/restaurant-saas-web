@@ -1,0 +1,132 @@
+export const expensesEn = {
+  // Navigation & Page Titles
+  'expenses.title': 'Expenses',
+  'expenses.subtitle': 'Operational expense records and tracking',
+  'expenses.categories.title': 'Expense Categories',
+  'expenses.categories.subtitle': 'Manage business expense categories',
+  'expenses.categories.manage': 'Manage Categories',
+  'expenses.categories.backToExpenses': 'Back to Expenses',
+  'layout.nav.expenses': 'Expenses',
+
+  // Boundary notice (D115)
+  'expenses.boundaryNotice': 'Anything that enters a warehouse has a purchase document, not an expense. Record only money that left with no stock behind it.',
+
+  // Enums - Payment Source
+  'expenses.paymentSource.CASH_DRAWER': 'Cash drawer',
+  'expenses.paymentSource.CASH_ON_HAND': 'Cash on hand',
+  'expenses.paymentSource.BANK': 'Bank transfer',
+
+  // Enums - Status
+  'expenses.status.ACTIVE': 'Active',
+  'expenses.status.VOIDED': 'Voided',
+
+  // Filters
+  'expenses.filters.search': 'Search description or payee...',
+  'expenses.filters.allBranches': 'All branches',
+  'expenses.filters.companyLevelOnly': 'Company-level only',
+  'expenses.filters.allCategories': 'All categories',
+  'expenses.filters.allPaymentSources': 'All payment sources',
+  'expenses.filters.allStatuses': 'All statuses',
+  'expenses.filters.dateFrom': 'From date',
+  'expenses.filters.dateTo': 'To date',
+  'expenses.filters.branch': 'Branch filter',
+  'expenses.filters.category': 'Category filter',
+  'expenses.filters.paymentSource': 'Payment source filter',
+  'expenses.filters.status': 'Status filter',
+
+  // Table Columns
+  'expenses.columns.date': 'Expense Date',
+  'expenses.columns.category': 'Category',
+  'expenses.columns.branch': 'Branch',
+  'expenses.columns.description': 'Description',
+  'expenses.columns.payee': 'Payee',
+  'expenses.columns.amount': 'Amount',
+  'expenses.columns.paymentSource': 'Payment Source',
+  'expenses.columns.status': 'Status',
+  'expenses.columns.actions': 'Actions',
+
+  // Branch Labels
+  'expenses.branch.companyLevel': 'Company-level',
+
+  // Create Modal
+  'expenses.create.title': 'New Expense',
+  'expenses.create.button': 'New Expense',
+  'expenses.create.category': 'Category',
+  'expenses.create.categoryPlaceholder': 'Select category',
+  'expenses.create.amount': 'Amount',
+  'expenses.create.amountPlaceholder': '0.00',
+  'expenses.create.date': 'Expense Date',
+  'expenses.create.branch': 'Branch',
+  'expenses.create.branchPlaceholder': 'Select branch or company-level',
+  'expenses.create.branchCompanyLevel': 'Company-level (no branch)',
+  'expenses.create.description': 'Description',
+  'expenses.create.descriptionPlaceholder': 'Optional expense description (max 500 characters)',
+  'expenses.create.payee': 'Payee',
+  'expenses.create.payeePlaceholder': 'Optional payee name (max 255 characters)',
+  'expenses.create.paymentSource': 'Payment Source',
+  'expenses.create.paymentSourcePlaceholder': 'Select payment source',
+  'expenses.create.submit': 'Record Expense',
+  'expenses.create.submitting': 'Recording...',
+  'expenses.create.cancel': 'Cancel',
+  'expenses.create.success': 'Expense recorded successfully',
+
+  // Void Modal (D117)
+  'expenses.void.title': 'Void Expense #{{id}}',
+  'expenses.void.button': 'Void',
+  'expenses.void.permanentNotice': 'Voiding cannot be undone. The record will remain visible in the list as voided with the void reason attached.',
+  'expenses.void.reasonLabel': 'Void Reason',
+  'expenses.void.reasonPlaceholder': 'Explain why this expense is being voided (required, max 500 characters)...',
+  'expenses.void.reasonRequired': 'A void reason is required.',
+  'expenses.void.submit': 'Confirm Void',
+  'expenses.void.submitting': 'Voiding...',
+  'expenses.void.cancel': 'Cancel',
+  'expenses.void.success': 'Expense voided successfully',
+  'expenses.void.viewReason': 'Void reason: {{reason}}',
+
+  // Categories Management (D116)
+  'expenses.categories.new': 'New Category',
+  'expenses.categories.edit': 'Edit Category',
+  'expenses.categories.nameEn': 'Category Name (English)',
+  'expenses.categories.nameAr': 'Category Name (Arabic)',
+  'expenses.categories.namePlaceholder': 'Enter category name',
+  'expenses.categories.nameArPlaceholder': 'Optional Arabic name',
+  'expenses.categories.scope': 'Scope',
+  'expenses.categories.scopeGlobal': 'Global Default',
+  'expenses.categories.scopeTenant': 'Custom Category',
+  'expenses.categories.statusActive': 'Active',
+  'expenses.categories.statusInactive': 'Inactive',
+  'expenses.categories.activate': 'Activate',
+  'expenses.categories.deactivate': 'Deactivate',
+  'expenses.categories.activateSuccess': 'Category activated successfully',
+  'expenses.categories.deactivateSuccess': 'Category deactivated successfully',
+  'expenses.categories.createSuccess': 'Category created successfully',
+  'expenses.categories.updateSuccess': 'Category updated successfully',
+  'expenses.categories.globalReadOnlyNotice': 'Global default categories cannot be edited or deactivated.',
+
+  // Empty States & Errors
+  'expenses.empty.title': 'No expenses recorded',
+  'expenses.empty.description': 'Get started by recording your first expense.',
+  'expenses.emptyFilter.title': 'No matching expenses',
+  'expenses.emptyFilter.description': 'Try adjusting your filters or search terms.',
+  'expenses.categories.empty.title': 'No categories found',
+  'expenses.categories.empty.description': 'No expense categories match the current filter.',
+
+  // Pagination
+  'expenses.pagination.summary': 'Showing {{from}} to {{to}} of {{total}} expenses',
+  'expenses.pagination.prev': 'Previous',
+  'expenses.pagination.next': 'Next',
+  'expenses.pagination.pageOf': 'Page {{page}} of {{totalPages}}',
+
+  // Structured Error Codes (Contract table)
+  'errors.EXPENSE_NOT_FOUND': 'Expense not found (ID: {{expenseId}})',
+  'errors.EXPENSE_CATEGORY_NOT_FOUND': 'Expense category not found (ID: {{categoryId}})',
+  'errors.BRANCH_NOT_FOUND': 'Branch not found (ID: {{branchId}})',
+  'errors.EXPENSE_CATEGORY_INACTIVE': 'Expense category "{{categoryName}}" is inactive and cannot be used',
+  'errors.EXPENSE_INVALID_AMOUNT': 'Invalid expense amount: {{amount}}. Amount must be greater than zero',
+  'errors.EXPENSE_DATE_IN_FUTURE': 'Expense date {{expenseDate}} cannot be in the future (today is {{today}})',
+  'errors.EXPENSE_ALREADY_VOIDED': 'Expense #{{expenseId}} has already been voided on {{voidedAt}}',
+  'errors.EXPENSE_NOT_MANUAL': 'Expense #{{expenseId}} cannot be voided directly because its source type is {{sourceType}}',
+  'errors.EXPENSE_VOID_REASON_REQUIRED': 'A reason is required to void expense #{{expenseId}}',
+  'errors.EXPENSE_CATEGORY_IS_GLOBAL': 'Global expense category (ID: {{categoryId}}) cannot be modified or deactivated',
+  'errors.EXPENSE_CATEGORY_NAME_EXISTS': 'An expense category named "{{name}}" already exists',
+}

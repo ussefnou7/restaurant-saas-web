@@ -24,6 +24,7 @@ import { permissionsEn } from './permissions'
 import { reportsEn } from './reports'
 import { tablesEn } from './tables'
 import { userDetailsEn } from './userDetails'
+import { expensesEn } from './expenses'
 import { usersEn } from './users'
 
 export const en = mergeMessages(
@@ -52,5 +53,6 @@ export const en = mergeMessages(
   orderConsumptionEn,
   tablesEn,
   reportsEn,
+  expensesEn,
   errorsEn,
 )
