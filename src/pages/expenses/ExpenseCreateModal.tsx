@@ -213,10 +213,15 @@ export function ExpenseCreateModal({ isOpen, onClose, onSuccess }: ExpenseCreate
                 setForm((prev) => ({ ...prev, categoryId: e.target.value }))
                 setFieldErrors((prev) => ({ ...prev, categoryId: '' }))
               }}
-              options={categoryOptions}
               disabled={submitting}
               required
-            />
+            >
+              {categoryOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </FormSelect>
           </FormField>
 
           <FormField
@@ -266,9 +271,14 @@ export function ExpenseCreateModal({ isOpen, onClose, onSuccess }: ExpenseCreate
                 setForm((prev) => ({ ...prev, branchSelection: e.target.value }))
                 setFieldErrors((prev) => ({ ...prev, branchId: '' }))
               }}
-              options={branchOptions}
               disabled={submitting}
-            />
+            >
+              {branchOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </FormSelect>
           </FormField>
 
           <FormField
@@ -285,10 +295,15 @@ export function ExpenseCreateModal({ isOpen, onClose, onSuccess }: ExpenseCreate
                 }))
                 setFieldErrors((prev) => ({ ...prev, paymentSource: '' }))
               }}
-              options={paymentSourceOptions}
               disabled={submitting}
               required
-            />
+            >
+              {paymentSourceOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </FormSelect>
           </FormField>
 
           <FormField

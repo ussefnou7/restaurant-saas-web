@@ -233,7 +233,7 @@ export function ExpensesListPage() {
     <ListPage className="expenses-page">
       <PageHeader
         title={t('expenses.title')}
-        subtitle={t('expenses.subtitle')}
+        description={t('expenses.subtitle')}
         actions={
           <div className="page-header__actions">
             <Button
@@ -402,7 +402,7 @@ export function ExpensesListPage() {
                           {t(`expenses.paymentSource.${exp.paymentSource}`)}
                         </td>
                         <td className="expenses-table__cell">
-                          <Badge variant={isVoided ? 'neutral' : 'success'}>
+                          <Badge variant={isVoided ? 'muted' : 'success'}>
                             {t(`expenses.status.${exp.status}`)}
                           </Badge>
                         </td>

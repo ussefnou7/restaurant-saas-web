@@ -144,7 +144,7 @@ export function ExpenseCategoriesPage() {
     <ListPage className="expenses-page">
       <PageHeader
         title={t('expenses.categories.title')}
-        subtitle={t('expenses.categories.subtitle')}
+        description={t('expenses.categories.subtitle')}
         actions={
           <div className="page-header__actions">
             <Button variant="secondary" onClick={() => navigate('/expenses')}>
@@ -266,7 +266,7 @@ export function ExpenseCategoriesPage() {
                           )}
                         </td>
                         <td className="expenses-table__cell">
-                          <Badge variant={cat.active ? 'success' : 'neutral'}>
+                          <Badge variant={cat.active ? 'success' : 'inactive'}>
                             {cat.active
                               ? t('expenses.categories.statusActive')
                               : t('expenses.categories.statusInactive')}
