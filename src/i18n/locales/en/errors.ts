@@ -25,6 +25,8 @@ export const errorsEn: TranslationDictionary = {
   'errors.UOM_CONVERSION_FAILED':
     'Unit conversion is missing for {{materialName}} ({{materialCode}}): cannot convert from {{fromUom}} to {{toUom}}.',
   'errors.EMPTY_DOCUMENT_LINES': 'This operation cannot proceed: the document has no lines',
+  'errors.PURCHASE_INVOICE_EXPIRY_DATE_REQUIRED':
+    'Enter an expiry date for {{materialName}} before posting the purchase invoice.',
   'errors.ORDER_CONSUMPTION_PENDING_DOC_RACE_LOST':
     'Another order created the pending consumption document first; please retry the operation.',
   'errors.ORDER_CONSUMPTION_RECIPE_NOT_RESOLVED':

@@ -2,6 +2,7 @@ import { BarChart3, Package, Plus, Wrench } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../../components/ui/Button'
+import { ClearFiltersButton } from '../../components/ui/ClearFiltersButton'
 import { EntityCell } from '../../components/ui/EntityCell'
 import { SelectFilter } from '../../components/ui/SelectFilter'
 import {
@@ -160,6 +161,15 @@ export function AssetsListPage() {
                 ]}
                 ariaLabel={t('assets.filters.branch')}
               />
+              {search || category || branchId ? (
+                <ClearFiltersButton
+                  onClick={() => {
+                    setSearch('')
+                    setCategory('')
+                    setBranchId('')
+                  }}
+                />
+              ) : null}
             </>
           }
         />

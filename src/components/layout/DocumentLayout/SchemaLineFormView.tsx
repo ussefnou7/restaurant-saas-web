@@ -97,6 +97,10 @@ export function SchemaLineFormView<
     }
   }
 
+  function visibleFormFields(line: Partial<TLine>, isNew = false) {
+    return formFields.filter((field) => !field.visible || field.visible(getContext(line, isNew)))
+  }
+
   function handlePrev() {
     if (selectedIndex > 0) {
       const prevLine = lines[selectedIndex - 1]
@@ -403,7 +407,7 @@ export function SchemaLineFormView<
 
       {isFormMode && activeForm ? (
         <div className="pi-form-line-single-view__grid">
-          {formFields.map((field) => (
+          {visibleFormFields(activeForm, Boolean(addingLine)).map((field) => (
             <div key={field.id} data-field-id={field.id} className="pi-form-field">
               <label className="pi-form-field__label">
                 {t(field.labelKey)}
@@ -415,7 +419,7 @@ export function SchemaLineFormView<
         </div>
       ) : currentLine ? (
         <div className="pi-form-line-single-view__grid">
-          {formFields.map((field) => (
+          {visibleFormFields(currentLine).map((field) => (
             <div key={field.id} data-field-id={field.id} className="pi-form-field">
               <span className="pi-form-field__label">{t(field.labelKey)}</span>
               <div className="pi-form-field__display" dir={field.dir}>

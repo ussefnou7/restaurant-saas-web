@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Check, Loader2, X } from 'lucide-react'
 import {
   EntityDetailScreen,
   EntityOverviewActions,
 } from '../../components/entity-detail'
+import { IconActionButton } from '../../components/ui/RowActions'
 import { StatusBadge } from '../../components/ui/StatusBadge'
 import { useNotify } from '../../components/ui/NotificationContext'
 import { useTranslation } from '../../i18n/useTranslation'
@@ -36,6 +38,7 @@ export function MaterialDetailsPage() {
   const [loading, setLoading] = useState(!isCreate)
   const [error, setError] = useState('')
   const [statusBusy, setStatusBusy] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   const initialEditRequested =
     isCreate ||
@@ -69,9 +72,11 @@ export function MaterialDetailsPage() {
       setMaterial(null)
       setLoading(false)
       setIsEditing(true)
-    } else {
-      void loadMaterial()
+      return
     }
+
+    const timer = window.setTimeout(() => void loadMaterial(), 0)
+    return () => window.clearTimeout(timer)
   }, [canView, isCreate, loadMaterial])
 
   function handleStartEdit() {
@@ -123,32 +128,46 @@ export function MaterialDetailsPage() {
   if (!canView) return <InventoryAccessDenied />
 
   const materialName = material ? getInventoryLocalizedName(material, locale) : ''
-  const subtitle = material
-    ? [
-        material.code,
-        material.categoryName,
-        material.catalogId ? t('inventory.common.catalog') : t('inventory.common.custom'),
-      ]
-        .filter(Boolean)
-        .join(' · ')
-    : undefined
 
-  const overviewActions =
-    material && canManage && !isEditing ? (
-      <EntityOverviewActions
-        editLabel={t('inventory.materials.details.actions.edit')}
-        statusLabel={
-          material.active
-            ? t('inventory.materials.details.actions.deactivate')
-            : t('inventory.materials.details.actions.activate')
-        }
-        active={material.active}
-        statusBusy={statusBusy}
-        showDelete={false}
-        onEdit={handleStartEdit}
-        onToggleStatus={() => void handleToggleStatus()}
-      />
-    ) : null
+  const overviewActions = isEditing ? (
+    <>
+      <IconActionButton
+        type="submit"
+        form="material-overview-form"
+        className="action-btn action-btn--icon action-btn--confirm"
+        label={t('inventory.materials.details.actions.saveChanges')}
+        disabled={saving || statusBusy}
+      >
+        {saving ? (
+          <Loader2 size={20} className="pi-form-actions__submit-spinner" aria-hidden />
+        ) : (
+          <Check size={20} aria-hidden />
+        )}
+      </IconActionButton>
+      <IconActionButton
+        className="action-btn action-btn--icon action-btn--cancel"
+        label={t('inventory.materials.details.actions.cancelEdit')}
+        onClick={handleCancelEdit}
+        disabled={saving || statusBusy}
+      >
+        <X size={20} aria-hidden />
+      </IconActionButton>
+    </>
+  ) : material && canManage ? (
+    <EntityOverviewActions
+      editLabel={t('inventory.materials.details.actions.edit')}
+      statusLabel={
+        material.active
+          ? t('inventory.materials.details.actions.deactivate')
+          : t('inventory.materials.details.actions.activate')
+      }
+      active={material.active}
+      statusBusy={statusBusy}
+      showDelete={false}
+      onEdit={handleStartEdit}
+      onToggleStatus={() => void handleToggleStatus()}
+    />
+  ) : null
 
   const pageTitle = isCreate
     ? t('inventory.materials.modal.addTitle')
@@ -156,7 +175,7 @@ export function MaterialDetailsPage() {
       ? materialName
       : undefined
 
-  const pageSubtitle = isCreate ? t('inventory.materials.modal.addSubtitle') : subtitle
+  const pageSubtitle = isCreate ? t('inventory.materials.modal.addSubtitle') : undefined
 
   return (
     <EntityDetailScreen
@@ -175,11 +194,14 @@ export function MaterialDetailsPage() {
       overview={
         isCreate || material ? (
           <MaterialOverviewPanel
+            formId="material-overview-form"
             material={material}
             categories={categories}
             uoms={uoms}
             loadingLookups={loadingLookups}
             editing={isEditing}
+            saving={saving}
+            onSavingChange={setSaving}
             onCancel={handleCancelEdit}
             onSaved={handleSaved}
           />

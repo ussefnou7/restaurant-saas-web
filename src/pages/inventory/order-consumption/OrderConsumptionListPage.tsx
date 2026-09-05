@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { RotateCcw } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { FormInput } from '../../../components/fields'
+import { ClearFiltersButton } from '../../../components/ui/ClearFiltersButton'
+import { DatePicker } from '../../../components/ui/DatePicker'
 import { OrderConsumptionStatusBadge } from '../../../components/inventory/OrderConsumptionStatusBadge'
 import { ErrorState } from '../../../components/ui/ErrorState'
 import {
@@ -172,34 +173,37 @@ export function OrderConsumptionListPage() {
                 }))}
                 ariaLabel={t('orderConsumption.filter.status')}
               />
-              <label className="order-consumption-toolbar__date">
-                <span className="order-consumption-toolbar__date-label">
-                  {t('orderConsumption.filter.dateFrom')}
-                </span>
-                <FormInput
-                  type="date"
-                  ltr
-                  value={dateFrom}
-                  onChange={(event) => {
-                    setDateFrom(event.target.value)
+              <DatePicker
+                value={dateFrom}
+                placeholder={t('orderConsumption.filter.dateFrom')}
+                ariaLabel={t('orderConsumption.filter.dateFrom')}
+                maxDate={dateTo || undefined}
+                onChange={(value) => {
+                  setDateFrom(value)
+                  setPage(0)
+                }}
+              />
+              <DatePicker
+                value={dateTo}
+                placeholder={t('orderConsumption.filter.dateTo')}
+                ariaLabel={t('orderConsumption.filter.dateTo')}
+                minDate={dateFrom || undefined}
+                onChange={(value) => {
+                  setDateTo(value)
+                  setPage(0)
+                }}
+              />
+              {hasFilters ? (
+                <ClearFiltersButton
+                  onClick={() => {
+                    setWarehouseId('')
+                    setStatus('')
+                    setDateFrom('')
+                    setDateTo('')
                     setPage(0)
                   }}
                 />
-              </label>
-              <label className="order-consumption-toolbar__date">
-                <span className="order-consumption-toolbar__date-label">
-                  {t('orderConsumption.filter.dateTo')}
-                </span>
-                <FormInput
-                  type="date"
-                  ltr
-                  value={dateTo}
-                  onChange={(event) => {
-                    setDateTo(event.target.value)
-                    setPage(0)
-                  }}
-                />
-              </label>
+              ) : null}
             </div>
           }
         />

@@ -26,7 +26,8 @@ import {
   Td,
   Th,
 } from '../../../components/ui/Table'
-import { FormInput } from '../../../components/fields'
+import { ClearFiltersButton } from '../../../components/ui/ClearFiltersButton'
+import { DatePicker } from '../../../components/ui/DatePicker'
 import {
   EditActionButton,
   RowActionGroup,
@@ -249,18 +250,33 @@ export function PurchaseInvoicesPage() {
                 }))}
                 ariaLabel={t('inventory.purchase.col.paymentStatus')}
               />
-              <label className="purchase-invoices-toolbar__date">
-                <span className="purchase-invoices-toolbar__date-label">
-                  {t('inventory.purchase.filter.dateFrom')}
-                </span>
-                <FormInput type="date" ltr value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
-              </label>
-              <label className="purchase-invoices-toolbar__date">
-                <span className="purchase-invoices-toolbar__date-label">
-                  {t('inventory.purchase.filter.dateTo')}
-                </span>
-                <FormInput type="date" ltr value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
-              </label>
+              <DatePicker
+                value={dateFrom}
+                placeholder={t('inventory.purchase.filter.dateFrom')}
+                ariaLabel={t('inventory.purchase.filter.dateFrom')}
+                maxDate={dateTo || undefined}
+                onChange={setDateFrom}
+              />
+              <DatePicker
+                value={dateTo}
+                placeholder={t('inventory.purchase.filter.dateTo')}
+                ariaLabel={t('inventory.purchase.filter.dateTo')}
+                minDate={dateFrom || undefined}
+                onChange={setDateTo}
+              />
+              {search || supplierId || warehouseId || statusFilter || paymentStatusFilter || dateFrom || dateTo ? (
+                <ClearFiltersButton
+                  onClick={() => {
+                    setSearch('')
+                    setSupplierId('')
+                    setWarehouseId('')
+                    setStatusFilter('')
+                    setPaymentStatusFilter('')
+                    setDateFrom('')
+                    setDateTo('')
+                  }}
+                />
+              ) : null}
             </div>
           }
         />

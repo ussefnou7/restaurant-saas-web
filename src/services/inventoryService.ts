@@ -152,9 +152,23 @@ export async function getMaterials(
   return response.data
 }
 
+const inFlightMaterialById = new Map<string | number, Promise<MaterialResponse>>()
+
 export async function getMaterial(id: number | string): Promise<MaterialResponse> {
-  const response = await api.get<MaterialResponse>(`/api/inventory/materials/${id}`)
-  return response.data
+  const existing = inFlightMaterialById.get(id)
+  if (existing) return existing
+
+  const request = (async () => {
+    try {
+      const response = await api.get<MaterialResponse>(`/api/inventory/materials/${id}`)
+      return response.data
+    } finally {
+      inFlightMaterialById.delete(id)
+    }
+  })()
+
+  inFlightMaterialById.set(id, request)
+  return request
 }
 
 function toMaterialWritePayload(payload: CreateMaterialRequest) {

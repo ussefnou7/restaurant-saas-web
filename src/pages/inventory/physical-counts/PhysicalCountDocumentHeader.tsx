@@ -36,13 +36,13 @@ export function PhysicalCountDocumentHeader({
         </Badge>
       }
       actions={actions}
-      reference={
-        <span className="pi-form-header-card__invoice-number" dir="ltr">
-          {count.code}
-        </span>
-      }
     >
       <div className="pi-form-header-grid">
+        <DetailField
+          label={t('common.documentNo')}
+          value={count.code || '—'}
+          dir="ltr"
+        />
         <DetailField
           label={t('inventory.purchase.fields.warehouse')}
           value={warehouseName}

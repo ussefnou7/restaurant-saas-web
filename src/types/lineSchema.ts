@@ -38,6 +38,7 @@ export interface LineField<
   type: LineFieldType
   required?: boolean
   readOnly?: boolean | ((ctx: LineFieldContext<TLine, TLookups>) => boolean)
+  visible?: (ctx: LineFieldContext<TLine, TLookups>) => boolean
   showIn?: Array<'grid' | 'form'> // default: ['grid', 'form']
   tableWidth?: string // Percentage width e.g. '28%'
   columnClass?: string // CSS column class name

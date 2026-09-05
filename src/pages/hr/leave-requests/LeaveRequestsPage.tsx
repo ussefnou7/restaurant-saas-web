@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CompactDateCell } from '../../../components/ui/CompactDateCell'
 import { CompactStatCard } from '../../../components/ui/StatCard'
+import { ClearFiltersButton } from '../../../components/ui/ClearFiltersButton'
 import { EntityCell } from '../../../components/ui/EntityCell'
 import {
   ListCard,
@@ -281,6 +282,15 @@ export function LeaveRequestsPage() {
                     })),
                   ]}
                 />
+                {search || statusFilter !== 'all' || employeeFilter !== 'all' ? (
+                  <ClearFiltersButton
+                    onClick={() => {
+                      setSearch('')
+                      setStatusFilter('all')
+                      setEmployeeFilter('all')
+                    }}
+                  />
+                ) : null}
               </>
             ) : undefined
           }

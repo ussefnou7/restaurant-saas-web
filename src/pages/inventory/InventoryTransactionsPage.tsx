@@ -20,7 +20,8 @@ import {
   Td,
   Th,
 } from '../../components/ui/Table'
-import { FormInput } from '../../components/fields'
+import { ClearFiltersButton } from '../../components/ui/ClearFiltersButton'
+import { DatePicker } from '../../components/ui/DatePicker'
 import { useTranslation } from '../../i18n/useTranslation'
 import { useUomLookup } from '../../hooks/useUomLookup'
 import * as inventoryStockService from '../../services/inventoryStockService'
@@ -222,18 +223,33 @@ export function InventoryTransactionsPage() {
                 }))}
                 ariaLabel={t('inventory.stock.transactions.col.direction')}
               />
-              <label className="stock-transactions-toolbar__date">
-                <span className="stock-transactions-toolbar__date-label">
-                  {t('inventory.stock.transactions.filter.dateFrom')}
-                </span>
-                <FormInput type="date" ltr value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
-              </label>
-              <label className="stock-transactions-toolbar__date">
-                <span className="stock-transactions-toolbar__date-label">
-                  {t('inventory.stock.transactions.filter.dateTo')}
-                </span>
-                <FormInput type="date" ltr value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
-              </label>
+              <DatePicker
+                value={dateFrom}
+                placeholder={t('inventory.stock.transactions.filter.dateFrom')}
+                ariaLabel={t('inventory.stock.transactions.filter.dateFrom')}
+                maxDate={dateTo || undefined}
+                onChange={setDateFrom}
+              />
+              <DatePicker
+                value={dateTo}
+                placeholder={t('inventory.stock.transactions.filter.dateTo')}
+                ariaLabel={t('inventory.stock.transactions.filter.dateTo')}
+                minDate={dateFrom || undefined}
+                onChange={setDateTo}
+              />
+              {search || warehouseId || categoryId || transactionType !== 'ALL' || direction !== 'ALL' || dateFrom || dateTo ? (
+                <ClearFiltersButton
+                  onClick={() => {
+                    setSearch('')
+                    setWarehouseId('')
+                    setCategoryId('')
+                    setTransactionType('ALL')
+                    setDirection('ALL')
+                    setDateFrom('')
+                    setDateTo('')
+                  }}
+                />
+              ) : null}
             </div>
           }
         />

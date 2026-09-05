@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CompactStatCard } from '../../../components/ui/StatCard'
 import { CompactDateCell } from '../../../components/ui/CompactDateCell'
+import { ClearFiltersButton } from '../../../components/ui/ClearFiltersButton'
 import { EntityCell } from '../../../components/ui/EntityCell'
 import { StatusToggle } from '../../../components/ui/StatusToggle'
 import {
@@ -256,6 +257,16 @@ export function EmployeesPage() {
                     })),
                   ]}
                 />
+                {search || statusFilter !== 'all' || branchFilter !== 'all' || jobFilter !== 'all' ? (
+                  <ClearFiltersButton
+                    onClick={() => {
+                      setSearch('')
+                      setStatusFilter('all')
+                      setBranchFilter('all')
+                      setJobFilter('all')
+                    }}
+                  />
+                ) : null}
               </>
             ) : undefined
           }

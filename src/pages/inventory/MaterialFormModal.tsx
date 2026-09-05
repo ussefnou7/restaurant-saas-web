@@ -145,6 +145,7 @@ export function MaterialFormModal({
         categoryId: Number(form.categoryId),
         stockUomId: Number(form.stockUomId),
         displayUomId: Number(form.displayUomId),
+        expiryTracked: false,
         active: form.active,
         notes: form.notes.trim() || null,
       }

@@ -9,6 +9,7 @@ import type { AssetLineFormState } from '../../schemas/assetLineSchema'
 import { useDocumentLines } from '../../hooks/useDocumentLines'
 import { Button } from '../../components/ui/Button'
 import { ConfirmModal } from '../../components/ui/ConfirmModal'
+import { Dropdown } from '../../components/ui/Dropdown'
 import { ListPage } from '../../components/ui/ListPage'
 import { IconActionButton } from '../../components/ui/RowActions'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
@@ -340,12 +341,6 @@ export function AssetDetailPage() {
       ? getInventoryLocalizedName(asset, locale)
       : t('assets.detail.title')
 
-  const subtitle = asset
-    ? [getAssetCategoryLabel(asset.category, t), branchName]
-        .filter(Boolean)
-        .join(' · ')
-    : undefined
-
   const pageActions = isCreate ? (
     <Button
       variant="primary"
@@ -419,7 +414,6 @@ export function AssetDetailPage() {
       >
         <DetailHeader
           title={pageTitle}
-          reference={subtitle}
           statusBadge={asset ? <AssetStatusBadge status={asset.status} /> : null}
           actions={pageActions}
           backTo="/assets/list"
@@ -450,36 +444,38 @@ export function AssetDetailPage() {
                 </PiFormField>
 
                 <PiFormField label={t('assets.form.category')} required>
-                  <select
-                    className="pi-form-field__select"
+                  <Dropdown
                     value={header.category}
-                    onChange={(e) =>
-                      setHeader((prev) => ({ ...prev, category: e.target.value as AssetCategory }))
+                    onChange={(val) =>
+                      setHeader((prev) => ({ ...prev, category: val as AssetCategory }))
                     }
                     disabled={headerSaving}
-                  >
-                    {ASSET_CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {getAssetCategoryLabel(cat, t)}
-                      </option>
-                    ))}
-                  </select>
+                    options={ASSET_CATEGORIES.map((cat) => ({
+                      value: cat,
+                      label: getAssetCategoryLabel(cat, t),
+                    }))}
+                    ariaLabel={t('assets.form.category')}
+                    className="dropdown--form-header"
+                  />
                 </PiFormField>
 
                 <PiFormField label={t('assets.form.branch')} required error={fieldErrors.branchId}>
-                  <select
-                    className="pi-form-field__select"
+                  <Dropdown
                     value={header.branchId}
-                    onChange={(e) => setHeader((prev) => ({ ...prev, branchId: e.target.value }))}
+                    onChange={(val) => setHeader((prev) => ({ ...prev, branchId: val }))}
                     disabled={headerSaving || !isCreate}
-                  >
-                    <option value="">{t('assets.form.selectBranch')}</option>
-                    {branches.map((b) => (
-                      <option key={b.id} value={String(b.id)}>
-                        {getLocalizedBranchName(b, locale)}
-                      </option>
-                    ))}
-                  </select>
+                    options={[
+                      { value: '', label: t('assets.form.selectBranch') },
+                      ...branches.map((b) => ({
+                        value: String(b.id),
+                        label: getLocalizedBranchName(b, locale),
+                      })),
+                    ]}
+                    ariaLabel={t('assets.form.branch')}
+                    searchable
+                    searchPlaceholder={t('common.search')}
+                    className="dropdown--form-header"
+                  />
                 </PiFormField>
               </>
             ) : asset ? (

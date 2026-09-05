@@ -1,7 +1,8 @@
 import { Plus } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { FormInput } from '../../components/fields'
+import { ClearFiltersButton } from '../../components/ui/ClearFiltersButton'
+import { DatePicker } from '../../components/ui/DatePicker'
 import { Button } from '../../components/ui/Button'
 import { Dropdown } from '../../components/ui/Dropdown'
 import { EntityCell } from '../../components/ui/EntityCell'
@@ -188,36 +189,26 @@ export function AssetMaintenanceListPage() {
                 ]}
                 ariaLabel={t('assets.filters.branch')}
               />
-              <label className="asset-operations-toolbar__date">
-                <span>{t('assets.filters.dateFrom')}</span>
-                <FormInput
-                  type="date"
-                  ltr
-                  value={dateFrom}
-                  max={dateTo || undefined}
-                  onChange={(event) => {
-                    const value = event.target.value
-                    updateFilters({ dateFrom: value, dateTo: dateTo && value > dateTo ? '' : dateTo })
-                  }}
-                />
-              </label>
-              <label className="asset-operations-toolbar__date">
-                <span>{t('assets.filters.dateTo')}</span>
-                <FormInput
-                  type="date"
-                  ltr
-                  value={dateTo}
-                  min={dateFrom || undefined}
-                  onChange={(event) => updateFilters({ dateTo: event.target.value })}
-                />
-              </label>
-              <Button
-                variant="secondary"
+              <DatePicker
+                value={dateFrom}
+                placeholder={t('assets.filters.dateFrom')}
+                ariaLabel={t('assets.filters.dateFrom')}
+                maxDate={dateTo || undefined}
+                onChange={(value) => {
+                  updateFilters({ dateFrom: value, dateTo: dateTo && value > dateTo ? '' : dateTo })
+                }}
+              />
+              <DatePicker
+                value={dateTo}
+                placeholder={t('assets.filters.dateTo')}
+                ariaLabel={t('assets.filters.dateTo')}
+                minDate={dateFrom || undefined}
+                onChange={(value) => updateFilters({ dateTo: value })}
+              />
+              <ClearFiltersButton
                 onClick={() => setSearchParams({})}
                 disabled={!hasFilters}
-              >
-                {t('assets.filters.clear')}
-              </Button>
+              />
             </div>
           }
         />

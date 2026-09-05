@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { ClearFiltersButton } from '../../../components/ui/ClearFiltersButton'
 import { EntityCell } from '../../../components/ui/EntityCell'
 import { StatusToggle } from '../../../components/ui/StatusToggle'
 import { useNotify } from '../../../components/ui/NotificationContext'
@@ -146,6 +147,14 @@ export function AdminUomsPage() {
                 onChange={setStatusFilter}
                 ariaLabel={t('common.status')}
               />
+              {search || statusFilter !== 'all' ? (
+                <ClearFiltersButton
+                  onClick={() => {
+                    setSearch('')
+                    setStatusFilter('all')
+                  }}
+                />
+              ) : null}
             </>
           }
         />

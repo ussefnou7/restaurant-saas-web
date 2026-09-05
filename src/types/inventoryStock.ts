@@ -59,6 +59,10 @@ export type StockBatchResponse = {
   remainingQuantity: number
   unitCost: number
   movementDate: string
+  warehouseEntryDate: string
+  expiryDate: string | null
+  daysRemaining: number | null
+  ageDays: number | null
   status: StockBatchStatus
   uomSymbol: string | null
   sourceInvoiceId: number | null
@@ -97,6 +101,7 @@ export type WarehouseStockResponse = {
   lastPurchaseDate?: string | null
   minimumQuantity?: number | null
   minimumStockLevel?: number | null
+  maxAgeDays?: number | null
   maximumQuantity?: number | null
   belowMinimum?: boolean
   lowStock?: boolean
@@ -112,6 +117,7 @@ export type AddMaterialToWarehouseRequest = {
 
 export type UpdateStockSettingsRequest = {
   minimumQuantity?: number
+  maxAgeDays?: number
   maximumQuantity?: number | null
 }
 

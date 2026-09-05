@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ClearFiltersButton } from '../../components/ui/ClearFiltersButton'
 import {
   ListCard,
   ListCardHeader,
@@ -95,6 +96,11 @@ export function CustomersListSection() {
                 placeholder={t('customers.search.placeholder')}
                 ariaLabel={t('customers.search.aria')}
               />
+              {search ? (
+                <ClearFiltersButton
+                  onClick={() => setSearch('')}
+                />
+              ) : null}
             </div>
           }
         />

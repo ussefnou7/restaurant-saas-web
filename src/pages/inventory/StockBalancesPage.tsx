@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
+import { ClearFiltersButton } from '../../components/ui/ClearFiltersButton'
 import { EntityCell } from '../../components/ui/EntityCell'
 import { useNotify } from '../../components/ui/NotificationContext'
 import {
@@ -171,6 +172,16 @@ export function StockBalancesPage() {
                 ]}
                 ariaLabel={t('inventory.col.category')}
               />
+              {search || warehouseId || materialId || categoryId ? (
+                <ClearFiltersButton
+                  onClick={() => {
+                    setSearch('')
+                    setWarehouseId('')
+                    setMaterialId('')
+                    setCategoryId('')
+                  }}
+                />
+              ) : null}
             </>
           }
         />

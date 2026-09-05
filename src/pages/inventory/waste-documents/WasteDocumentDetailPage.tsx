@@ -15,6 +15,8 @@ import {
 import { PurchaseDocumentReasonModal } from '../../../components/inventory/PurchaseDocumentReasonModal'
 import { Button } from '../../../components/ui/Button'
 import { ConfirmModal } from '../../../components/ui/ConfirmModal'
+import { DatePicker } from '../../../components/ui/DatePicker'
+import { Dropdown } from '../../../components/ui/Dropdown'
 import { ListPage } from '../../../components/ui/ListPage'
 import { Modal } from '../../../components/ui/Modal'
 import { IconActionButton } from '../../../components/ui/RowActions'
@@ -734,17 +736,15 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                   </>
                 ) : null
               }
-              reference={
-                persistedId && document?.code ? (
-                  <span className="pi-form-header-card__invoice-number" dir="ltr">
-                    {document.code}
-                  </span>
-                ) : null
-              }
             >
               <div className="pi-form-header-grid">
                 {headerInputsDisabled ? (
                   <>
+                    <DetailField
+                      label={t('common.documentNo')}
+                      value={document?.code || '—'}
+                      dir="ltr"
+                    />
                     <DetailField
                       label={t('inventory.waste.fields.warehouse')}
                       value={
@@ -777,6 +777,11 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                   </>
                 ) : (
                   <>
+                    <DetailField
+                      label={t('common.documentNo')}
+                      value={document?.code || '—'}
+                      dir="ltr"
+                    />
                     <PiFormField
                       label={t('inventory.waste.fields.warehouse')}
                       required
@@ -785,18 +790,18 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                       {lookupsLoading ? (
                         <div className="pi-form-field__skeleton" />
                       ) : (
-                        <select
-                          className="pi-form-field__select"
+                        <Dropdown
                           value={header.warehouseId}
-                          onChange={(e) => setHeader((prev) => ({ ...prev, warehouseId: e.target.value }))}
-                        >
-                          <option value="">{t('inventory.common.selectWarehouse')}</option>
-                          {warehouseOptions.map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
+                          onChange={(val) => setHeader((prev) => ({ ...prev, warehouseId: val }))}
+                          options={[
+                            { value: '', label: t('inventory.common.selectWarehouse') },
+                            ...warehouseOptions,
+                          ]}
+                          ariaLabel={t('inventory.waste.fields.warehouse')}
+                          searchable
+                          searchPlaceholder={t('common.search')}
+                          className="dropdown--form-header"
+                        />
                       )}
                     </PiFormField>
 
@@ -806,33 +811,32 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                       required
                       error={fieldErrors.wasteDate}
                     >
-                      <input
-                        id="waste-date"
-                        type="date"
-                        className="pi-form-field__input"
-                        dir="ltr"
+                      <DatePicker
                         value={header.wasteDate}
-                        onChange={(e) => setHeader((prev) => ({ ...prev, wasteDate: e.target.value }))}
+                        onChange={(val) => setHeader((prev) => ({ ...prev, wasteDate: val }))}
+                        placeholder={t('inventory.waste.fields.wasteDate')}
+                        ariaLabel={t('inventory.waste.fields.wasteDate')}
+                        size="md"
+                        className="date-picker--form-field"
                       />
                     </PiFormField>
 
                     <PiFormField label={t('inventory.waste.fields.reasonCode')} required>
-                      <select
-                        className="pi-form-field__select"
+                      <Dropdown
                         value={header.reasonCode}
-                        onChange={(e) =>
+                        onChange={(val) =>
                           setHeader((prev) => ({
                             ...prev,
-                            reasonCode: e.target.value as WasteReasonCode,
+                            reasonCode: val as WasteReasonCode,
                           }))
                         }
-                      >
-                        {WASTE_REASON_CODES.map((code) => (
-                          <option key={code} value={code}>
-                            {t(`inventory.waste.reasonCode.${code}`)}
-                          </option>
-                        ))}
-                      </select>
+                        options={WASTE_REASON_CODES.map((code) => ({
+                          value: code,
+                          label: t(`inventory.waste.reasonCode.${code}`),
+                        }))}
+                        ariaLabel={t('inventory.waste.fields.reasonCode')}
+                        className="dropdown--form-header"
+                      />
                     </PiFormField>
 
                     <PiFormField label={t('inventory.waste.fields.notes')} htmlFor="waste-notes">

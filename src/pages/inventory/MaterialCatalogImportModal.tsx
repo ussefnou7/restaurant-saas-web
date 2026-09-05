@@ -49,7 +49,7 @@ export function MaterialCatalogImportModal({
   const uomPicker = useUomPickerProps()
   const notify = useNotify()
   const canManage = canManageInventorySetup()
-  const { categories } = useInventoryLookups({ forCatalog: true })
+  const { categories } = useInventoryLookups({ forCatalog: true, enabled: open })
   const { activeUoms } = useUomLookup()
   const uoms = activeUoms as unknown as UomResponse[]
 

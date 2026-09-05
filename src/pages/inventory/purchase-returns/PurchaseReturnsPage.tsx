@@ -25,10 +25,13 @@ import {
   Td,
   Th,
 } from '../../../components/ui/Table'
-import { FormInput } from '../../../components/fields'
+import { DatePicker } from '../../../components/ui/DatePicker'
+import { ClearFiltersButton } from '../../../components/ui/ClearFiltersButton'
 import { RowActionGroup } from '../../../components/ui/RowActions'
 import { useTranslation } from '../../../i18n/useTranslation'
+import * as inventoryService from '../../../services/inventoryService'
 import * as purchaseReturnService from '../../../services/purchaseReturnService'
+import type { SupplierResponse } from '../../../types/inventory'
 import type { PurchaseReturnResponse, PurchaseReturnStatus } from '../../../types/purchaseReturn'
 import { translateApiError } from '../../../utils/errors'
 import { formatDate, formatMoney } from '../../../utils/format'
@@ -62,9 +65,11 @@ export function PurchaseReturnsPage() {
   const canManage = canManagePurchaseInvoices()
 
   const [returns, setReturns] = useState<PurchaseReturnResponse[]>([])
+  const [suppliers, setSuppliers] = useState<SupplierResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
+  const [supplierId, setSupplierId] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
@@ -72,12 +77,22 @@ export function PurchaseReturnsPage() {
   const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null)
   const [confirmLoading, setConfirmLoading] = useState(false)
 
+  const loadSuppliers = useCallback(async () => {
+    try {
+      const data = await inventoryService.getSuppliers()
+      setSuppliers(data)
+    } catch {
+      setSuppliers([])
+    }
+  }, [])
+
   const loadReturns = useCallback(async () => {
     setLoading(true)
     setError('')
     try {
       const data = await purchaseReturnService.getPurchaseReturns({
         search: search.trim() || undefined,
+        supplierId: supplierId ? Number(supplierId) : undefined,
         status: (statusFilter || undefined) as PurchaseReturnStatus | undefined,
         dateFrom: dateFrom || undefined,
         dateTo: dateTo || undefined,
@@ -89,7 +104,12 @@ export function PurchaseReturnsPage() {
     } finally {
       setLoading(false)
     }
-  }, [dateFrom, dateTo, search, statusFilter, t])
+  }, [dateFrom, dateTo, search, statusFilter, supplierId, t])
+
+  useEffect(() => {
+    if (!canView) return
+    void loadSuppliers()
+  }, [canView, loadSuppliers])
 
   useEffect(() => {
     if (!canView) return
@@ -174,6 +194,18 @@ export function PurchaseReturnsPage() {
                 ariaLabel={t('common.search')}
               />
               <SelectFilter
+                value={supplierId}
+                onChange={setSupplierId}
+                options={[
+                  { value: '', label: t('inventory.purchase.filter.allSuppliers') },
+                  ...suppliers.map((s) => ({
+                    value: String(s.id),
+                    label: getInventoryLocalizedName(s, locale),
+                  })),
+                ]}
+                ariaLabel={t('inventory.purchase.col.supplier')}
+              />
+              <SelectFilter
                 value={statusFilter}
                 onChange={setStatusFilter}
                 options={STATUS_FILTERS.map((status) => ({
@@ -184,18 +216,30 @@ export function PurchaseReturnsPage() {
                 }))}
                 ariaLabel={t('inventory.purchaseReturn.col.status')}
               />
-              <label className="purchase-returns-toolbar__date">
-                <span className="purchase-returns-toolbar__date-label">
-                  {t('inventory.purchase.filter.dateFrom')}
-                </span>
-                <FormInput type="date" ltr value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
-              </label>
-              <label className="purchase-returns-toolbar__date">
-                <span className="purchase-returns-toolbar__date-label">
-                  {t('inventory.purchase.filter.dateTo')}
-                </span>
-                <FormInput type="date" ltr value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
-              </label>
+              <DatePicker
+                value={dateFrom}
+                placeholder={t('inventory.purchase.filter.dateFrom')}
+                ariaLabel={t('inventory.purchase.filter.dateFrom')}
+                maxDate={dateTo || undefined}
+                onChange={setDateFrom}
+              />
+              <DatePicker
+                value={dateTo}
+                placeholder={t('inventory.purchase.filter.dateTo')}
+                ariaLabel={t('inventory.purchase.filter.dateTo')}
+                minDate={dateFrom || undefined}
+                onChange={setDateTo}
+              />
+              <ClearFiltersButton
+                onClick={() => {
+                  setSearch('')
+                  setSupplierId('')
+                  setStatusFilter('')
+                  setDateFrom('')
+                  setDateTo('')
+                }}
+                disabled={!search && !supplierId && !statusFilter && !dateFrom && !dateTo}
+              />
             </div>
           }
         />

@@ -438,8 +438,8 @@
 .stock-transactions-toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  align-items: flex-end;
+  gap: var(--space-sm, 8px);
+  align-items: center;
   width: 100%;
 }
 
@@ -448,48 +448,17 @@
   min-width: 180px;
 }
 
-.stock-transactions-toolbar__date {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 140px;
-}
-
-.stock-transactions-toolbar__date-label {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #64748b;
-}
-
-.stock-transactions-toolbar__date .field-box__input {
-  height: 40px;
-  min-height: 40px;
-}
-
 .purchase-invoices-toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  align-items: flex-end;
+  gap: var(--space-sm, 8px);
+  align-items: center;
   width: 100%;
 }
 
 .purchase-invoices-toolbar .search-input {
   flex: 1 1 200px;
   min-width: 180px;
-}
-
-.purchase-invoices-toolbar__date {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 140px;
-}
-
-.purchase-invoices-toolbar__date-label {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #64748b;
 }
 
 .purchase-invoice-status-badges {
@@ -576,18 +545,13 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-sm, 8px);
+  width: 100%;
 }
 
-.purchase-returns-toolbar__date {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.purchase-returns-toolbar__date-label {
-  font-size: 0.75rem;
-  color: #64748b;
+.purchase-returns-toolbar .search-input {
+  flex: 1 1 200px;
+  min-width: 180px;
 }
 
 .purchase-return-detail__invoice-link {
@@ -848,7 +812,6 @@
 }
 
 .pi-form-header-grid,
-.transfer-header-grid,
 .physical-count-header-grid,
 .waste-document-header-grid {
   display: grid;
@@ -892,6 +855,7 @@
   background: #ffffff;
   border: 1px solid #cbd5e1;
   border-radius: 10px;
+  font-family: var(--font-family, 'Cairo', sans-serif);
   transition:
     border-color 0.15s ease,
     background 0.15s ease,
@@ -900,7 +864,7 @@
 
 .pi-form-field:focus-within {
   border-color: #10b981;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.12);
 }
 
 .pi-form-field__label {
@@ -910,8 +874,9 @@
   transform: translateY(-50%);
   padding-inline: 4px;
   background: #ffffff;
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-family: var(--font-family, 'Cairo', sans-serif);
+  font-size: 0.8125rem;
+  font-weight: 600;
   color: #64748b;
   line-height: 1.2;
   text-align: start;
@@ -942,7 +907,8 @@
   border: none !important;
   outline: none !important;
   background: transparent !important;
-  font-size: 0.875rem;
+  font-family: var(--font-family, 'Cairo', sans-serif);
+  font-size: 0.9375rem;
   font-weight: 600;
   color: #0f172a;
   box-shadow: none !important;
@@ -950,6 +916,7 @@
 
 .pi-form-field__select {
   appearance: none;
+  font-family: var(--font-family, 'Cairo', sans-serif);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
   background-repeat: no-repeat !important;
   background-position: left 0px center !important;
@@ -988,18 +955,98 @@
   border-color: #cbd5e1;
 }
 
+/* Custom Dropdown integration in pi-form-field */
+.pi-form-field .dropdown,
+.pi-form-field .dropdown--form-header {
+  width: 100%;
+  display: flex;
+}
+
+.pi-form-field .dropdown .dropdown__trigger {
+  width: 100%;
+  height: auto;
+  min-height: 28px;
+  padding: 0;
+  border: none !important;
+  border-radius: 0;
+  background: transparent !important;
+  font-family: var(--font-family, 'Cairo', sans-serif);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #0f172a;
+  box-shadow: none !important;
+  justify-content: space-between;
+}
+
+.pi-form-field .dropdown .dropdown__trigger:hover:not(:disabled) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.pi-form-field .dropdown .dropdown__value {
+  font-family: var(--font-family, 'Cairo', sans-serif);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.pi-form-field .dropdown .dropdown__chevron {
+  color: #64748b;
+}
+
+/* Custom DatePicker integration in pi-form-field */
+.pi-form-field .date-picker,
+.pi-form-field .date-picker--form-field {
+  width: 100%;
+}
+
+.pi-form-field .date-picker__trigger {
+  width: 100%;
+  height: auto;
+  min-height: 28px;
+  padding: 0;
+  border: none !important;
+  border-radius: 0;
+  background: transparent !important;
+  font-family: var(--font-family, 'Cairo', sans-serif);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #0f172a;
+  box-shadow: none !important;
+  justify-content: space-between;
+}
+
+.pi-form-field .date-picker__trigger:hover:not(:disabled) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.pi-form-field .date-picker__text {
+  font-family: var(--font-family, 'Cairo', sans-serif);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.pi-form-field .date-picker__icon {
+  color: #64748b;
+}
+
 .pi-form-field--error {
   border-color: #f87171 !important;
 }
 
 .pi-form-field__error {
   font-size: 0.8125rem;
+  font-family: var(--font-family, 'Cairo', sans-serif);
   color: #ef4444;
   text-align: start;
 }
 
 .pi-form-field__skeleton {
-  height: 38px;
+  height: 28px;
   border-radius: 8px;
   background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
   background-size: 200% 100%;
@@ -1102,33 +1149,31 @@
 .pi-form-field__input-wrap {
   display: flex;
   align-items: center;
-  gap: 0;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background: #fff;
-  overflow: hidden;
-  transition:
-    border-color var(--transition-fast, 0.18s ease),
-    box-shadow var(--transition-fast, 0.18s ease);
-}
-
-.pi-form-field__input-wrap:focus-within {
-  border-color: #1d9e75;
-  box-shadow: 0 0 0 1px #1d9e75;
+  width: 100%;
+  min-height: 28px;
+  gap: 6px;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 .pi-form-field__input-wrap .pi-form-field__input {
   flex: 1;
   min-width: 0;
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-  padding-inline-end: 8px;
+  padding: 0;
+  border: none !important;
+  background: transparent !important;
+  font-family: var(--font-family, 'Cairo', sans-serif);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #0f172a;
+  box-shadow: none !important;
 }
 
 .pi-form-field__input-wrap .pi-form-field__input:focus {
-  border-color: transparent;
-  box-shadow: none;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .pi-form-field__input--ltr {
@@ -1140,20 +1185,13 @@
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  padding-inline: 10px;
-  font-size: 0.75rem;
-  color: #9ca3af;
-  background: #f9fafb;
-  border-inline-start: 1px solid #e5e7eb;
-  align-self: stretch;
-}
-
-.pi-form-field__input:focus,
-.pi-form-field__select:focus,
-.pi-form-field__textarea:focus {
-  outline: none;
-  border-color: #1d9e75;
-  box-shadow: 0 0 0 1px #1d9e75;
+  font-family: var(--font-family, 'Cairo', sans-serif);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #64748b;
+  background: transparent;
+  border: none;
+  padding: 0;
 }
 
 .pi-form-lines-card {
@@ -1303,7 +1341,6 @@
 .asset-lines-table,
 .purchase-return-lines-table,
 .return-lines-table,
-.transfer-lines-table,
 .physical-count-lines-table,
 .physical-count-detail__lines-table,
 .waste-lines-table,
@@ -1320,7 +1357,6 @@
 .pi-form-lines-table { min-width: 1080px; }          /* 8 cols */
 .purchase-return-lines-table,
 .return-lines-table { min-width: 960px; }            /* 7 cols */
-.transfer-lines-table { min-width: 840px; }          /* 5 cols */
 .physical-count-lines-table,
 .physical-count-detail__lines-table { min-width: 900px; } /* 6 cols */
 .waste-lines-table,
@@ -2214,123 +2250,6 @@
   color: #64748b;
 }
 
-/* ─── Transfers page ─────────────────────────────────────────────────────── */
-
-.transfers-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: flex-end;
-  width: 100%;
-}
-
-.transfers-toolbar .search-input {
-  flex: 1 1 200px;
-  min-width: 180px;
-}
-
-.transfer-code {
-  font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, monospace;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: #0f172a;
-  background: #f1f5f9;
-  padding: 2px 8px;
-  border-radius: 6px;
-  letter-spacing: 0.03em;
-}
-
-/* Transfer detail page */
-
-.transfer-detail {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.transfer-detail__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 16px 20px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-}
-
-.transfer-detail__route {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.transfer-detail__warehouse {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #0f172a;
-}
-
-.transfer-detail__arrow {
-  color: #94a3b8;
-  flex-shrink: 0;
-}
-
-.transfer-detail__meta {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px 24px;
-  padding: 16px 20px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-}
-
-.transfer-detail__meta-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.transfer-detail__meta-item--full {
-  grid-column: 1 / -1;
-}
-
-.transfer-detail__meta-label {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.transfer-detail__meta-value {
-  font-size: 0.9375rem;
-  color: #0f172a;
-}
-
-.transfer-detail__lines {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.transfer-detail__lines-title {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #0f172a;
-}
-
-/* Transfer form */
-
-.transfer-form {
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-}
-
 .form-section {
   display: flex;
   flex-direction: column;
@@ -2353,38 +2272,6 @@
   font-size: 1rem;
   font-weight: 600;
   color: #0f172a;
-}
-
-.transfer-form__stock-hint {
-  display: block;
-  margin-block-start: 3px;
-  font-size: 0.75rem;
-  color: #64748b;
-}
-
-.transfer-form__remove-line {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  background: transparent;
-  color: #94a3b8;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
-
-.transfer-form__remove-line:hover:not(:disabled) {
-  background: #fef2f2;
-  border-color: #fecaca;
-  color: #dc2626;
-}
-
-.transfer-form__remove-line:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
 }
 
 .form-actions {
@@ -3707,10 +3594,44 @@
 
 .warehouse-stocks-panel__batches-table {
   inline-size: 100%;
+  min-inline-size: 980px;
   border-collapse: collapse;
   background: transparent;
   border: none;
   border-radius: 0;
+}
+
+.warehouse-stocks-panel__batch-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  min-block-size: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.warehouse-stocks-panel__batch-sort:hover:not(:disabled) {
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.warehouse-stocks-panel__days-value {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.warehouse-stocks-panel__days-value--danger {
+  color: var(--color-danger);
+}
+
+.warehouse-stocks-panel__days-value--warning {
+  color: var(--color-warning);
 }
 
 .warehouse-stocks-panel__batches-table thead th {

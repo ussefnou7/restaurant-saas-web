@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { FieldTooltip } from './FieldTooltip'
 
 export interface DetailFieldProps {
   label: string
@@ -8,6 +9,7 @@ export interface DetailFieldProps {
   dir?: 'ltr' | 'rtl' | 'auto'
   fullWidth?: boolean
   empty?: boolean
+  tooltip?: string
   children?: ReactNode
   className?: string
 }
@@ -20,6 +22,7 @@ export function DetailField({
   dir,
   fullWidth,
   empty,
+  tooltip,
   children,
   className,
 }: DetailFieldProps) {
@@ -31,7 +34,10 @@ export function DetailField({
         className ? ` ${className}` : ''
       }`}
     >
-      <span className="field-box__label">{label}</span>
+      <span className="field-box__label">
+        <span>{label}</span>
+        {tooltip ? <FieldTooltip text={tooltip} /> : null}
+      </span>
       <div className="field-box__body">
         {icon ? <span className="field-box__icon">{icon}</span> : null}
         {children ?? (

@@ -5,6 +5,7 @@ import { Modal } from '../../components/ui/Modal'
 import { useTranslation } from '../../i18n/useTranslation'
 import * as inventoryService from '../../services/inventoryService'
 import type { MaterialCategoryResponse } from '../../types/inventory'
+import { invalidateInventoryLookupsCache } from './useInventoryLookups'
 
 type FormMode = 'create' | 'edit'
 
@@ -85,6 +86,7 @@ export function MaterialCategoryFormModal({
       } else if (category) {
         await inventoryService.updateMaterialCategory(category.id, payload)
       }
+      invalidateInventoryLookupsCache()
       onSuccess()
       onClose()
     } catch {

@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react'
+import { FieldTooltip } from './FieldTooltip'
 
 export interface FormFieldProps {
   label: string
   htmlFor?: string
   error?: string
   helper?: string
+  tooltip?: string
   fullWidth?: boolean
   disabled?: boolean
   required?: boolean
@@ -17,6 +19,7 @@ export function FormField({
   htmlFor,
   error,
   helper,
+  tooltip,
   fullWidth,
   disabled,
   required,
@@ -32,8 +35,9 @@ export function FormField({
       }${fullWidth ? ' field-box--full' : ''}${className ? ` ${className}` : ''}`}
     >
       <LabelTag className="field-box__label" htmlFor={htmlFor}>
-        {label}
+        <span>{label}</span>
         {required ? <span aria-hidden="true"> *</span> : null}
+        {tooltip ? <FieldTooltip text={tooltip} /> : null}
       </LabelTag>
       <div className="field-box__body">
         {children}

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Badge } from '../../../components/ui/Badge'
 import { CompactDateCell } from '../../../components/ui/CompactDateCell'
+import { ClearFiltersButton } from '../../../components/ui/ClearFiltersButton'
 import { EntityCell } from '../../../components/ui/EntityCell'
 import { StatusToggle } from '../../../components/ui/StatusToggle'
 import {
@@ -151,6 +152,14 @@ export function LeaveTypesPage() {
                   onChange={setStatusFilter}
                   ariaLabel={t('common.status')}
                 />
+                {search || statusFilter !== 'all' ? (
+                  <ClearFiltersButton
+                    onClick={() => {
+                      setSearch('')
+                      setStatusFilter('all')
+                    }}
+                  />
+                ) : null}
               </>
             ) : undefined
           }

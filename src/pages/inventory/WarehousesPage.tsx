@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Badge } from '../../components/ui/Badge'
+import { ClearFiltersButton } from '../../components/ui/ClearFiltersButton'
 import { EntityCell } from '../../components/ui/EntityCell'
 import { StatusToggle } from '../../components/ui/StatusToggle'
 import { useNotify } from '../../components/ui/NotificationContext'
@@ -188,6 +189,16 @@ export function WarehousesPage() {
                 onChange={setStatusFilter}
                 ariaLabel={t('common.status')}
               />
+              {search || branchId || typeFilter || statusFilter !== 'all' ? (
+                <ClearFiltersButton
+                  onClick={() => {
+                    setSearch('')
+                    setBranchId('')
+                    setTypeFilter('')
+                    setStatusFilter('all')
+                  }}
+                />
+              ) : null}
             </>
           }
         />

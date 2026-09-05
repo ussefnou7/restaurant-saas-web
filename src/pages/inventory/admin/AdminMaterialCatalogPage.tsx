@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { ClearFiltersButton } from '../../../components/ui/ClearFiltersButton'
 import { EntityCell } from '../../../components/ui/EntityCell'
 import { StatusToggle } from '../../../components/ui/StatusToggle'
 import { useNotify } from '../../../components/ui/NotificationContext'
@@ -168,6 +169,16 @@ export function AdminMaterialCatalogPage() {
                 onChange={setStatusFilter}
                 ariaLabel={t('common.status')}
               />
+              {search || categoryId || uomId || statusFilter !== 'all' ? (
+                <ClearFiltersButton
+                  onClick={() => {
+                    setSearch('')
+                    setCategoryId('')
+                    setUomId('')
+                    setStatusFilter('all')
+                  }}
+                />
+              ) : null}
             </>
           }
         />

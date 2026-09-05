@@ -9,6 +9,7 @@ import {
   ListPageStates,
   ListPrimaryAction,
 } from '../../components/ui/ListPage'
+import { ClearFiltersButton } from '../../components/ui/ClearFiltersButton'
 import { SelectFilter } from '../../components/ui/SelectFilter'
 import {
   DataTable,
@@ -386,6 +387,11 @@ export function MenuProductsSection() {
                 options={categoryOptions}
                 ariaLabel={t('menu.products.filter.category')}
               />
+              {categoryFilter ? (
+                <ClearFiltersButton
+                  onClick={() => setCategoryFilter('')}
+                />
+              ) : null}
               <ListPrimaryAction label={t('menu.products.add')} onClick={openCreate} />
             </>
           }

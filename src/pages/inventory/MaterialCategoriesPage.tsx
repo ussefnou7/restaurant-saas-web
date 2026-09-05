@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Badge } from '../../components/ui/Badge'
+import { ClearFiltersButton } from '../../components/ui/ClearFiltersButton'
 import { EntityCell } from '../../components/ui/EntityCell'
 import { StatusToggle } from '../../components/ui/StatusToggle'
 import { useNotify } from '../../components/ui/NotificationContext'
@@ -31,6 +32,7 @@ import { canManageInventorySetup, canViewInventorySetup } from '../../utils/inve
 import { displayArabicName, getInventoryLocalizedName } from '../../utils/inventoryDisplay'
 import { InventoryAccessDenied } from './InventoryAccessDenied'
 import { MaterialCategoryFormModal } from './MaterialCategoryFormModal'
+import { invalidateInventoryLookupsCache } from './useInventoryLookups'
 
 type StatusFilter = 'all' | 'active' | 'inactive'
 
@@ -97,6 +99,7 @@ export function MaterialCategoriesPage() {
         await inventoryService.activateMaterialCategory(category.id)
         notify.success(t('inventory.toast.activateSuccess'))
       }
+      invalidateInventoryLookupsCache()
       await loadCategories()
     } catch {
       // API errors are translated and toasted by the global axios interceptor.
@@ -140,6 +143,14 @@ export function MaterialCategoriesPage() {
                 onChange={setStatusFilter}
                 ariaLabel={t('common.status')}
               />
+              {search || statusFilter !== 'all' ? (
+                <ClearFiltersButton
+                  onClick={() => {
+                    setSearch('')
+                    setStatusFilter('all')
+                  }}
+                />
+              ) : null}
             </>
           }
         />

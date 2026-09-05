@@ -75,7 +75,7 @@ export function SchemaLineGrid<
   onCancelLine,
 }: SchemaLineGridProps<TLine, TLookups>) {
   const { uomLabel, uomSymbol } = useUomLookup()
-  const gridFields = schema.fields.filter((f) => !f.showIn || f.showIn.includes('grid'))
+  const candidateGridFields = schema.fields.filter((f) => !f.showIn || f.showIn.includes('grid'))
 
   function getContext(line: Partial<TLine>, isNew = false): LineFieldContext<TLine, TLookups> {
     return {
@@ -87,6 +87,17 @@ export function SchemaLineGrid<
       allLines: lines,
     }
   }
+
+  function isFieldVisible(field: LineField<TLine, TLookups>, line: Partial<TLine>, isNew = false) {
+    return !field.visible || field.visible(getContext(line, isNew))
+  }
+
+  const gridFields = candidateGridFields.filter((field) =>
+    !field.visible ||
+    lines.some((line) => isFieldVisible(field, line)) ||
+    Boolean(editLineForm && isFieldVisible(field, editLineForm)) ||
+    Boolean(addingLine && newLineForm && isFieldVisible(field, newLineForm, true)),
+  )
 
   function renderCellDisplay(field: LineField<TLine, TLookups>, line: TLine, isNew = false) {
     const ctx = getContext(line, isNew)
@@ -369,7 +380,9 @@ export function SchemaLineGrid<
                         data-numeric={isNum ? 'true' : undefined}
                         data-center={isCenter ? 'true' : undefined}
                       >
-                        {renderCellInput(field, editLineForm, false)}
+                        {isFieldVisible(field, editLineForm)
+                          ? renderCellInput(field, editLineForm, false)
+                          : null}
                       </td>
                     )
                   })}
@@ -401,7 +414,7 @@ export function SchemaLineGrid<
                       data-numeric={isNum ? 'true' : undefined}
                       data-center={isCenter ? 'true' : undefined}
                     >
-                      {renderCellDisplay(field, line)}
+                      {isFieldVisible(field, line) ? renderCellDisplay(field, line) : null}
                     </td>
                   )
                 })}
@@ -422,7 +435,9 @@ export function SchemaLineGrid<
             <tr className="pi-form-lines-table__row pi-form-lines-table__row--edit">
               {gridFields.map((field) => (
                 <td key={field.id} data-field-id={field.id} className={getTdClass(field)}>
-                  {renderCellInput(field, newLineForm, true)}
+                  {isFieldVisible(field, newLineForm, true)
+                    ? renderCellInput(field, newLineForm, true)
+                    : null}
                 </td>
               ))}
               {showActions ? (

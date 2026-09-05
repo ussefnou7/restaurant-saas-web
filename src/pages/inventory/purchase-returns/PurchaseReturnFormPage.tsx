@@ -14,6 +14,8 @@ import {
 } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
 import { ConfirmModal } from '../../../components/ui/ConfirmModal'
+import { DatePicker } from '../../../components/ui/DatePicker'
+import { Dropdown } from '../../../components/ui/Dropdown'
 import { PurchaseDocumentCancelModal } from '../../../components/inventory/PurchaseDocumentCancelModal'
 import { PurchaseDocumentReasonModal } from '../../../components/inventory/PurchaseDocumentReasonModal'
 import { ListPage } from '../../../components/ui/ListPage'
@@ -877,17 +879,15 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                   </>
                 ) : null
               }
-              reference={
-                persistedId && purchaseReturn?.returnNumber ? (
-                  <span className="pi-form-header-card__invoice-number" dir="ltr">
-                    {purchaseReturn.returnNumber}
-                  </span>
-                ) : null
-              }
             >
               <div className="pi-form-header-grid">
                 {headerInputsDisabled ? (
                   <>
+                    <DetailField
+                      label={t('common.documentNo')}
+                      value={purchaseReturn?.returnNumber || '—'}
+                      dir="ltr"
+                    />
                     <DetailField
                       label={t('inventory.purchaseReturn.fields.originalInvoice')}
                       value={
@@ -923,6 +923,11 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                   </>
                 ) : (
                   <>
+                    <DetailField
+                      label={t('common.documentNo')}
+                      value={purchaseReturn?.returnNumber || '—'}
+                      dir="ltr"
+                    />
                     <PrFormField
                       label={t('inventory.purchaseReturn.fields.originalInvoice')}
                       required={!persistedId}
@@ -939,20 +944,21 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                       ) : lookupsLoading ? (
                         <div className="pi-form-field__skeleton" />
                       ) : (
-                        <select
-                          className="pi-form-field__select"
+                        <Dropdown
                           value={header.originalInvoiceId}
-                          onChange={(e) =>
-                            setHeader((prev) => ({ ...prev, originalInvoiceId: e.target.value }))
-                          }
-                        >
-                          <option value="">{t('inventory.purchaseReturn.fields.selectOriginalInvoice')}</option>
-                          {postedInvoices.map((invoice) => (
-                            <option key={invoice.id} value={String(invoice.id)}>
-                              {formatInvoiceOption(invoice)}
-                            </option>
-                          ))}
-                        </select>
+                          onChange={(val) => setHeader((prev) => ({ ...prev, originalInvoiceId: val }))}
+                          options={[
+                            { value: '', label: t('inventory.purchaseReturn.fields.selectOriginalInvoice') },
+                            ...postedInvoices.map((invoice) => ({
+                              value: String(invoice.id),
+                              label: formatInvoiceOption(invoice),
+                            })),
+                          ]}
+                          ariaLabel={t('inventory.purchaseReturn.fields.originalInvoice')}
+                          searchable
+                          searchPlaceholder={t('common.search')}
+                          className="dropdown--form-header"
+                        />
                       )}
                     </PrFormField>
 
@@ -962,13 +968,13 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                       required
                       error={fieldErrors.returnDate}
                     >
-                      <input
-                        id="pr-return-date"
-                        type="date"
-                        className="pi-form-field__input"
-                        dir="ltr"
+                      <DatePicker
                         value={header.returnDate}
-                        onChange={(e) => setHeader((prev) => ({ ...prev, returnDate: e.target.value }))}
+                        onChange={(val) => setHeader((prev) => ({ ...prev, returnDate: val }))}
+                        placeholder={t('inventory.purchaseReturn.fields.returnDate')}
+                        ariaLabel={t('inventory.purchaseReturn.fields.returnDate')}
+                        size="md"
+                        className="date-picker--form-field"
                       />
                     </PrFormField>
 
@@ -977,23 +983,24 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                       required
                       error={fieldErrors.reason}
                     >
-                      <select
-                        className="pi-form-field__select"
+                      <Dropdown
                         value={header.reason}
-                        onChange={(e) =>
+                        onChange={(val) =>
                           setHeader((prev) => ({
                             ...prev,
-                            reason: e.target.value as PurchaseReturnReason,
+                            reason: val as PurchaseReturnReason,
                           }))
                         }
-                      >
-                        <option value="">{t('inventory.purchaseReturn.fields.selectReason')}</option>
-                        {RETURN_REASONS.map((value) => (
-                          <option key={value} value={value}>
-                            {getPurchaseReturnReasonLabel(value, t)}
-                          </option>
-                        ))}
-                      </select>
+                        options={[
+                          { value: '', label: t('inventory.purchaseReturn.fields.selectReason') },
+                          ...RETURN_REASONS.map((value) => ({
+                            value,
+                            label: getPurchaseReturnReasonLabel(value, t),
+                          })),
+                        ]}
+                        ariaLabel={t('inventory.purchaseReturn.fields.reason')}
+                        className="dropdown--form-header"
+                      />
                     </PrFormField>
 
                     <PrFormField label={t('inventory.purchaseReturn.fields.notes')} htmlFor="pr-notes">

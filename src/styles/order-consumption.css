@@ -1,17 +1,10 @@
 .order-consumption-toolbar {
   display: flex;
   flex-wrap: wrap;
-  align-items: end;
+  align-items: center;
   gap: var(--space-sm);
 }
 
-.order-consumption-toolbar__date {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-}
-
-.order-consumption-toolbar__date-label,
 .order-consumption-detail__label {
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);

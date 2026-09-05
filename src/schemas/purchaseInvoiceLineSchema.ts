@@ -10,6 +10,7 @@ export interface PurchaseInvoiceLineFormState {
   quantity: string
   uomId: string
   unitCost: string
+  expiryDate: string
   lineTotal?: number
 }
 
@@ -99,6 +100,24 @@ export function createPurchaseInvoiceLineSchema(
           String(val ?? '').trim() === '' || Number.isNaN(Number(val)) || Number(val) <= 0
             ? 'inventory.purchase.validation.unitCostRequired'
             : null,
+      },
+      {
+        id: 'expiry-date',
+        key: 'expiryDate',
+        labelKey: 'inventory.purchase.lines.expiryDate',
+        type: 'date',
+        dir: 'ltr',
+        showIn: ['grid', 'form'],
+        tableWidth: '16%',
+        columnClass: 'pi-form-lines-table__col--expiry-date',
+        visible: (ctx) => {
+          const material = (lookups.materials || []).find(
+            (item) => String(item.id) === String(ctx.line.materialId),
+          )
+          return material?.expiryTracked === true
+        },
+        dependsOn: ['materialId'],
+        onDependencyChange: () => ({ expiryDate: '' }),
       },
       {
         id: 'line-total',

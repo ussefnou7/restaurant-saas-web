@@ -229,6 +229,7 @@ export function useDocumentLines<
     (form: Partial<TLine>, isNew = false): string | null => {
       const ctx = buildContext(form, isNew)
       for (const field of schema.fields) {
+        if (field.visible && !field.visible(ctx)) continue
         if (field.validate) {
           const val = (form as Record<string, unknown>)[field.key]
           const errorCode = field.validate(val, ctx)

@@ -21,6 +21,8 @@ export interface EntityOverviewPanelProps {
   cancelLabel: string
   saveLabel: string
   savingLabel: string
+  formId?: string
+  showCardActions?: boolean
   children: ReactNode
 }
 
@@ -41,12 +43,15 @@ export function EntityOverviewPanel({
   cancelLabel,
   saveLabel,
   savingLabel,
+  formId,
+  showCardActions = true,
   children,
 }: EntityOverviewPanelProps) {
   const statusActive = active ?? false
 
   function renderHeadActions() {
     if (editing) {
+      if (!showCardActions) return undefined
       return (
         <>
           <Button type="button" variant="secondary" size="sm" onClick={onCancel} disabled={saving}>
@@ -98,7 +103,7 @@ export function EntityOverviewPanel({
 
   return (
     <div className="entity-overview entity-overview--editing">
-      <form className="entity-overview__form form-card" onSubmit={onSubmit}>
+      <form id={formId} className="entity-overview__form form-card" onSubmit={onSubmit}>
         {saveError ? <div className="alert-error">{saveError}</div> : null}
         {renderOverviewCard()}
       </form>

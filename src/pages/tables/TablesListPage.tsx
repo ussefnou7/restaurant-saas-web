@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { ManageSectionsModal } from '../../components/tables/ManageSectionsModal'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
+import { ClearFiltersButton } from '../../components/ui/ClearFiltersButton'
 import { StatusToggle } from '../../components/ui/StatusToggle'
 import { useNotify } from '../../components/ui/NotificationContext'
 import {
@@ -245,6 +246,16 @@ export function TablesListPage() {
                 onChange={setStatusFilter}
                 ariaLabel={t('common.status')}
               />
+              {search || branchId || sectionFilter !== 'all' || statusFilter !== 'all' ? (
+                <ClearFiltersButton
+                  onClick={() => {
+                    setSearch('')
+                    setBranchId('')
+                    setSectionFilter('all')
+                    setStatusFilter('all')
+                  }}
+                />
+              ) : null}
             </>
           }
         />

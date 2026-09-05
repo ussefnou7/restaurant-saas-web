@@ -37,10 +37,12 @@ interface WarehouseStocksPanelProps {
 
 type StockSettingsForm = {
   minimumQuantity: string
+  maxAgeDays: string
 }
 
 const emptySettingsForm: StockSettingsForm = {
   minimumQuantity: '0',
+  maxAgeDays: '0',
 }
 
 function getMinimumQuantity(stock: WarehouseStockResponse): number {
@@ -61,6 +63,7 @@ function displayMaterialName(stock: WarehouseStockResponse): string {
 function settingsFormFromStock(stock: WarehouseStockResponse): StockSettingsForm {
   return {
     minimumQuantity: String(getMinimumQuantity(stock)),
+    maxAgeDays: String(stock.maxAgeDays ?? 0),
   }
 }
 
@@ -292,6 +295,8 @@ export function WarehouseStocksPanel({ warehouseId }: WarehouseStocksPanelProps)
     try {
       const updated = await inventoryService.updateStockSettings(warehouseId, stock.materialId, {
         minimumQuantity: parseQuantity(editForm.minimumQuantity, 0),
+        maxAgeDays: parseQuantity(editForm.maxAgeDays, 0),
+        maximumQuantity: stock.maximumQuantity ?? null,
       })
       setStocks((current) =>
         current.map((row) =>
@@ -316,12 +321,13 @@ export function WarehouseStocksPanel({ warehouseId }: WarehouseStocksPanelProps)
     onChange: (next: string) => void,
     disabled: boolean,
     ariaLabel: string,
+    step: string | number = 'any',
   ) {
     return (
       <input
         type="number"
         min={0}
-        step="any"
+        step={step}
         className="stocks-number-input"
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -358,7 +364,7 @@ export function WarehouseStocksPanel({ warehouseId }: WarehouseStocksPanelProps)
     )
   }
 
-  const tableColumnCount = canManage ? 10 : 9
+  const tableColumnCount = canManage ? 11 : 10
 
   return (
     <section className="warehouse-stocks-panel" aria-labelledby="warehouse-stocks-heading">
@@ -412,6 +418,7 @@ export function WarehouseStocksPanel({ warehouseId }: WarehouseStocksPanelProps)
                 <Th className="table-cell--numeric">{t('inventory.warehouses.stocks.openingQty')}</Th>
                 <Th className="table-cell--numeric">{t('inventory.warehouses.stocks.currentQty')}</Th>
                 <Th className="table-cell--numeric">{t('inventory.warehouses.stocks.minQty')}</Th>
+                <Th className="table-cell--numeric">{t('inventory.warehouses.stocks.maxAgeDays')}</Th>
                 <Th className="table-cell--numeric">{t('inventory.stock.balances.col.avgCost')}</Th>
                 <Th className="table-cell--numeric">{t('inventory.warehouses.stocks.lastPurchasePrice')}</Th>
                 <Th className="table-cell--numeric">{t('inventory.warehouses.stocks.lastPurchaseDate')}</Th>
@@ -457,6 +464,7 @@ export function WarehouseStocksPanel({ warehouseId }: WarehouseStocksPanelProps)
                         t('inventory.warehouses.stocks.minQty'),
                       )}
                     </Td>
+                    <Td className="table-cell--numeric">{t('common.empty.dash')}</Td>
                     <Td dir="ltr" className="table-cell--numeric">
                       {renderNumberInput(
                         addAverageCost,
@@ -525,6 +533,15 @@ export function WarehouseStocksPanel({ warehouseId }: WarehouseStocksPanelProps)
                             (value) => setEditForm((prev) => ({ ...prev, minimumQuantity: value })),
                             editSaving,
                             t('inventory.warehouses.stocks.minQty'),
+                          )}
+                        </Td>
+                        <Td className="table-cell--numeric">
+                          {renderNumberInput(
+                            editForm.maxAgeDays,
+                            (value) => setEditForm((prev) => ({ ...prev, maxAgeDays: value })),
+                            editSaving,
+                            t('inventory.warehouses.stocks.maxAgeDays'),
+                            1,
                           )}
                         </Td>
                         <Td dir="ltr" className="table-cell--numeric">{renderAverageCost(stock)}</Td>
@@ -600,6 +617,7 @@ export function WarehouseStocksPanel({ warehouseId }: WarehouseStocksPanelProps)
                         {formatNumber(stock.quantity)}
                       </Td>
                       <Td className="table-cell--numeric">{formatNumber(getMinimumQuantity(stock))}</Td>
+                      <Td className="table-cell--numeric">{formatNumber(stock.maxAgeDays ?? 0)}</Td>
                       <Td dir="ltr" className="table-cell--numeric">{renderAverageCost(stock)}</Td>
                       <Td dir="ltr" className="table-cell--numeric">{renderLastPurchasePrice(stock)}</Td>
                       <Td dir="ltr" className="table-cell--numeric">{renderLastPurchaseDate(stock)}</Td>

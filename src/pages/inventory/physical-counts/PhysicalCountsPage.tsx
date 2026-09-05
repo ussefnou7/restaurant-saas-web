@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Badge } from '../../../components/ui/Badge'
+import { ClearFiltersButton } from '../../../components/ui/ClearFiltersButton'
 import {
   ListCard,
   ListCardHeader,
@@ -118,6 +119,11 @@ export function PhysicalCountsPage() {
                 options={warehouseOptions}
                 ariaLabel={t('inventory.physicalCounts.filter.warehouse')}
               />
+              {warehouseFilter ? (
+                <ClearFiltersButton
+                  onClick={() => setWarehouseFilter('')}
+                />
+              ) : null}
             </div>
           }
         />

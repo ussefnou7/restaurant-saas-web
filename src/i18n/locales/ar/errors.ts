@@ -24,6 +24,8 @@ export const errorsAr: TranslationDictionary = {
   'errors.UOM_CONVERSION_FAILED':
     'إعداد تحويل الوحدات غير مكتمل للمادة {{materialName}} ({{materialCode}}): لا يمكن التحويل من {{fromUom}} إلى {{toUom}}.',
   'errors.EMPTY_DOCUMENT_LINES': 'لا يمكن تنفيذ العملية: المستند لا يحتوي على أي بنود',
+  'errors.PURCHASE_INVOICE_EXPIRY_DATE_REQUIRED':
+    'أدخل تاريخ انتهاء الصلاحية للمادة {{materialName}} قبل ترحيل فاتورة الشراء.',
   'errors.ORDER_CONSUMPTION_PENDING_DOC_RACE_LOST':
     'تم إنشاء مستند استهلاك الطلبات المعلّق بواسطة عملية أخرى؛ يرجى إعادة المحاولة.',
   'errors.ORDER_CONSUMPTION_RECIPE_NOT_RESOLVED':

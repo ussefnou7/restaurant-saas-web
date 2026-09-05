@@ -6,6 +6,7 @@ import {
   FormInput,
   FormSelect,
   FormTextarea,
+  OnOffSwitch,
   SectionGroup,
 } from '../../components/fields'
 import {
@@ -34,6 +35,7 @@ type EditForm = {
   categoryId: string
   stockUomId: string
   displayUomId: string
+  expiryTracked: boolean
   active: boolean
   notes: string
 }
@@ -58,6 +60,7 @@ function formFromMaterial(material: MaterialResponse | null): EditForm {
       categoryId: '',
       stockUomId: '',
       displayUomId: '',
+      expiryTracked: false,
       active: true,
       notes: '',
     }
@@ -69,6 +72,7 @@ function formFromMaterial(material: MaterialResponse | null): EditForm {
     categoryId: material.categoryId != null ? String(material.categoryId) : '',
     stockUomId: String(resolveStockUomId(material) || ''),
     displayUomId: String(resolveDisplayUomId(material) || ''),
+    expiryTracked: material.expiryTracked,
     active: material.active,
     notes: material.notes ?? '',
   }
@@ -81,6 +85,9 @@ interface MaterialOverviewPanelProps
   uoms: UomResponse[]
   loadingLookups?: boolean
   onSaved: (material: MaterialResponse) => void
+  formId?: string
+  saving?: boolean
+  onSavingChange?: (saving: boolean) => void
 }
 
 export function MaterialOverviewPanel({
@@ -92,11 +99,20 @@ export function MaterialOverviewPanel({
   onCancel,
   onSaved,
   toolbarActions,
+  formId,
+  saving: controlledSaving,
+  onSavingChange,
 }: MaterialOverviewPanelProps) {
   const { t, locale } = useTranslation()
   const [form, setForm] = useState<EditForm>(() => formFromMaterial(material))
   const [saveError, setSaveError] = useState('')
-  const [saving, setSaving] = useState(false)
+  const [internalSaving, setInternalSaving] = useState(false)
+  const saving = controlledSaving ?? internalSaving
+
+  function updateSaving(val: boolean) {
+    setInternalSaving(val)
+    onSavingChange?.(val)
+  }
 
   // React pattern: Adjust state when props change
   const [prevMaterial, setPrevMaterial] = useState(material)
@@ -156,7 +172,7 @@ export function MaterialOverviewPanel({
       return
     }
 
-    setSaving(true)
+    updateSaving(true)
     try {
       const payload = {
         name: form.name.trim(),
@@ -164,6 +180,7 @@ export function MaterialOverviewPanel({
         categoryId: Number(form.categoryId),
         stockUomId: Number(form.stockUomId),
         displayUomId: Number(form.displayUomId),
+        expiryTracked: form.expiryTracked,
         active: form.active,
         notes: form.notes.trim() || null,
       }
@@ -178,7 +195,7 @@ export function MaterialOverviewPanel({
     } catch {
       // API errors are translated and toasted by the global axios interceptor.
     } finally {
-      setSaving(false)
+      updateSaving(false)
     }
   }
 
@@ -214,10 +231,12 @@ export function MaterialOverviewPanel({
           <DetailField
             label={t('inventory.col.stockUom')}
             value={getStockUomLabel(material, locale, uoms)}
+            tooltip={t('inventory.col.stockUomHint')}
           />
           <DetailField
             label={t('inventory.col.displayUom')}
             value={getDisplayUomLabel(material, locale, uoms)}
+            tooltip={t('inventory.col.displayUomHint')}
           />
           <DetailField
             label={t('inventory.col.source')}
@@ -226,6 +245,15 @@ export function MaterialOverviewPanel({
                 {source}
               </Badge>
             }
+          />
+          <DetailField
+            label={t('inventory.materials.fields.expiryTracked')}
+            value={
+              <Badge variant={material.expiryTracked ? 'success' : 'muted'}>
+                {material.expiryTracked ? t('common.on') : t('common.off')}
+              </Badge>
+            }
+            tooltip={t('inventory.materials.fields.expiryTrackedHint')}
           />
           <DetailField
             label={t('inventory.materials.fields.notes')}
@@ -247,7 +275,7 @@ export function MaterialOverviewPanel({
             </span>
           </FormField>
         ) : null}
-        <FormField label={t('inventory.col.name')} htmlFor="material-overview-name">
+        <FormField label={t('inventory.col.name')} htmlFor="material-overview-name" required>
           <FormInput
             id="material-overview-name"
             value={form.name}
@@ -281,7 +309,10 @@ export function MaterialOverviewPanel({
             ))}
           </FormSelect>
         </FormField>
-        <FormField label={t('inventory.col.stockUom')}>
+        <FormField
+          label={t('inventory.col.stockUom')}
+          tooltip={t('inventory.col.stockUomHint')}
+        >
           <FormSelect
             value={form.stockUomId}
             onChange={(event) =>
@@ -295,9 +326,11 @@ export function MaterialOverviewPanel({
               </option>
             ))}
           </FormSelect>
-          <p className="form-hint">{t('inventory.col.stockUomHint')}</p>
         </FormField>
-        <FormField label={t('inventory.col.displayUom')}>
+        <FormField
+          label={t('inventory.col.displayUom')}
+          tooltip={t('inventory.col.displayUomHint')}
+        >
           <FormSelect
             value={form.displayUomId}
             onChange={(event) =>
@@ -311,7 +344,18 @@ export function MaterialOverviewPanel({
               </option>
             ))}
           </FormSelect>
-          <p className="form-hint">{t('inventory.col.displayUomHint')}</p>
+        </FormField>
+        <FormField
+          label={t('inventory.materials.fields.expiryTracked')}
+          tooltip={t('inventory.materials.fields.expiryTrackedHint')}
+        >
+          <OnOffSwitch
+            checked={form.expiryTracked}
+            disabled={disabled}
+            onChange={(expiryTracked) =>
+              setForm((prev) => ({ ...prev, expiryTracked }))
+            }
+          />
         </FormField>
         <FormField
           label={t('inventory.materials.fields.notes')}
@@ -348,6 +392,8 @@ export function MaterialOverviewPanel({
       cancelLabel={t('inventory.materials.details.actions.cancelEdit')}
       saveLabel={t('inventory.materials.details.actions.saveChanges')}
       savingLabel={t('inventory.materials.details.actions.saving')}
+      formId={formId}
+      showCardActions={false}
     >
       <SectionGroup title={t('inventory.materials.sections.details')} divider={false}>
         {renderFields()}

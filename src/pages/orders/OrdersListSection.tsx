@@ -5,7 +5,8 @@ import {
   OrderStatusBadge,
   OrderTypeBadge,
 } from '../../components/orders/OrderBadges'
-import { FormInput } from '../../components/fields'
+import { ClearFiltersButton } from '../../components/ui/ClearFiltersButton'
+import { DatePicker } from '../../components/ui/DatePicker'
 import {
   ListCard,
   ListCardHeader,
@@ -158,24 +159,32 @@ export function OrdersListSection() {
                 ]}
                 ariaLabel={t('orders.col.branch')}
               />
-              <label className="orders-toolbar__date">
-                <span className="orders-toolbar__date-label">{t('orders.filter.dateFrom')}</span>
-                <FormInput
-                  type="date"
-                  ltr
-                  value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
+              <DatePicker
+                value={dateFrom}
+                placeholder={t('orders.filter.dateFrom')}
+                ariaLabel={t('orders.filter.dateFrom')}
+                maxDate={dateTo || undefined}
+                onChange={setDateFrom}
+              />
+              <DatePicker
+                value={dateTo}
+                placeholder={t('orders.filter.dateTo')}
+                ariaLabel={t('orders.filter.dateTo')}
+                minDate={dateFrom || undefined}
+                onChange={setDateTo}
+              />
+              {orderType || orderSource || statusFilter || branchId || dateFrom || dateTo ? (
+                <ClearFiltersButton
+                  onClick={() => {
+                    setOrderType('')
+                    setOrderSource('')
+                    setStatusFilter('')
+                    setBranchId('')
+                    setDateFrom('')
+                    setDateTo('')
+                  }}
                 />
-              </label>
-              <label className="orders-toolbar__date">
-                <span className="orders-toolbar__date-label">{t('orders.filter.dateTo')}</span>
-                <FormInput
-                  type="date"
-                  ltr
-                  value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)}
-                />
-              </label>
+              ) : null}
             </div>
           }
         />

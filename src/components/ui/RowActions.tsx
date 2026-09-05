@@ -97,11 +97,13 @@ export function DeactivateActionButton({ onClick, disabled, entityName }: Deacti
 }
 
 interface IconActionButtonProps {
-  onClick: () => void
+  onClick?: () => void
   disabled?: boolean
   className: string
   label: string
   tooltip?: string
+  type?: 'button' | 'submit' | 'reset'
+  form?: string
   children: ReactNode
 }
 
@@ -111,11 +113,14 @@ export function IconActionButton({
   className,
   label,
   tooltip,
+  type = 'button',
+  form,
   children,
 }: IconActionButtonProps) {
   return (
     <button
-      type="button"
+      type={type}
+      form={form}
       className={className}
       onClick={onClick}
       disabled={disabled}

@@ -3,6 +3,8 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { AlertTriangle, Check, CheckCircle, Loader2, Pencil, Receipt, Send, Trash2, Undo2, X, XCircle } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
 import { ConfirmModal } from '../../../components/ui/ConfirmModal'
+import { DatePicker } from '../../../components/ui/DatePicker'
+import { Dropdown } from '../../../components/ui/Dropdown'
 import { DetailField } from '../../../components/fields'
 import { ListPage } from '../../../components/ui/ListPage'
 import { useNotify } from '../../../components/ui/NotificationContext'
@@ -86,6 +88,7 @@ function newLine(): PurchaseInvoiceLineFormState {
     quantity: '',
     uomId: '',
     unitCost: '',
+    expiryDate: '',
   }
 }
 
@@ -109,6 +112,7 @@ function mapInvoiceLineToForm(line: PurchaseInvoiceLineResponse): PurchaseInvoic
     quantity: String(line.quantity),
     uomId: String(line.uomId),
     unitCost: String(line.unitCost),
+    expiryDate: line.expiryDate ?? '',
     lineTotal: line.lineTotal,
   }
 }
@@ -505,6 +509,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
       quantity: Number(form.quantity),
       uomId: Number(form.uomId),
       unitCost: Number(form.unitCost),
+      expiryDate: form.expiryDate || null,
     }))
     handleLineResult(result, 'inventory.purchase.toast.lineAddSuccess')
   }
@@ -514,6 +519,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
       quantity: Number(form.quantity),
       uomId: Number(form.uomId),
       unitCost: Number(form.unitCost),
+      expiryDate: form.expiryDate || null,
     }))
     handleLineResult(result, 'inventory.purchase.toast.lineUpdateSuccess')
   }
@@ -872,17 +878,15 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                   </>
                 ) : null
               }
-              reference={
-                persistedId && header.invoiceNumber ? (
-                  <span className="pi-form-header-card__invoice-number" dir="ltr">
-                    {header.invoiceNumber}
-                  </span>
-                ) : null
-              }
             >
               <div className="pi-form-header-grid">
                 {headerInputsDisabled ? (
                   <>
+                    <DetailField
+                      label={t('common.invoiceNo')}
+                      value={header.invoiceNumber || invoice?.invoiceNumber || '—'}
+                      dir="ltr"
+                    />
                     <DetailField
                       label={t('inventory.purchase.fields.supplier')}
                       value={
@@ -927,22 +931,27 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                   </>
                 ) : (
                   <>
+                    <DetailField
+                      label={t('common.invoiceNo')}
+                      value={header.invoiceNumber || invoice?.invoiceNumber || '—'}
+                      dir="ltr"
+                    />
                     <PiFormField label={t('inventory.purchase.fields.supplier')}>
                       {lookupsLoading ? (
                         <div className="pi-form-field__skeleton" />
                       ) : (
-                        <select
-                          className="pi-form-field__select"
+                        <Dropdown
                           value={header.supplierId}
-                          onChange={(e) => setHeader((prev) => ({ ...prev, supplierId: e.target.value }))}
-                        >
-                          <option value="">{t('inventory.purchase.fields.supplierOptional')}</option>
-                          {supplierOptions.map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
+                          onChange={(val) => setHeader((prev) => ({ ...prev, supplierId: val }))}
+                          options={[
+                            { value: '', label: t('inventory.purchase.fields.supplierOptional') },
+                            ...supplierOptions,
+                          ]}
+                          ariaLabel={t('inventory.purchase.fields.supplier')}
+                          searchable
+                          searchPlaceholder={t('common.search')}
+                          className="dropdown--form-header"
+                        />
                       )}
                     </PiFormField>
 
@@ -954,18 +963,18 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                       {lookupsLoading ? (
                         <div className="pi-form-field__skeleton" />
                       ) : (
-                        <select
-                          className="pi-form-field__select"
+                        <Dropdown
                           value={header.warehouseId}
-                          onChange={(e) => setHeader((prev) => ({ ...prev, warehouseId: e.target.value }))}
-                        >
-                          <option value="">{t('inventory.common.selectWarehouse')}</option>
-                          {warehouseOptions.map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
+                          onChange={(val) => setHeader((prev) => ({ ...prev, warehouseId: val }))}
+                          options={[
+                            { value: '', label: t('inventory.common.selectWarehouse') },
+                            ...warehouseOptions,
+                          ]}
+                          ariaLabel={t('inventory.purchase.fields.warehouse')}
+                          searchable
+                          searchPlaceholder={t('common.search')}
+                          className="dropdown--form-header"
+                        />
                       )}
                     </PiFormField>
 
@@ -975,13 +984,13 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                       required
                       error={fieldErrors.invoiceDate}
                     >
-                      <input
-                        id="pi-invoice-date"
-                        type="date"
-                        className="pi-form-field__input"
-                        dir="ltr"
+                      <DatePicker
                         value={header.invoiceDate}
-                        onChange={(e) => setHeader((prev) => ({ ...prev, invoiceDate: e.target.value }))}
+                        onChange={(val) => setHeader((prev) => ({ ...prev, invoiceDate: val }))}
+                        placeholder={t('inventory.purchase.fields.invoiceDate')}
+                        ariaLabel={t('inventory.purchase.fields.invoiceDate')}
+                        size="md"
+                        className="date-picker--form-field"
                       />
                     </PiFormField>
 
@@ -991,13 +1000,13 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                       required
                       error={fieldErrors.receiptDate}
                     >
-                      <input
-                        id="pi-receipt-date"
-                        type="date"
-                        className="pi-form-field__input"
-                        dir="ltr"
+                      <DatePicker
                         value={header.receiptDate}
-                        onChange={(e) => setHeader((prev) => ({ ...prev, receiptDate: e.target.value }))}
+                        onChange={(val) => setHeader((prev) => ({ ...prev, receiptDate: val }))}
+                        placeholder={t('inventory.purchase.fields.receiptDate')}
+                        ariaLabel={t('inventory.purchase.fields.receiptDate')}
+                        size="md"
+                        className="date-picker--form-field"
                       />
                     </PiFormField>
 

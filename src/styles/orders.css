@@ -5,22 +5,9 @@
 .orders-toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  align-items: flex-end;
+  gap: var(--space-sm, 8px);
+  align-items: center;
   width: 100%;
-}
-
-.orders-toolbar__date {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 140px;
-}
-
-.orders-toolbar__date-label {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--color-text-muted);
 }
 
 .orders-detail {

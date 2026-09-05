@@ -40,7 +40,7 @@ export function PhysicalCountMaterialPicker({
   loading = false,
 }: PhysicalCountMaterialPickerProps) {
   const { t, locale } = useTranslation()
-  const { categories } = useInventoryLookups()
+  const { categories } = useInventoryLookups({ enabled: open })
   const { uomLabel, uomSymbol } = useUomLookup()
 
   const [materials, setMaterials] = useState<MaterialResponse[]>([])

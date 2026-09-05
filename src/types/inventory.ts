@@ -116,6 +116,7 @@ export type MaterialResponse = {
   defaultUomCode?: string | null
   defaultUomSymbol?: string | null
   catalogId?: number | null
+  expiryTracked: boolean
   active: boolean
   notes?: string | null
   createdAt?: string
@@ -128,6 +129,7 @@ export type CreateMaterialRequest = {
   categoryId: number
   stockUomId: number
   displayUomId: number
+  expiryTracked: boolean
   active: boolean
   notes?: string | null
 }

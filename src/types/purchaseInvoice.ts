@@ -17,6 +17,7 @@ export type PurchaseInvoiceLineResponse = {
   /** The unit only; resolve the name from the UOM lookup cache (D111 phase 3). */
   uomId: number
   unitCost: number
+  expiryDate: string | null
   lineTotal: number
   notes?: string | null
 }
@@ -65,6 +66,7 @@ export type PurchaseInvoiceLineRequest = {
   quantity: number
   uomId: number
   unitCost: number
+  expiryDate: string | null
   notes?: string | null
 }
 
@@ -84,6 +86,7 @@ export type UpdatePurchaseInvoiceLineRequest = {
   quantity: number
   uomId: number
   unitCost: number
+  expiryDate: string | null
   notes?: string | null
 }
 
