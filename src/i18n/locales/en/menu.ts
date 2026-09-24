@@ -155,6 +155,7 @@ export const menuEn: TranslationDictionary = {
   'menu.editor.fields.variantLabelEn': 'Variant Label (English)',
   'menu.editor.fields.variantLabelAr': 'Variant Label (Arabic)',
   'menu.editor.fields.image': 'Product Image',
+  'menu.editor.imageAfterSave': 'Save the product first, then add its image',
   'menu.editor.tabs.recipe': 'Recipe',
   'menu.editor.tabs.variants': 'Variants',
   'menu.editor.tabs.addons': 'Add-Ons',

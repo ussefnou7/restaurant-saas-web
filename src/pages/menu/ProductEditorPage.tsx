@@ -4,6 +4,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { FieldGrid, FormField, FormInput, FormTextarea, StatusSwitch } from '../../components/fields'
 import { Button } from '../../components/ui/Button'
 import { Dropdown } from '../../components/ui/Dropdown'
+import { ImageUploader } from '../../components/ui/ImageUploader'
 import { LoadingRows } from '../../components/ui/LoadingRows'
 import { useNotify } from '../../components/ui/NotificationContext'
 import { DetailTabPanel, DetailTabs } from '../../components/entity-detail/DetailTabs'
@@ -386,149 +387,169 @@ export function ProductEditorPage() {
       ) : (
         <>
           <form id="product-editor-form" className="product-editor__card" onSubmit={handleSubmit}>
-            <div className="product-editor__card-head">
-              <div className="product-editor__image-slot" aria-label={t('menu.editor.fields.image')}>
-                <ImageIcon size={20} aria-hidden="true" />
-                <span>{t('menu.editor.fields.image')}</span>
-              </div>
+            <div className="product-editor__card-media">
+              {productId == null ? (
+                // An attachment points at an owner row, so there is nothing to attach to until
+                // the product is saved. Showing a live uploader here would only collect a file
+                // it has no id to link.
+                <div className="product-editor__image-slot" aria-label={t('menu.editor.fields.image')}>
+                  <ImageIcon size={32} aria-hidden="true" />
+                  <span>{t('menu.editor.imageAfterSave')}</span>
+                </div>
+              ) : (
+                <ImageUploader
+                  purpose="PRODUCT_IMAGE"
+                  ownerType="PRODUCT"
+                  ownerId={productId}
+                  shape="wide"
+                  previewVariant="LARGE"
+                  showLabel={false}
+                />
+              )}
             </div>
 
-            <FieldGrid columns={2} className="product-editor__fields">
-              <FormField label={t('menu.editor.fields.nameAr')} htmlFor="product-editor-name" required>
-                <FormInput
-                  id="product-editor-name"
-                  value={form.name}
-                  onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
-                  disabled={readOnly || saving}
-                  required
-                />
-              </FormField>
-              <FormField label={t('menu.editor.fields.nameEn')} htmlFor="product-editor-name-en">
-                <FormInput
-                  id="product-editor-name-en"
-                  value={form.nameEn}
-                  onChange={(event) => setForm((current) => ({ ...current, nameEn: event.target.value }))}
-                  disabled={readOnly || saving}
-                />
-              </FormField>
-              <FormField label={t('menu.fields.category')} htmlFor="product-editor-category" required>
-                <Dropdown
-                  value={form.menuCategoryId}
-                  onChange={(menuCategoryId) =>
-                    setForm((current) => ({ ...current, menuCategoryId }))
-                  }
-                  options={categoryOptions}
-                  ariaLabel={t('menu.fields.category')}
-                  disabled={readOnly || saving || categoriesLoading}
-                />
-              </FormField>
-              <FormField label={t('menu.fields.parentProduct')} htmlFor="product-editor-parent-product">
-                <Dropdown
-                  value={form.parentProductId}
-                  onChange={(parentProductId) =>
-                    setForm((current) => ({
-                      ...current,
-                      parentProductId,
-                      isMenu: parentProductId ? false : current.isMenu,
-                      variantLabel: parentProductId ? current.variantLabel : '',
-                      variantLabelAr: parentProductId ? current.variantLabelAr : '',
-                    }))
-                  }
-                  options={parentProductOptions}
-                  ariaLabel={t('menu.fields.parentProduct')}
-                  searchable
-                  searchPlaceholder={t('menu.addons.picker.placeholder')}
-                  disabled={readOnly || saving || productsLoading}
-                />
-              </FormField>
-              {draftHasParent ? (
-                <>
-                  <FormField
-                    label={t('menu.editor.fields.variantLabelEn')}
-                    htmlFor="product-editor-variant-label"
-                    required
-                  >
-                    <FormInput
-                      id="product-editor-variant-label"
-                      value={form.variantLabel}
-                      onChange={(event) => setForm((current) => ({
-                        ...current,
-                        variantLabel: event.target.value,
-                      }))}
-                      disabled={readOnly || saving}
-                      required
-                    />
-                  </FormField>
-                  <FormField
-                    label={t('menu.editor.fields.variantLabelAr')}
-                    htmlFor="product-editor-variant-label-ar"
-                    required
-                  >
-                    <FormInput
-                      id="product-editor-variant-label-ar"
-                      value={form.variantLabelAr}
-                      onChange={(event) => setForm((current) => ({
-                        ...current,
-                        variantLabelAr: event.target.value,
-                      }))}
-                      disabled={readOnly || saving}
-                      required
-                    />
-                  </FormField>
-                </>
-              ) : null}
-              <FormField label={draftIsParent ? t('menu.editor.fields.priceRange') : t('menu.editor.fields.price')} htmlFor="product-editor-price">
-                {draftIsParent ? (
-                  <div className="product-editor__price-range" dir="ltr">{variantPriceRange}</div>
-                ) : (
+            <div className="product-editor__card-fields">
+              <FieldGrid columns={2} className="product-editor__fields">
+                <FormField label={t('menu.editor.fields.nameAr')} htmlFor="product-editor-name" required>
                   <FormInput
-                    id="product-editor-price"
-                    type="number"
-                    ltr
-                    min={0}
-                    step="0.01"
-                    value={form.sellingPrice}
-                    onChange={(event) => setForm((current) => ({ ...current, sellingPrice: event.target.value }))}
+                    id="product-editor-name"
+                    value={form.name}
+                    onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+                    disabled={readOnly || saving}
+                    required
+                  />
+                </FormField>
+                <FormField label={t('menu.editor.fields.nameEn')} htmlFor="product-editor-name-en">
+                  <FormInput
+                    id="product-editor-name-en"
+                    value={form.nameEn}
+                    onChange={(event) => setForm((current) => ({ ...current, nameEn: event.target.value }))}
                     disabled={readOnly || saving}
                   />
-                )}
-              </FormField>
-              <FormField label={t('menu.editor.fields.descAr')} htmlFor="product-editor-description-ar">
-                <FormTextarea
-                  id="product-editor-description-ar"
-                  value={form.descriptionAr}
-                  onChange={(event) => setForm((current) => ({ ...current, descriptionAr: event.target.value }))}
-                  disabled={readOnly || saving}
-                  rows={4}
-                />
-              </FormField>
-              <FormField label={t('menu.editor.fields.descEn')} htmlFor="product-editor-description">
-                <FormTextarea
-                  id="product-editor-description"
-                  value={form.description}
-                  onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
-                  disabled={readOnly || saving}
-                  rows={4}
-                />
-              </FormField>
-              <div className="product-editor__visibility field-box--full">
-                <div>
-                  <strong>{t('menu.editor.fields.isMenu')}</strong>
-                  <span>
-                    {draftHasParent
-                      ? t('menu.editor.fields.isMenuVariantHint')
-                      : draftIsParent
-                        ? t('menu.editor.fields.isMenuParentHint')
-                        : t('menu.editor.fields.isMenuHint')}
-                  </span>
+                </FormField>
+                <FormField label={t('menu.fields.category')} htmlFor="product-editor-category" required>
+                  <Dropdown
+                    value={form.menuCategoryId}
+                    onChange={(menuCategoryId) =>
+                      setForm((current) => ({ ...current, menuCategoryId }))
+                    }
+                    options={categoryOptions}
+                    ariaLabel={t('menu.fields.category')}
+                    disabled={readOnly || saving || categoriesLoading}
+                  />
+                </FormField>
+                <FormField label={t('menu.fields.parentProduct')} htmlFor="product-editor-parent-product">
+                  <Dropdown
+                    value={form.parentProductId}
+                    onChange={(parentProductId) =>
+                      setForm((current) => ({
+                        ...current,
+                        parentProductId,
+                        isMenu: parentProductId ? false : current.isMenu,
+                        variantLabel: parentProductId ? current.variantLabel : '',
+                        variantLabelAr: parentProductId ? current.variantLabelAr : '',
+                      }))
+                    }
+                    options={parentProductOptions}
+                    ariaLabel={t('menu.fields.parentProduct')}
+                    searchable
+                    searchPlaceholder={t('menu.addons.picker.placeholder')}
+                    disabled={readOnly || saving || productsLoading}
+                  />
+                </FormField>
+                {draftHasParent ? (
+                  <>
+                    <FormField
+                      label={t('menu.editor.fields.variantLabelAr')}
+                      htmlFor="product-editor-variant-label-ar"
+                      required
+                    >
+                      <FormInput
+                        id="product-editor-variant-label-ar"
+                        value={form.variantLabelAr}
+                        onChange={(event) => setForm((current) => ({
+                          ...current,
+                          variantLabelAr: event.target.value,
+                        }))}
+                        disabled={readOnly || saving}
+                        required
+                      />
+                    </FormField>
+                    <FormField
+                      label={t('menu.editor.fields.variantLabelEn')}
+                      htmlFor="product-editor-variant-label"
+                      required
+                    >
+                      <FormInput
+                        id="product-editor-variant-label"
+                        value={form.variantLabel}
+                        onChange={(event) => setForm((current) => ({
+                          ...current,
+                          variantLabel: event.target.value,
+                        }))}
+                        disabled={readOnly || saving}
+                        required
+                      />
+                    </FormField>
+                  </>
+                ) : null}
+                <FormField
+                  label={draftIsParent ? t('menu.editor.fields.priceRange') : t('menu.editor.fields.price')}
+                  htmlFor="product-editor-price"
+                  fullWidth={!draftHasParent}
+                >
+                  {draftIsParent ? (
+                    <div className="product-editor__price-range" dir="ltr">{variantPriceRange}</div>
+                  ) : (
+                    <FormInput
+                      id="product-editor-price"
+                      type="number"
+                      ltr
+                      min={0}
+                      step="0.01"
+                      value={form.sellingPrice}
+                      onChange={(event) => setForm((current) => ({ ...current, sellingPrice: event.target.value }))}
+                      disabled={readOnly || saving}
+                    />
+                  )}
+                </FormField>
+                <FormField label={t('menu.editor.fields.descAr')} htmlFor="product-editor-description-ar">
+                  <FormTextarea
+                    id="product-editor-description-ar"
+                    value={form.descriptionAr}
+                    onChange={(event) => setForm((current) => ({ ...current, descriptionAr: event.target.value }))}
+                    disabled={readOnly || saving}
+                    rows={4}
+                  />
+                </FormField>
+                <FormField label={t('menu.editor.fields.descEn')} htmlFor="product-editor-description">
+                  <FormTextarea
+                    id="product-editor-description"
+                    value={form.description}
+                    onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
+                    disabled={readOnly || saving}
+                    rows={4}
+                  />
+                </FormField>
+                <div className="product-editor__visibility field-box--full">
+                  <div>
+                    <strong>{t('menu.editor.fields.isMenu')}</strong>
+                    <span>
+                      {draftHasParent
+                        ? t('menu.editor.fields.isMenuVariantHint')
+                        : draftIsParent
+                          ? t('menu.editor.fields.isMenuParentHint')
+                          : t('menu.editor.fields.isMenuHint')}
+                    </span>
+                  </div>
+                  <StatusSwitch
+                    active={form.isMenu}
+                    disabled={readOnly || saving || draftHasParent}
+                    onChange={(isMenu) => setForm((current) => ({ ...current, isMenu }))}
+                  />
                 </div>
-                <StatusSwitch
-                  active={form.isMenu}
-                  disabled={readOnly || saving || draftHasParent}
-                  onChange={(isMenu) => setForm((current) => ({ ...current, isMenu }))}
-                />
-              </div>
-            </FieldGrid>
+              </FieldGrid>
+            </div>
           </form>
 
           {isCreate || product ? (

@@ -155,6 +155,7 @@ export const menuAr: TranslationDictionary = {
   'menu.editor.fields.variantLabelEn': 'تسمية الصنف (إنجليزي)',
   'menu.editor.fields.variantLabelAr': 'تسمية الصنف',
   'menu.editor.fields.image': 'صورة المنتج',
+  'menu.editor.imageAfterSave': 'احفظ المنتج أولًا ثم أضف صورته',
   'menu.editor.tabs.recipe': 'الوصفة',
   'menu.editor.tabs.variants': 'الأصناف',
   'menu.editor.tabs.addons': 'الإضافات',

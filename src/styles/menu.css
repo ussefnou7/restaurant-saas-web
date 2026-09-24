@@ -1090,8 +1090,7 @@
 .product-editor {
   display: grid;
   gap: 18px;
-  width: min(1120px, 100%);
-  margin: 0 auto;
+  width: 100%;
 }
 
 .product-editor__topbar {
@@ -1151,37 +1150,63 @@
 
 .product-editor__card {
   display: grid;
-  gap: 18px;
-  padding: 22px;
+  grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+  align-items: start;
+  gap: 24px;
+  padding: 24px;
   border: 1px solid var(--color-border);
   border-radius: 14px;
   background: var(--color-surface);
   box-shadow: var(--shadow-sm);
 }
 
-.product-editor__card-head {
+.product-editor__card-media {
   display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
-  gap: 14px;
+  flex-direction: column;
+  width: 100%;
+}
+
+.product-editor__card-fields {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
+}
+
+.product-editor .image-uploader {
+  width: 100%;
+}
+
+.product-editor .image-uploader--wide .image-uploader__frame {
+  max-inline-size: 100%;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  min-height: 240px;
+}
+
+.product-editor .image-uploader__warning,
+.product-editor .image-uploader__error {
+  max-inline-size: 100%;
 }
 
 .product-editor__image-slot {
   display: grid;
   place-items: center;
   align-content: center;
-  gap: 6px;
-  width: 132px;
-  min-height: 98px;
+  gap: 8px;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  min-height: 240px;
   border: 1px dashed var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-md, 8px);
   background: var(--color-surface-muted);
   color: var(--color-text-muted);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
 }
 
 .product-editor__fields {
   align-items: start;
+  width: 100%;
 }
 
 .product-editor__price-range {
@@ -1512,6 +1537,14 @@
   color: var(--color-primary);
 }
 
+@media (max-width: 900px) {
+  .product-editor__card {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 16px;
+  }
+}
+
 @media (max-width: 760px) {
   .product-editor__topbar,
   .product-editor__heading,
@@ -1522,13 +1555,8 @@
     flex-direction: column;
   }
 
-  .product-editor__card-head {
+  .product-editor__card-media {
     align-items: stretch;
-    flex-direction: column;
-  }
-
-  .product-editor__image-slot {
-    width: 100%;
   }
 
   .product-editor__fields {

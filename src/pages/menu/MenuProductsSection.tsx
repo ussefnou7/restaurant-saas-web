@@ -24,6 +24,7 @@ import * as menuService from '../../services/menuService'
 import type { Product } from '../../types/menu'
 import { translateApiError } from '../../utils/errors'
 import { getLocalizedMenuCategoryName } from '../../utils/menuDisplay'
+import { useScreenAccess } from '../../access/useScreenAccess'
 import { useMenuCategories } from './useMenuCategories'
 
 const variantCache = new Map<number, Product[]>()
@@ -59,6 +60,7 @@ export function MenuProductsSection() {
   const { t, locale } = useTranslation()
   const navigate = useNavigate()
   const { categories } = useMenuCategories()
+  const menu = useScreenAccess('menu')
 
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
@@ -358,11 +360,16 @@ export function MenuProductsSection() {
                   type="button"
                   className="menu-products__icon-action menu-products__icon-action--danger"
                   aria-label={t('menu.products.actions.delete')}
-                  title={t('menu.products.actions.delete')}
+                  title={
+                    menu.can('delete')
+                      ? t('menu.products.actions.delete')
+                      : t('access.denied.subtitle')
+                  }
                   onClick={(event: MouseEvent<HTMLButtonElement>) => {
                     event.stopPropagation()
                     setConfirmingDeleteProductId(product.id)
                   }}
+                  disabled={!menu.can('delete')}
                 >
                   <Trash2 size={15} aria-hidden="true" />
                 </button>
@@ -392,7 +399,12 @@ export function MenuProductsSection() {
                   onClick={() => setCategoryFilter('')}
                 />
               ) : null}
-              <ListPrimaryAction label={t('menu.products.add')} onClick={openCreate} />
+              <ListPrimaryAction
+                label={t('menu.products.add')}
+                onClick={openCreate}
+                disabled={!menu.can('create')}
+                title={menu.can('create') ? undefined : t('access.denied.subtitle')}
+              />
             </>
           }
         />
@@ -414,8 +426,8 @@ export function MenuProductsSection() {
               ? t('menu.products.empty.filteredSubtitle')
               : t('menu.products.empty.subtitle')
           }
-          emptyActionLabel={emptyIsFiltered ? undefined : t('menu.products.add')}
-          onEmptyAction={emptyIsFiltered ? undefined : openCreate}
+          emptyActionLabel={emptyIsFiltered || !menu.can('create') ? undefined : t('menu.products.add')}
+          onEmptyAction={emptyIsFiltered || !menu.can('create') ? undefined : openCreate}
           showFilterEmpty={false}
           filterEmptyTitle={t('common.noResults')}
           filterEmptyDescription={t('common.tryAdjustFilters')}
