@@ -7,7 +7,7 @@ import { useTranslation } from '../../i18n/useTranslation'
 import * as expenseService from '../../services/expenseService'
 import type { ExpenseResponse } from '../../types/expense'
 import { translateApiError } from '../../utils/errors'
-import { canVoidExpense } from '../../utils/expenseAccess'
+import { useCanVoidExpense } from '../../utils/expenseAccess'
 import { formatMoney } from '../../utils/format'
 
 interface ExpenseVoidModalProps {
@@ -24,7 +24,7 @@ export function ExpenseVoidModal({
   onSuccess,
 }: ExpenseVoidModalProps) {
   const { t } = useTranslation()
-  const canVoid = canVoidExpense()
+  const canVoid = useCanVoidExpense()
 
   const [reason, setReason] = useState('')
   const [submitting, setSubmitting] = useState(false)

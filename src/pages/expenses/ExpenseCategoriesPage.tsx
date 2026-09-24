@@ -18,7 +18,7 @@ import { useTranslation } from '../../i18n/useTranslation'
 import * as expenseService from '../../services/expenseService'
 import type { ExpenseCategoryResponse } from '../../types/expense'
 import { translateApiError } from '../../utils/errors'
-import { canManageExpenseCategories, canViewExpenses } from '../../utils/expenseAccess'
+import { useCanManageExpenseCategories, useCanViewExpenses } from '../../utils/expenseAccess'
 import { ExpenseCategoryFormModal } from './ExpenseCategoryFormModal'
 
 type ScopeFilter = 'all' | 'global' | 'tenant'
@@ -29,8 +29,8 @@ export function ExpenseCategoriesPage() {
   const navigate = useNavigate()
   const notify = useNotify()
 
-  const canView = canViewExpenses()
-  const canManage = canManageExpenseCategories()
+  const canView = useCanViewExpenses()
+  const canManage = useCanManageExpenseCategories()
 
   const [categories, setCategories] = useState<ExpenseCategoryResponse[]>([])
   const [loading, setLoading] = useState(true)
@@ -167,18 +167,18 @@ export function ExpenseCategoriesPage() {
         <ListCardHeader
           title={t('expenses.categories.title')}
           toolbar={
-            <div className="expenses-filter-grid">
+            <div className="expenses-toolbar">
               <ListToolbarSearch
                 value={search}
                 onChange={setSearch}
-                placeholder={t('expenses.filters.search')}
-                ariaLabel={t('expenses.filters.search')}
+                placeholder={t('expenses.categories.filters.search')}
+                ariaLabel={t('expenses.categories.filters.search')}
               />
               <SelectFilter
                 value={scopeFilter}
                 onChange={(val) => setScopeFilter(val as ScopeFilter)}
                 options={[
-                  { value: 'all', label: t('common.all') },
+                  { value: 'all', label: t('expenses.categories.scopeAll') },
                   { value: 'global', label: t('expenses.categories.scopeGlobal') },
                   { value: 'tenant', label: t('expenses.categories.scopeTenant') },
                 ]}

@@ -12,6 +12,21 @@ export interface CreateExpenseRequest {
   description?: string | null
   payeeName?: string | null
   paymentSource: ExpensePaymentSource
+  paidFromShiftId?: number | null
+}
+
+export interface SelectableExpenseShift {
+  id: number
+  businessDate: string
+  deviceId: number
+  deviceName: string
+  branchDeviceCount: number
+  cashierUserId: number
+  cashierName: string | null
+  openedAt: string
+  closedAt: string | null
+  status: 'OPEN' | 'CLOSED'
+  closed: boolean
 }
 
 export interface VoidExpenseRequest {
@@ -43,6 +58,8 @@ export interface ExpenseResponse {
   voidReason: string | null
   createdBy: number | null
   createdAt: string
+  paidFromShiftId: number | null
+  recordedAfterShiftClose: boolean | null
 }
 
 export interface ExpenseCategoryResponse {

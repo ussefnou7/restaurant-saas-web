@@ -8,7 +8,16 @@ import type {
   ExpensePageResponse,
   ExpenseResponse,
   VoidExpenseRequest,
+  SelectableExpenseShift,
 } from '../types/expense'
+
+export async function getSelectableExpenseShifts(branchId: number, days = 7): Promise<SelectableExpenseShift[]> {
+  const { data } = await api.get<SelectableExpenseShift[]>(EXPENSES_API.selectableShifts, {
+    params: { branchId, days },
+    notifyOnError: false,
+  })
+  return data
+}
 
 export async function getExpenses(params?: ExpenseListParams): Promise<ExpensePageResponse> {
   const queryParams: Record<string, unknown> = {}

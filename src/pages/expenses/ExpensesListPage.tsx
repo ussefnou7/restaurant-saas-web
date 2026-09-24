@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Ban, FolderKanban, Plus } from 'lucide-react'
+import { Ban, Eye, FolderKanban, Plus } from 'lucide-react'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { ClearFiltersButton } from '../../components/ui/ClearFiltersButton'
@@ -28,10 +28,9 @@ import type {
 } from '../../types/expense'
 import { getLocalizedBranchName } from '../../utils/branchDisplay'
 import { translateApiError } from '../../utils/errors'
-import { canCreateExpense, canViewExpenses, canVoidExpense } from '../../utils/expenseAccess'
+import { useCanCreateExpense, useCanViewExpenses, useCanVoidExpense } from '../../utils/expenseAccess'
 import { getExpenseCategoryDisplayName } from '../../utils/expenseDisplay'
 import { formatDate, formatMoney } from '../../utils/format'
-import { ExpenseCreateModal } from './ExpenseCreateModal'
 import { ExpenseVoidModal } from './ExpenseVoidModal'
 
 const PAGE_SIZE = 20
@@ -41,9 +40,9 @@ export function ExpensesListPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const canView = canViewExpenses()
-  const canCreate = canCreateExpense()
-  const canVoid = canVoidExpense()
+  const canView = useCanViewExpenses()
+  const canCreate = useCanCreateExpense()
+  const canVoid = useCanVoidExpense()
 
   // URL-reflected filters
   const search = searchParams.get('search') ?? ''
@@ -64,8 +63,7 @@ export function ExpensesListPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  // Modals state
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
+  // Void modal state
   const [voidingExpense, setVoidingExpense] = useState<ExpenseResponse | null>(null)
 
   const hasFilters = Boolean(
@@ -210,11 +208,6 @@ export function ExpensesListPage() {
     ]
   }, [t])
 
-  function handleCreateSuccess() {
-    setIsCreateOpen(false)
-    void loadExpenses()
-  }
-
   function handleVoidSuccess() {
     setVoidingExpense(null)
     void loadExpenses()
@@ -244,7 +237,7 @@ export function ExpensesListPage() {
               {t('expenses.categories.manage')}
             </Button>
             {canCreate ? (
-              <Button onClick={() => setIsCreateOpen(true)}>
+              <Button onClick={() => navigate('/expenses/new')}>
                 <Plus size={16} aria-hidden />
                 {t('expenses.create.button')}
               </Button>
@@ -259,7 +252,7 @@ export function ExpensesListPage() {
         <ListCardHeader
           title={t('expenses.title')}
           toolbar={
-            <div className="expenses-filter-grid">
+            <div className="expenses-toolbar">
               <ListToolbarSearch
                 value={search}
                 onChange={(val) => updateFilters({ search: val })}
@@ -324,7 +317,7 @@ export function ExpensesListPage() {
           emptyTitle={t('expenses.empty.title')}
           emptyDescription={t('expenses.empty.description')}
           emptyActionLabel={canCreate ? t('expenses.create.button') : undefined}
-          onEmptyAction={canCreate ? () => setIsCreateOpen(true) : undefined}
+          onEmptyAction={canCreate ? () => navigate('/expenses/new') : undefined}
           showFilterEmpty={!loading && totalElements === 0 && hasFilters}
           filterEmptyTitle={t('expenses.emptyFilter.title')}
           filterEmptyDescription={t('expenses.emptyFilter.description')}
@@ -341,7 +334,7 @@ export function ExpensesListPage() {
                   <col style={{ width: '130px' }} />
                   <col style={{ width: '130px' }} />
                   <col style={{ width: '100px' }} />
-                  <col style={{ width: '110px' }} />
+                  <col style={{ width: '150px' }} />
                 </colgroup>
                 <thead>
                   <tr>
@@ -375,9 +368,10 @@ export function ExpensesListPage() {
                     return (
                       <tr
                         key={exp.id}
-                        className={`expenses-table__row${
+                        className={`expenses-table__row expenses-table__row--clickable${
                           isVoided ? ' expenses-table__row--voided' : ''
                         }`}
+                        onClick={() => navigate(`/expenses/${exp.id}`)}
                       >
                         <td className="expenses-table__cell">
                           {formatDate(exp.expenseDate, locale)}
@@ -407,11 +401,27 @@ export function ExpensesListPage() {
                           </Badge>
                         </td>
                         <td className="expenses-table__cell expenses-table__td--actions">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              navigate(`/expenses/${exp.id}`)
+                            }}
+                            aria-label={t('expenses.detail.viewDetails')}
+                            title={t('expenses.detail.viewDetails')}
+                          >
+                            <Eye size={15} aria-hidden />
+                            <span>{t('expenses.detail.viewDetails')}</span>
+                          </Button>
                           {!isVoided && canVoid ? (
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => setVoidingExpense(exp)}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setVoidingExpense(exp)
+                              }}
                               aria-label={t('expenses.void.button')}
                               title={t('expenses.void.button')}
                             >
@@ -438,14 +448,6 @@ export function ExpensesListPage() {
           translationPrefix="expenses.pagination"
         />
       </ListCard>
-
-      {isCreateOpen ? (
-        <ExpenseCreateModal
-          isOpen={isCreateOpen}
-          onClose={() => setIsCreateOpen(false)}
-          onSuccess={handleCreateSuccess}
-        />
-      ) : null}
 
       {voidingExpense ? (
         <ExpenseVoidModal
