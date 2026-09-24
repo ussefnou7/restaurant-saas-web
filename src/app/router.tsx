@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { Root } from './Root'
 import { ProtectedRoute } from '../guards/ProtectedRoute'
+import { ScreenGuard } from '../guards/ScreenGuard'
 import { ClientLayout } from '../layouts/ClientLayout'
 import { AssetDetailPage } from '../pages/assets/AssetDetailPage'
 import { AssetDisposalsPage } from '../pages/assets/AssetDisposalsPage'
@@ -85,12 +86,16 @@ import { OrdersListSection } from '../pages/orders/OrdersListSection'
 import { PosPage } from '../pages/pos/PosPage'
 import { ReportsCataloguePage } from '../pages/reports/ReportsCataloguePage'
 import { SettingsPage } from '../pages/settings/SettingsPage'
+import { ShiftDetailPage } from '../pages/shifts/ShiftDetailPage'
+import { ShiftsListPage } from '../pages/shifts/ShiftsListPage'
 import { TableLayoutPage } from '../pages/tables/TableLayoutPage'
 import { TablesListPage } from '../pages/tables/TablesListPage'
 import { UserDetailsPage } from '../pages/users/UserDetailsPage'
 import { UsersPage } from '../pages/users/UsersPage'
 import { EmployeeDetailsPage } from '../pages/hr/employees/EmployeeDetailsPage'
 import { ExpensesListPage } from '../pages/expenses/ExpensesListPage'
+import { ExpenseCreatePage } from '../pages/expenses/ExpenseCreatePage'
+import { ExpenseDetailPage } from '../pages/expenses/ExpenseDetailPage'
 import { ExpenseCategoriesPage } from '../pages/expenses/ExpenseCategoriesPage'
 
 export const router = createBrowserRouter([
@@ -123,6 +128,7 @@ export const router = createBrowserRouter([
           },
           {
             path: 'sales',
+            element: <ScreenGuard screen="sales" />,
             handle: { titleKey: 'hubs.sales.title' },
             children: [
               { index: true, element: <SalesHubPage /> },
@@ -146,6 +152,7 @@ export const router = createBrowserRouter([
           },
           {
             path: 'orders',
+            element: <ScreenGuard screen="orders" />,
             handle: { titleKey: 'orders.title' },
             children: [
               {
@@ -162,8 +169,17 @@ export const router = createBrowserRouter([
             ],
           },
           {
+            path: 'shifts',
+            element: <ScreenGuard screen="shifts" />,
+            handle: { titleKey: 'shifts.title' },
+            children: [
+              { index: true, element: <ShiftsListPage /> },
+              { path: ':shiftId', element: <ShiftDetailPage />, handle: { titleKey: 'shifts.detail.screenTitle' } },
+            ],
+          },
+          {
             path: 'menu',
-            element: <MenuHubLayout />,
+            element: <ScreenGuard screen="menu"><MenuHubLayout /></ScreenGuard>,
             handle: { titleKey: 'hubs.menu.title' },
             children: [
               { index: true, element: <Navigate to="/menu/categories" replace /> },
@@ -183,6 +199,7 @@ export const router = createBrowserRouter([
           },
           {
             path: 'branches',
+            element: <ScreenGuard screen="branches" />,
             handle: { titleKey: 'branches.title' },
             children: [
               { index: true, element: <BranchesPage /> },
@@ -191,11 +208,12 @@ export const router = createBrowserRouter([
           },
           {
             path: 'devices',
-            element: <DevicesPage />,
+            element: <ScreenGuard screen="devices"><DevicesPage /></ScreenGuard>,
             handle: { titleKey: 'devices.title' },
           },
           {
             path: 'tables',
+            element: <ScreenGuard screen="tables" />,
             handle: { titleKey: 'tables.title' },
             children: [
               { index: true, element: <TablesListPage /> },
@@ -204,6 +222,7 @@ export const router = createBrowserRouter([
           },
           {
             path: 'inventory',
+            element: <ScreenGuard screen="inventory" />,
             handle: { titleKey: 'hubs.inventory.title' },
             children: [
               {
@@ -346,6 +365,7 @@ export const router = createBrowserRouter([
           },
           {
             path: 'assets',
+            element: <ScreenGuard screen="assets" />,
             handle: { titleKey: 'assets.title' },
             children: [
               { index: true, element: <AssetsHubPage /> },
@@ -361,6 +381,7 @@ export const router = createBrowserRouter([
           },
           {
             path: 'purchase',
+            element: <ScreenGuard screen="purchase" />,
             handle: { titleKey: 'hubs.purchase.title' },
             children: [
               { index: true, element: <PurchaseHubPage /> },
@@ -388,13 +409,24 @@ export const router = createBrowserRouter([
           },
           {
             path: 'expenses',
+            element: <ScreenGuard screen="expenses" />,
             handle: { titleKey: 'expenses.title' },
             children: [
               { index: true, element: <ExpensesListPage /> },
               {
+                path: 'new',
+                element: <ExpenseCreatePage />,
+                handle: { titleKey: 'expenses.create.title' },
+              },
+              {
                 path: 'categories',
                 element: <ExpenseCategoriesPage />,
                 handle: { titleKey: 'expenses.categories.title' },
+              },
+              {
+                path: ':id',
+                element: <ExpenseDetailPage />,
+                handle: { titleKey: 'expenses.detail.title' },
               },
             ],
           },
@@ -404,6 +436,7 @@ export const router = createBrowserRouter([
           },
           {
             path: 'users',
+            element: <ScreenGuard screen="users" />,
             handle: { titleKey: 'users.title' },
             children: [
               { index: true, element: <UsersPage /> },
@@ -412,6 +445,7 @@ export const router = createBrowserRouter([
           },
           {
             path: 'hr',
+            element: <ScreenGuard screen="hr" />,
             handle: { titleKey: 'hubs.hr.title' },
             children: [
               { index: true, element: <HrHubPage /> },

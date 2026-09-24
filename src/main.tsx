@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
+import { AuthSessionProvider } from './access/AuthSessionProvider'
 import { router } from './app/router'
 import { UomLookupProvider } from './contexts/UomLookupProvider'
 import { LocaleProvider } from './i18n/LocaleProvider'
@@ -20,13 +21,17 @@ import './styles/devices.css'
 import './styles/tables.css'
 import './styles/reports.css'
 import './styles/expenses.css'
+import './styles/shifts.css'
+import './styles/media.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <LocaleProvider>
-      <UomLookupProvider>
-        <RouterProvider router={router} />
-      </UomLookupProvider>
+      <AuthSessionProvider>
+        <UomLookupProvider>
+          <RouterProvider router={router} />
+        </UomLookupProvider>
+      </AuthSessionProvider>
     </LocaleProvider>
   </StrictMode>,
 )
