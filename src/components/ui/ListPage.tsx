@@ -83,11 +83,14 @@ export { StatusQuickFilters, type ActiveInactiveFilter }
 interface ListPrimaryActionProps {
   label: string
   onClick: () => void
+  /** Rendered inert, with `title` explaining why, when the user lacks the permission. */
+  disabled?: boolean
+  title?: string
 }
 
-export function ListPrimaryAction({ label, onClick }: ListPrimaryActionProps) {
+export function ListPrimaryAction({ label, onClick, disabled, title }: ListPrimaryActionProps) {
   return (
-    <Button variant="primary" className="page-header-action" onClick={onClick}>
+    <Button variant="primary" className="page-header-action" onClick={onClick} disabled={disabled} title={title}>
       {label}
     </Button>
   )

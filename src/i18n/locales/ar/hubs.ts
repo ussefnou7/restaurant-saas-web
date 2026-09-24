@@ -26,6 +26,8 @@ export const hubsAr: TranslationDictionary = {
   'hubs.sales.menu.description': 'أصناف المطعم والأسعار والتصنيفات',
   'hubs.sales.operations.title': 'الطلبات',
   'hubs.sales.operations.description': 'الطلبات والفواتير ومتابعة المبيعات',
+  'hubs.sales.shifts.title': 'الورديات',
+  'hubs.sales.shifts.description': 'ورديات الدرج وفروقات الإغلاق والمصروفات المرتبطة',
   'hubs.sales.reports.description': 'أداء المبيعات والطلبات حسب الفترة',
 
   'hubs.menu.title': 'القائمة',

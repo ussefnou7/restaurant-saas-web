@@ -1,6 +1,10 @@
 import type { TranslationDictionary } from '../../types'
 
 export const errorsAr: TranslationDictionary = {
+  'errors.USER_INACTIVE': 'حسابك غير نشط. تواصل مع مسؤول النظام.',
+  'errors.ROLE_INACTIVE': 'دورك غير نشط. تواصل مع مسؤول النظام.',
+  'errors.TOKEN_EXPIRED': 'انتهت صلاحية جلستك. يرجى تسجيل الدخول مرة أخرى.',
+  'errors.TOKEN_INVALID': 'جلستك غير صالحة. يرجى تسجيل الدخول مرة أخرى.',
   // Inventory module
   'errors.INVALID_STATE_TRANSITION':
     'لا يمكن تنفيذ هذا الإجراء: الحالة الحالية ({{currentStatus}}) لا تسمح به، ويتطلب أن تكون الحالة ({{requiredStatus}})',
@@ -143,4 +147,20 @@ export const errorsAr: TranslationDictionary = {
     'بيانات الدخول غير صحيحة، تحقق من رمز المطعم واسم المستخدم وكلمة المرور',
   'errors.POS_LOGIN_NOT_PERMITTED': 'هذا المستخدم غير مسموح له بفتح الورديات على جهاز نقاط البيع',
   'errors.DEVICE_BRANCH_MISMATCH': 'هذا المستخدم غير مرتبط بفرع جهاز نقاط البيع المحدد',
+
+  // Shifts module
+  'errors.SHIFT_OPEN_BY_ANOTHER_USER':
+    'يوجد وردية مفتوحة بالفعل لهذا الدرج باسم {{openedByUserName}}.',
+  'errors.SHIFT_ALREADY_CLOSED': 'الوردية رقم {{shiftId}} مغلقة بالفعل.',
+  'errors.SHIFT_NOT_FOUND': 'الوردية المطلوبة غير موجودة.',
+  'errors.SHIFT_FORCE_CLOSE_NOT_PERMITTED':
+    'تحتاج إلى صلاحية {{requiredPermission}} لإغلاق وردية كاشير آخر.',
+  'errors.SHIFT_CLOSE_NOT_PERMITTED':
+    'تحتاج إلى صلاحية {{requiredPermission}} لإغلاق هذه الوردية.',
+  'errors.DEVICE_IDENTITY_REQUIRED':
+    'هذا الإجراء يتطلب جلسة جهاز نقطة بيع تحتوي على {{claim}}.',
+  'errors.NO_OPEN_SHIFT_FOR_DEVICE': 'لا توجد وردية مفتوحة لهذا الجهاز.',
+  'errors.EXPENSE_SHIFT_NOT_FOUND': 'وردية الدرج المحددة غير موجودة.',
+  'errors.EXPENSE_SHIFT_BRANCH_MISMATCH':
+    'وردية الدرج المحددة تتبع فرعًا مختلفًا.',
 }

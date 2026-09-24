@@ -1,6 +1,10 @@
 import type { TranslationDictionary } from '../../types'
 
 export const errorsEn: TranslationDictionary = {
+  'errors.USER_INACTIVE': 'Your account is inactive. Contact your administrator.',
+  'errors.ROLE_INACTIVE': 'Your role is inactive. Contact your administrator.',
+  'errors.TOKEN_EXPIRED': 'Your session has expired. Please sign in again.',
+  'errors.TOKEN_INVALID': 'Your session is invalid. Please sign in again.',
   // Inventory module
   'errors.INVALID_STATE_TRANSITION':
     'This action cannot be performed: current status is {{currentStatus}}, but it requires status {{requiredStatus}}',
@@ -148,4 +152,20 @@ export const errorsEn: TranslationDictionary = {
     'Invalid credentials, check the restaurant code, username, and password',
   'errors.POS_LOGIN_NOT_PERMITTED': 'This user is not allowed to open shifts on a POS device',
   'errors.DEVICE_BRANCH_MISMATCH': 'This user is not assigned to the selected POS device branch',
+
+  // Shifts module
+  'errors.SHIFT_OPEN_BY_ANOTHER_USER':
+    'This drawer already has an open shift for {{openedByUserName}}.',
+  'errors.SHIFT_ALREADY_CLOSED': 'Shift #{{shiftId}} is already closed.',
+  'errors.SHIFT_NOT_FOUND': 'The requested shift was not found.',
+  'errors.SHIFT_FORCE_CLOSE_NOT_PERMITTED':
+    "You need {{requiredPermission}} to close another cashier's shift.",
+  'errors.SHIFT_CLOSE_NOT_PERMITTED':
+    'You need {{requiredPermission}} to close this shift.',
+  'errors.DEVICE_IDENTITY_REQUIRED':
+    'This action requires a POS device session with a {{claim}} claim.',
+  'errors.NO_OPEN_SHIFT_FOR_DEVICE': 'This POS device has no open shift.',
+  'errors.EXPENSE_SHIFT_NOT_FOUND': 'The selected drawer shift was not found.',
+  'errors.EXPENSE_SHIFT_BRANCH_MISMATCH':
+    'The selected drawer shift belongs to a different branch.',
 }

@@ -18,6 +18,8 @@ interface DropdownProps {
   searchPlaceholder?: string
   /** Fired when the list is opened, before it paints. Used for revalidate-on-open (D111). */
   onOpen?: () => void
+  /** Fired when the list is closed. */
+  onClose?: () => void
 }
 
 export function Dropdown({
@@ -31,6 +33,7 @@ export function Dropdown({
   searchable = false,
   searchPlaceholder,
   onOpen,
+  onClose,
 }: DropdownProps) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
@@ -46,7 +49,8 @@ export function Dropdown({
   const closeDropdown = useCallback(() => {
     setOpen(false)
     setSearch('')
-  }, [])
+    onClose?.()
+  }, [onClose])
 
   useEffect(() => {
     if (!open) return
@@ -72,7 +76,7 @@ export function Dropdown({
   return (
     <div
       ref={rootRef}
-      className={`dropdown${size === 'toolbar' ? ' dropdown--toolbar' : ''}${className ? ` ${className}` : ''}`}
+      className={`dropdown${open ? ' dropdown--open' : ''}${size === 'toolbar' ? ' dropdown--toolbar' : ''}${className ? ` ${className}` : ''}`}
     >
       <button
         type="button"
@@ -100,7 +104,7 @@ export function Dropdown({
         />
       </button>
       {open ? (
-        <ul id={listId} className="dropdown__panel" role="listbox" aria-label={ariaLabel}>
+        <ul id={listId} className="dropdown__panel" role="listbox" aria-label={ariaLabel} tabIndex={-1}>
           {searchable ? (
             <li role="presentation">
               <label className="dropdown__search">
