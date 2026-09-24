@@ -36,10 +36,10 @@ import type {
 import { translateApiError } from '../../../utils/errors'
 import { formatDate, formatMoney, todayLocalDate } from '../../../utils/format'
 import {
-  canManagePurchaseInvoices,
-  canUnpostPurchaseInvoices,
-  canUncompletePurchaseInvoices,
-  canViewPurchaseInvoices,
+  useCanManagePurchaseInvoices,
+  useCanUnpostPurchaseInvoices,
+  useCanUncompletePurchaseInvoices,
+  useCanViewPurchaseInvoices,
 } from '../../../utils/inventoryPurchaseAccess'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { notifyStockBalancesRefresh } from '../../../utils/inventoryStockRefresh'
@@ -165,10 +165,10 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
   const navigate = useNavigate()
   const notify = useNotify()
   const { id } = useParams<{ id: string }>()
-  const canView = canViewPurchaseInvoices()
-  const canManage = canManagePurchaseInvoices()
-  const canUnpost = canUnpostPurchaseInvoices()
-  const canUncomplete = canUncompletePurchaseInvoices()
+  const canView = useCanViewPurchaseInvoices()
+  const canManage = useCanManagePurchaseInvoices()
+  const canUnpost = useCanUnpostPurchaseInvoices()
+  const canUncomplete = useCanUncompletePurchaseInvoices()
 
   const [invoice, setInvoice] = useState<PurchaseInvoiceResponse | null>(null)
   const [header, setHeader] = useState<HeaderFormState>(emptyHeader)

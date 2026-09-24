@@ -1,10 +1,8 @@
-import { authService } from '../services/authService'
+import { hasPermission } from '../access/can'
+import { useAuthSession } from '../access/useAuthSession'
 
-const DEVICES_MANAGE = 'DEVICES_MANAGE'
-
-export function canManageDevices(): boolean {
-  const user = authService.getAuthUser()
-  if (!user) return false
-  if (user.roleCode === 'OWNER' || user.roleCode === 'SYS_ADMIN') return true
-  return user.permissions.includes(DEVICES_MANAGE)
+/** `OWNER` bypass removed: the backend gates on `DEVICES_MANAGE` with a `SYS_ADMIN`-only bypass. */
+export function useCanManageDevices(): boolean {
+  const { user } = useAuthSession()
+  return hasPermission(user, 'DEVICES_MANAGE')
 }

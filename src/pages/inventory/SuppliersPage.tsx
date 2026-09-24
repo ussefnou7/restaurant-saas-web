@@ -28,7 +28,7 @@ import { useTranslation } from '../../i18n/useTranslation'
 import * as inventoryService from '../../services/inventoryService'
 import type { SupplierResponse } from '../../types/inventory'
 import { translateApiError } from '../../utils/errors'
-import { canManageInventorySetup, canViewInventorySetup } from '../../utils/inventoryAccess'
+import { useCanManageInventorySetup, useCanViewInventorySetup } from '../../utils/inventoryAccess'
 import { displayArabicName, getInventoryLocalizedName } from '../../utils/inventoryDisplay'
 import { InventoryAccessDenied } from './InventoryAccessDenied'
 import { SupplierFormModal } from './SupplierFormModal'
@@ -38,8 +38,8 @@ type StatusFilter = 'all' | 'active' | 'inactive'
 export function SuppliersPage() {
   const { t, locale } = useTranslation()
   const notify = useNotify()
-  const canView = canViewInventorySetup()
-  const canManage = canManageInventorySetup()
+  const canView = useCanViewInventorySetup()
+  const canManage = useCanManageInventorySetup()
 
   const [suppliers, setSuppliers] = useState<SupplierResponse[]>([])
   const [loading, setLoading] = useState(true)

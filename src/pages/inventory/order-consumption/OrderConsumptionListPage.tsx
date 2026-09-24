@@ -33,7 +33,7 @@ import type {
   OrderConsumptionDocListResponse,
   OrderConsumptionStatus,
 } from '../../../types/orderConsumption'
-import { canManageInventoryStock, canViewInventoryStock } from '../../../utils/inventoryAccess'
+import { useCanManageInventoryStock, useCanViewInventoryStock } from '../../../utils/inventoryAccess'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { translateApiError } from '../../../utils/errors'
 import { formatDate, formatDateTime } from '../../../utils/format'
@@ -61,8 +61,8 @@ export function OrderConsumptionListPage() {
   const { t, locale } = useTranslation()
   const navigate = useNavigate()
   const notify = useNotify()
-  const canView = canViewInventoryStock()
-  const canManage = canManageInventoryStock()
+  const canView = useCanViewInventoryStock()
+  const canManage = useCanManageInventoryStock()
   const { warehouses } = useStockFilterLookups()
 
   const [docs, setDocs] = useState<OrderConsumptionDocListResponse[]>([])

@@ -1,63 +1,40 @@
-import { authService } from '../services/authService'
-import type { AuthUser, RoleCode } from '../types/auth'
+import { hasAnyPermission, hasPermission } from '../access/can'
+import { useAuthSession } from '../access/useAuthSession'
 
-const INVENTORY_PURCHASE_VIEW = 'INVENTORY_PURCHASE_VIEW'
-const INVENTORY_PURCHASE_MANAGE = 'INVENTORY_PURCHASE_MANAGE'
-const PURCHASE_INVOICE_UNPOST = 'PURCHASE_INVOICE_UNPOST'
-const PURCHASE_RETURN_UNPOST = 'PURCHASE_RETURN_UNPOST'
-const PURCHASE_INVOICE_UNCOMPLETE = 'PURCHASE_INVOICE_UNCOMPLETE'
-const PURCHASE_RETURN_UNCOMPLETE = 'PURCHASE_RETURN_UNCOMPLETE'
+/**
+ * Purchase gates, matching the purchase invoice and return controllers.
+ *
+ * <p>The `OWNER` and `INVENTORY_MANAGER` bypasses are gone: the backend bypasses `SYS_ADMIN` only.
+ * Note that unpost and uncomplete are four separate grants, not one — a user may be trusted to
+ * reverse a return but not an invoice.
+ */
 
-const VIEW_ROLES: RoleCode[] = ['OWNER', 'SYS_ADMIN', 'INVENTORY_MANAGER']
-
-function hasPermission(user: AuthUser, code: string): boolean {
-  return user.permissions.includes(code)
+export function useCanViewPurchaseInvoices(): boolean {
+  const { user } = useAuthSession()
+  return hasAnyPermission(user, ['INVENTORY_PURCHASE_VIEW', 'INVENTORY_PURCHASE_MANAGE'])
 }
 
-function hasRole(user: AuthUser, roles: RoleCode[]): boolean {
-  return roles.includes(user.roleCode)
+export function useCanManagePurchaseInvoices(): boolean {
+  const { user } = useAuthSession()
+  return hasPermission(user, 'INVENTORY_PURCHASE_MANAGE')
 }
 
-export function canViewPurchaseInvoices(): boolean {
-  const user = authService.getAuthUser()
-  if (!user) return false
-  if (hasRole(user, VIEW_ROLES)) return true
-  return (
-    hasPermission(user, INVENTORY_PURCHASE_VIEW) || hasPermission(user, INVENTORY_PURCHASE_MANAGE)
-  )
+export function useCanUnpostPurchaseInvoices(): boolean {
+  const { user } = useAuthSession()
+  return hasPermission(user, 'PURCHASE_INVOICE_UNPOST')
 }
 
-export function canManagePurchaseInvoices(): boolean {
-  const user = authService.getAuthUser()
-  if (!user) return false
-  if (hasRole(user, ['OWNER', 'SYS_ADMIN'])) return true
-  return hasPermission(user, INVENTORY_PURCHASE_MANAGE)
+export function useCanUnpostPurchaseReturns(): boolean {
+  const { user } = useAuthSession()
+  return hasPermission(user, 'PURCHASE_RETURN_UNPOST')
 }
 
-export function canUnpostPurchaseInvoices(): boolean {
-  const user = authService.getAuthUser()
-  if (!user) return false
-  if (hasRole(user, ['OWNER', 'SYS_ADMIN'])) return true
-  return hasPermission(user, PURCHASE_INVOICE_UNPOST)
+export function useCanUncompletePurchaseInvoices(): boolean {
+  const { user } = useAuthSession()
+  return hasPermission(user, 'PURCHASE_INVOICE_UNCOMPLETE')
 }
 
-export function canUnpostPurchaseReturns(): boolean {
-  const user = authService.getAuthUser()
-  if (!user) return false
-  if (hasRole(user, ['OWNER', 'SYS_ADMIN'])) return true
-  return hasPermission(user, PURCHASE_RETURN_UNPOST)
-}
-
-export function canUncompletePurchaseInvoices(): boolean {
-  const user = authService.getAuthUser()
-  if (!user) return false
-  if (hasRole(user, ['OWNER', 'SYS_ADMIN'])) return true
-  return hasPermission(user, PURCHASE_INVOICE_UNCOMPLETE)
-}
-
-export function canUncompletePurchaseReturns(): boolean {
-  const user = authService.getAuthUser()
-  if (!user) return false
-  if (hasRole(user, ['OWNER', 'SYS_ADMIN'])) return true
-  return hasPermission(user, PURCHASE_RETURN_UNCOMPLETE)
+export function useCanUncompletePurchaseReturns(): boolean {
+  const { user } = useAuthSession()
+  return hasPermission(user, 'PURCHASE_RETURN_UNCOMPLETE')
 }

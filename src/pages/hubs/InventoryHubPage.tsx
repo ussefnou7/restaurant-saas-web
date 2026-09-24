@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import {
   AlertTriangle,
   BarChart3,
@@ -22,17 +21,17 @@ import {
 } from '../../components/hub/ModuleHubPage'
 import { useTranslation } from '../../i18n/useTranslation'
 import {
-  canViewInventorySetup,
-  canViewInventoryStock,
+  useCanViewInventorySetup,
+  useCanViewInventoryStock,
 } from '../../utils/inventoryAccess'
 import { InventoryAccessDenied } from '../inventory/InventoryAccessDenied'
-import { buildInventoryHubUserPermissions } from './inventoryHubPermissions'
+import { useInventoryHubUserPermissions } from './inventoryHubPermissions'
 
 export function InventoryHubPage() {
   const { t } = useTranslation()
-  const canView = canViewInventorySetup()
-  const canViewStock = canViewInventoryStock()
-  const userPermissions = useMemo(() => buildInventoryHubUserPermissions(), [])
+  const canView = useCanViewInventorySetup()
+  const canViewStock = useCanViewInventoryStock()
+  const userPermissions = useInventoryHubUserPermissions()
 
   if (!canView) return <InventoryAccessDenied />
 

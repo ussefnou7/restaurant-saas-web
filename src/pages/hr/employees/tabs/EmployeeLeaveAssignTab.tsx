@@ -14,7 +14,7 @@ import {
   getApiErrorCode,
   translateApiError,
 } from '../../../../utils/errors'
-import { canManageLeaveRequests } from '../../../../utils/hrAccess'
+import { useCanManageLeaveBalances } from '../../../../utils/hrAccess'
 import { formatDecimalDays, getLocalizedLeaveTypeName } from '../../../../utils/leaveDisplay'
 import { EditLeaveBalanceModal } from './EditLeaveBalanceModal'
 
@@ -104,7 +104,7 @@ function LeaveBalanceCard({ balance, canManage, onEdit }: LeaveBalanceCardProps)
 export function EmployeeLeaveAssignTab({ employeeId }: EmployeeLeaveAssignTabProps) {
   const { t } = useTranslation()
   const notify = useNotify()
-  const canManage = canManageLeaveRequests()
+  const canManage = useCanManageLeaveBalances()
 
   const [balances, setBalances] = useState<LeaveBalanceResponse[]>([])
   const [loading, setLoading] = useState(true)

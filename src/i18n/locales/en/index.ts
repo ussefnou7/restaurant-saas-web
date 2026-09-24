@@ -1,4 +1,5 @@
 import { mergeMessages } from '../../mergeMessages'
+import { accessEn } from './access'
 import { authEn } from './auth'
 import { assetsEn } from './assets'
 import { branchDetailsEn } from './branchDetails'
@@ -12,6 +13,7 @@ import { hubsEn } from './hubs'
 import { inventoryEn } from './inventory'
 import { jobsEn } from './jobs'
 import { layoutEn } from './layout'
+import { mediaEn } from './media'
 import { menuEn } from './menu'
 import { ordersEn } from './orders'
 import { orderConsumptionEn } from './orderConsumption'
@@ -22,6 +24,7 @@ import { leaveTypesEn } from './leaveTypes'
 import { payrollEn } from './payroll'
 import { permissionsEn } from './permissions'
 import { reportsEn } from './reports'
+import { shiftsEn } from './shifts'
 import { tablesEn } from './tables'
 import { userDetailsEn } from './userDetails'
 import { expensesEn } from './expenses'
@@ -48,11 +51,14 @@ export const en = mergeMessages(
   leaveTypesEn,
   hubsEn,
   inventoryEn,
+  mediaEn,
   menuEn,
   ordersEn,
   orderConsumptionEn,
   tablesEn,
   reportsEn,
   expensesEn,
+  shiftsEn,
   errorsEn,
+  accessEn,
 )

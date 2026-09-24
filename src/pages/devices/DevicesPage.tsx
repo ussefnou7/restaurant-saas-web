@@ -28,14 +28,14 @@ import * as deviceService from '../../services/deviceService'
 import type { BranchResponse } from '../../types/branch'
 import type { Device } from '../../types/device'
 import { getLocalizedBranchName } from '../../utils/branchDisplay'
-import { canManageDevices } from '../../utils/deviceAccess'
+import { useCanManageDevices } from '../../utils/deviceAccess'
 import { getApiErrorCode, translateApiError } from '../../utils/errors'
 import { DeviceCreateModal } from './DeviceCreateModal'
 
 export function DevicesPage() {
   const { t, locale } = useTranslation()
   const notify = useNotify()
-  const canManage = canManageDevices()
+  const canManage = useCanManageDevices()
   const [devices, setDevices] = useState<Device[]>([])
   const [branches, setBranches] = useState<BranchResponse[]>([])
   const [loading, setLoading] = useState(true)

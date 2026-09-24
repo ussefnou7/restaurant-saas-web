@@ -21,7 +21,7 @@ import { useUomLookup } from '../../hooks/useUomLookup'
 import * as inventoryService from '../../services/inventoryService'
 import type { ImportMaterialsResponse, MaterialCatalogResponse, UomResponse } from '../../types/inventory'
 import { translateApiError } from '../../utils/errors'
-import { canManageInventorySetup } from '../../utils/inventoryAccess'
+import { useCanManageInventorySetup } from '../../utils/inventoryAccess'
 import { getInventoryLocalizedName } from '../../utils/inventoryDisplay'
 import { getDisplayUomLabel, getStockUomLabel } from '../../utils/inventoryUom'
 import { getImportSkippedReasonLabel } from '../../utils/inventoryImport'
@@ -48,7 +48,7 @@ export function MaterialCatalogImportModal({
   const { t, locale } = useTranslation()
   const uomPicker = useUomPickerProps()
   const notify = useNotify()
-  const canManage = canManageInventorySetup()
+  const canManage = useCanManageInventorySetup()
   const { categories } = useInventoryLookups({ forCatalog: true, enabled: open })
   const { activeUoms } = useUomLookup()
   const uoms = activeUoms as unknown as UomResponse[]

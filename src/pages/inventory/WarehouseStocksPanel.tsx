@@ -20,7 +20,7 @@ import * as inventoryService from '../../services/inventoryService'
 import * as inventoryStockService from '../../services/inventoryStockService'
 import type { MaterialResponse, UomResponse } from '../../types/inventory'
 import type { StockBatchResponse, WarehouseStockResponse } from '../../types/inventoryStock'
-import { canManageInventoryStock } from '../../utils/inventoryAccess'
+import { useCanManageInventoryStock } from '../../utils/inventoryAccess'
 import { translateApiError } from '../../utils/errors'
 import { formatDate, formatMoney, formatNumber } from '../../utils/format'
 import { getDisplayUomLabel } from '../../utils/inventoryUom'
@@ -86,7 +86,7 @@ export function WarehouseStocksPanel({ warehouseId }: WarehouseStocksPanelProps)
   // getDisplayUomLabel is a display path, so it reads the full cached set (D111).
   const { uoms: cachedUoms, uomLabel, uomSymbol } = useUomLookup()
   const uoms = cachedUoms as unknown as UomResponse[]
-  const canManage = canManageInventoryStock()
+  const canManage = useCanManageInventoryStock()
 
   function displayUomName(stock: WarehouseStockResponse): string {
     const sym = uomSymbol(stock.uomId)

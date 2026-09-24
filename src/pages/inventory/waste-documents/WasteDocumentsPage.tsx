@@ -25,7 +25,7 @@ import * as wasteDocumentService from '../../../services/wasteDocumentService'
 import type { DocumentStatus, WasteDocumentResponse } from '../../../types/wasteDocument'
 import { translateApiError } from '../../../utils/errors'
 import { formatDate } from '../../../utils/format'
-import { canManageInventoryStock, canViewInventoryStock } from '../../../utils/inventoryAccess'
+import { useCanManageInventoryStock, useCanViewInventoryStock } from '../../../utils/inventoryAccess'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { StockAccessDenied } from '../StockAccessDenied'
 import { useStockFilterLookups } from '../useStockFilterLookups'
@@ -47,8 +47,8 @@ function getStatusVariant(status: DocumentStatus): 'muted' | 'warning' | 'succes
 export function WasteDocumentsPage() {
   const { t, locale } = useTranslation()
   const navigate = useNavigate()
-  const canView = canViewInventoryStock()
-  const canManage = canManageInventoryStock()
+  const canView = useCanViewInventoryStock()
+  const canManage = useCanManageInventoryStock()
   const { warehouses } = useStockFilterLookups()
 
   const [documents, setDocuments] = useState<WasteDocumentResponse[]>([])

@@ -9,7 +9,7 @@ import * as salaryAdditionService from '../../../../services/salaryAdditionServi
 import type { EmployeeResponse } from '../../../../types/employee'
 import type { SalaryAdditionResponse } from '../../../../types/salaryAddition'
 import { translateApiError } from '../../../../utils/errors'
-import { canManageHrPayroll } from '../../../../utils/hrAccess'
+import { useCanManageSalaries } from '../../../../utils/hrAccess'
 import { formatMoney } from '../../../../utils/format'
 import { ChangeSalaryModal } from './ChangeSalaryModal'
 import { SalaryAdditionModal } from './SalaryAdditionModal'
@@ -21,7 +21,7 @@ interface EmployeePayrollTabProps {
 
 export function EmployeePayrollTab({ employee, onEmployeeUpdated }: EmployeePayrollTabProps) {
   const { t } = useTranslation()
-  const canManage = canManageHrPayroll()
+  const canManage = useCanManageSalaries()
 
   const [additions, setAdditions] = useState<SalaryAdditionResponse[]>([])
   const [loading, setLoading] = useState(true)

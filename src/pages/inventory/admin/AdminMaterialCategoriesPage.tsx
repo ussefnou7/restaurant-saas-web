@@ -27,7 +27,7 @@ import { useTranslation } from '../../../i18n/useTranslation'
 import * as adminInventoryService from '../../../services/adminInventoryService'
 import type { AdminMaterialCategoryResponse } from '../../../types/inventory'
 import { translateApiError } from '../../../utils/errors'
-import { isSysAdmin } from '../../../utils/inventoryAccess'
+import { useIsSysAdmin } from '../../../utils/inventoryAccess'
 import { displayArabicName, getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { AdminInventoryAccessDenied } from './AdminInventoryAccessDenied'
 import { AdminMaterialCategoryFormModal } from './AdminMaterialCategoryFormModal'
@@ -37,7 +37,7 @@ type StatusFilter = 'all' | 'active' | 'inactive'
 export function AdminMaterialCategoriesPage() {
   const { t, locale } = useTranslation()
   const notify = useNotify()
-  const canAccess = isSysAdmin()
+  const canAccess = useIsSysAdmin()
 
   const [categories, setCategories] = useState<AdminMaterialCategoryResponse[]>([])
   const [loading, setLoading] = useState(true)

@@ -24,7 +24,7 @@ import { useTranslation } from '../../../i18n/useTranslation'
 import * as physicalCountService from '../../../services/physicalCountService'
 import type { PhysicalCountStatus, PhysicalCountSummaryResponse } from '../../../types/inventoryOperations'
 import { translateApiError } from '../../../utils/errors'
-import { canManageInventoryStock, canViewInventoryStock } from '../../../utils/inventoryAccess'
+import { useCanManageInventoryStock, useCanViewInventoryStock } from '../../../utils/inventoryAccess'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { StockAccessDenied } from '../StockAccessDenied'
 import { useStockFilterLookups } from '../useStockFilterLookups'
@@ -47,8 +47,8 @@ function getStatusVariant(status: PhysicalCountStatus): 'muted' | 'warning' | 's
 export function PhysicalCountsPage() {
   const { t, locale } = useTranslation()
   const navigate = useNavigate()
-  const canView = canViewInventoryStock()
-  const canManage = canManageInventoryStock()
+  const canView = useCanViewInventoryStock()
+  const canManage = useCanManageInventoryStock()
   const { warehouses } = useStockFilterLookups()
 
   const [counts, setCounts] = useState<PhysicalCountSummaryResponse[]>([])

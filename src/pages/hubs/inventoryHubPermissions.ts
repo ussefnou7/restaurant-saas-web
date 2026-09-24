@@ -1,4 +1,5 @@
-import { canManageInventorySetup } from '../../utils/inventoryAccess'
+import { useMemo } from 'react'
+import { useCanManageInventorySetup } from '../../utils/inventoryAccess'
 
 export type InventoryHubUserPermissions = {
   materials: { canView: boolean; canAdd: boolean }
@@ -7,13 +8,13 @@ export type InventoryHubUserPermissions = {
   uom: { canEdit: boolean }
 }
 
-export function buildInventoryHubUserPermissions(): InventoryHubUserPermissions {
-  const canManage = canManageInventorySetup()
+export function useInventoryHubUserPermissions(): InventoryHubUserPermissions {
+  const canManage = useCanManageInventorySetup()
 
-  return {
+  return useMemo(() => ({
     materials: { canView: true, canAdd: canManage },
     warehouses: { canAdd: canManage },
     categories: { canEdit: canManage },
     uom: { canEdit: canManage },
-  }
+  }), [canManage])
 }

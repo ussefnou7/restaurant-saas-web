@@ -28,7 +28,7 @@ import { useTranslation } from '../../../i18n/useTranslation'
 import * as adminInventoryService from '../../../services/adminInventoryService'
 import type { MaterialCatalogResponse } from '../../../types/inventory'
 import { translateApiError } from '../../../utils/errors'
-import { isSysAdmin } from '../../../utils/inventoryAccess'
+import { useIsSysAdmin } from '../../../utils/inventoryAccess'
 import { displayArabicName, getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { getDisplayUomLabel, getStockUomLabel } from '../../../utils/inventoryUom'
 import { AdminInventoryAccessDenied } from './AdminInventoryAccessDenied'
@@ -40,7 +40,7 @@ type StatusFilter = 'all' | 'active' | 'inactive'
 export function AdminMaterialCatalogPage() {
   const { t, locale } = useTranslation()
   const notify = useNotify()
-  const canAccess = isSysAdmin()
+  const canAccess = useIsSysAdmin()
   const { categories, uoms } = useAdminInventoryLookups()
 
   const [items, setItems] = useState<MaterialCatalogResponse[]>([])

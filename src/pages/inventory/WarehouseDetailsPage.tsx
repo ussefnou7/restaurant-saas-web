@@ -13,7 +13,7 @@ import type { BranchResponse } from '../../types/branch'
 import type { WarehouseResponse } from '../../types/inventory'
 import { getLocalizedBranchName } from '../../utils/branchDisplay'
 import { translateApiError } from '../../utils/errors'
-import { canManageInventorySetup, canViewInventorySetup } from '../../utils/inventoryAccess'
+import { useCanManageInventorySetup, useCanViewInventorySetup } from '../../utils/inventoryAccess'
 import { getInventoryLocalizedName } from '../../utils/inventoryDisplay'
 import { InventoryAccessDenied } from './InventoryAccessDenied'
 import { WarehouseOverviewPanel } from './WarehouseOverviewPanel'
@@ -22,8 +22,8 @@ import { WarehouseStocksPanel } from './WarehouseStocksPanel'
 export function WarehouseDetailsPage() {
   const { t, locale } = useTranslation()
   const { warehouseId } = useParams<{ warehouseId: string }>()
-  const canView = canViewInventorySetup()
-  const canManage = canManageInventorySetup()
+  const canView = useCanViewInventorySetup()
+  const canManage = useCanManageInventorySetup()
 
   const [warehouse, setWarehouse] = useState<WarehouseResponse | null>(null)
   const [branches, setBranches] = useState<BranchResponse[]>([])

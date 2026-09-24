@@ -42,8 +42,8 @@ import type {
 import { translateApiError } from '../../../utils/errors'
 import { formatDate, formatMoney } from '../../../utils/format'
 import {
-  canManagePurchaseInvoices,
-  canViewPurchaseInvoices,
+  useCanManagePurchaseInvoices,
+  useCanViewPurchaseInvoices,
 } from '../../../utils/inventoryPurchaseAccess'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { notifyStockBalancesRefresh } from '../../../utils/inventoryStockRefresh'
@@ -72,8 +72,8 @@ export function PurchaseInvoicesPage() {
   const { t, locale } = useTranslation()
   const navigate = useNavigate()
   const notify = useNotify()
-  const canView = canViewPurchaseInvoices()
-  const canManage = canManagePurchaseInvoices()
+  const canView = useCanViewPurchaseInvoices()
+  const canManage = useCanManagePurchaseInvoices()
   const { warehouses, suppliers } = usePurchaseFilterLookups()
 
   const [invoices, setInvoices] = useState<PurchaseInvoiceResponse[]>([])

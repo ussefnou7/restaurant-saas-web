@@ -7,7 +7,7 @@ import { useTranslation } from '../../../../i18n/useTranslation'
 import * as leaveRequestService from '../../../../services/leaveRequestService'
 import type { LeaveRequestResponse } from '../../../../types/leaveRequest'
 import { translateApiError } from '../../../../utils/errors'
-import { canManageLeaveRequests } from '../../../../utils/hrAccess'
+import { useCanManageLeaveRequests } from '../../../../utils/hrAccess'
 import { formatDate } from '../../../../utils/format'
 import { LeaveStatusBadge } from '../../leave-requests/LeaveStatusBadge'
 import { EmployeeLeaveRequestModal } from './EmployeeLeaveRequestModal'
@@ -18,7 +18,7 @@ interface EmployeeLeaveTabProps {
 
 export function EmployeeLeaveTab({ employeeId }: EmployeeLeaveTabProps) {
   const { t } = useTranslation()
-  const canManage = canManageLeaveRequests()
+  const canManage = useCanManageLeaveRequests()
 
   const [requests, setRequests] = useState<LeaveRequestResponse[]>([])
   const [loading, setLoading] = useState(true)

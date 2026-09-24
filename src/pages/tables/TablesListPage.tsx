@@ -36,7 +36,7 @@ import type { RestaurantTable } from '../../types/table'
 import type { TableSection } from '../../types/tableSection'
 import { getLocalizedBranchName } from '../../utils/branchDisplay'
 import { translateApiError } from '../../utils/errors'
-import { canManageTables, canViewTables } from '../../utils/tableAccess'
+import { useCanManageTables, useCanViewTables } from '../../utils/tableAccess'
 import { TableFormModal } from './TableFormModal'
 
 type StatusFilter = 'all' | 'active' | 'inactive'
@@ -45,8 +45,8 @@ type SectionFilter = 'all' | 'none' | string
 export function TablesListPage() {
   const { t, locale } = useTranslation()
   const notify = useNotify()
-  const canView = canViewTables()
-  const canManage = canManageTables()
+  const canView = useCanViewTables()
+  const canManage = useCanManageTables()
   const [branches, setBranches] = useState<BranchResponse[]>([])
   const [tables, setTables] = useState<RestaurantTable[]>([])
   const [loading, setLoading] = useState(true)

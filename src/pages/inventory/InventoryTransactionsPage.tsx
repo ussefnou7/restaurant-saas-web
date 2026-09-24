@@ -28,7 +28,7 @@ import * as inventoryStockService from '../../services/inventoryStockService'
 import type { InventoryTransactionResponse, InventoryTransactionType } from '../../types/inventoryStock'
 import { translateApiError } from '../../utils/errors'
 import { formatDateTime } from '../../utils/format'
-import { canManageInventoryStock, canViewInventoryStock } from '../../utils/inventoryAccess'
+import { useCanManageInventoryStock, useCanViewInventoryStock } from '../../utils/inventoryAccess'
 import { getInventoryLocalizedName } from '../../utils/inventoryDisplay'
 import {
   getTransactionDirectionLabel,
@@ -55,8 +55,8 @@ const DIRECTION_FILTERS = ['', 'IN', 'OUT'] as const
 export function InventoryTransactionsPage() {
   const { t, locale } = useTranslation()
   const notify = useNotify()
-  const canView = canViewInventoryStock()
-  const canManage = canManageInventoryStock()
+  const canView = useCanViewInventoryStock()
+  const canManage = useCanManageInventoryStock()
   const { warehouses, materials, categories } = useStockFilterLookups()
   const { uomLabel, uomSymbol } = useUomLookup()
 

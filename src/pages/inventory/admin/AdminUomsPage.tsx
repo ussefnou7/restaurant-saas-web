@@ -27,7 +27,7 @@ import { useTranslation } from '../../../i18n/useTranslation'
 import * as adminInventoryService from '../../../services/adminInventoryService'
 import type { UomResponse } from '../../../types/inventory'
 import { translateApiError } from '../../../utils/errors'
-import { isSysAdmin } from '../../../utils/inventoryAccess'
+import { useIsSysAdmin } from '../../../utils/inventoryAccess'
 import {
   displayArabicName,
   getInventoryLocalizedName,
@@ -41,7 +41,7 @@ type StatusFilter = 'all' | 'active' | 'inactive'
 export function AdminUomsPage() {
   const { t, locale } = useTranslation()
   const notify = useNotify()
-  const canAccess = isSysAdmin()
+  const canAccess = useIsSysAdmin()
 
   const [uoms, setUoms] = useState<UomResponse[]>([])
   const [loading, setLoading] = useState(true)

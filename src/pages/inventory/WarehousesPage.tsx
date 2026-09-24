@@ -34,7 +34,7 @@ import type { BranchResponse } from '../../types/branch'
 import type { WarehouseResponse, WarehouseType } from '../../types/inventory'
 import { getLocalizedBranchName } from '../../utils/branchDisplay'
 import { translateApiError } from '../../utils/errors'
-import { canManageInventorySetup, canViewInventorySetup } from '../../utils/inventoryAccess'
+import { useCanManageInventorySetup, useCanViewInventorySetup } from '../../utils/inventoryAccess'
 import { displayArabicName, getInventoryLocalizedName } from '../../utils/inventoryDisplay'
 import { InventoryAccessDenied } from './InventoryAccessDenied'
 import { WarehouseFormModal } from './WarehouseFormModal'
@@ -54,8 +54,8 @@ export function WarehousesPage() {
   const { t, locale } = useTranslation()
   const navigate = useNavigate()
   const notify = useNotify()
-  const canView = canViewInventorySetup()
-  const canManage = canManageInventorySetup()
+  const canView = useCanViewInventorySetup()
+  const canManage = useCanManageInventorySetup()
   const [branches, setBranches] = useState<BranchResponse[]>([])
 
   const [warehouses, setWarehouses] = useState<WarehouseResponse[]>([])

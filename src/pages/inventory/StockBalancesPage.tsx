@@ -28,7 +28,7 @@ import * as inventoryStockService from '../../services/inventoryStockService'
 import type { UomResponse } from '../../types/inventory'
 import type { ManualTransactionPrefill } from '../../types/inventoryStock'
 import type { StockBalanceResponse } from '../../types/inventoryStock'
-import { canManageInventoryStock, canViewInventoryStock } from '../../utils/inventoryAccess'
+import { useCanManageInventoryStock, useCanViewInventoryStock } from '../../utils/inventoryAccess'
 import { getInventoryLocalizedName } from '../../utils/inventoryDisplay'
 import { formatMoney } from '../../utils/format'
 import { translateApiError } from '../../utils/errors'
@@ -41,8 +41,8 @@ import { INVENTORY_STOCK_REFRESH_EVENT } from '../../utils/inventoryStockRefresh
 export function StockBalancesPage() {
   const { t, locale } = useTranslation()
   const notify = useNotify()
-  const canView = canViewInventoryStock()
-  const canManage = canManageInventoryStock()
+  const canView = useCanViewInventoryStock()
+  const canManage = useCanManageInventoryStock()
   const { warehouses, materials, categories } = useStockFilterLookups()
   // Display resolves from the full cached set, never the active one (D111):
   // stock held in a since-retired unit must still render that unit.

@@ -10,7 +10,7 @@ import * as salaryAdditionService from '../../../../services/salaryAdditionServi
 import type { SalaryAdjustmentResponse } from '../../../../types/salaryAdjustment'
 import type { SalaryAdditionResponse } from '../../../../types/salaryAddition'
 import { translateApiError } from '../../../../utils/errors'
-import { canManageHrPayroll } from '../../../../utils/hrAccess'
+import { useCanManageSalaryAdjustments } from '../../../../utils/hrAccess'
 import { formatMoney } from '../../../../utils/format'
 import { SalaryAdjustmentModal } from './SalaryAdjustmentModal'
 
@@ -43,7 +43,7 @@ function mapLegacyAddition(item: SalaryAdditionResponse): SalaryAdjustmentRespon
 
 export function EmployeeAdjustmentsTab({ employeeId }: EmployeeAdjustmentsTabProps) {
   const { t } = useTranslation()
-  const canManage = canManageHrPayroll()
+  const canManage = useCanManageSalaryAdjustments()
 
   const [adjustments, setAdjustments] = useState<SalaryAdjustmentResponse[]>([])
   const [loading, setLoading] = useState(true)

@@ -1,13 +1,13 @@
 import { MapPinned, MonitorSmartphone, Settings, Store, Users } from 'lucide-react'
 import { ModuleHubPage } from '../../components/hub/ModuleHubPage'
 import { useTranslation } from '../../i18n/useTranslation'
-import { canManageDevices } from '../../utils/deviceAccess'
-import { canViewTables } from '../../utils/tableAccess'
+import { useCanManageDevices } from '../../utils/deviceAccess'
+import { useCanViewTables } from '../../utils/tableAccess'
 
 export function AdminHubPage() {
   const { t } = useTranslation()
-  const showDevices = canManageDevices()
-  const showTables = canViewTables()
+  const showDevices = useCanManageDevices()
+  const showTables = useCanViewTables()
 
   return (
     <ModuleHubPage

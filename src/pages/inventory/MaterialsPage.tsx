@@ -33,7 +33,7 @@ import { useUomLookup } from '../../hooks/useUomLookup'
 import * as inventoryService from '../../services/inventoryService'
 import type { MaterialResponse, UomResponse } from '../../types/inventory'
 import { translateApiError } from '../../utils/errors'
-import { canManageInventorySetup, canViewInventorySetup } from '../../utils/inventoryAccess'
+import { useCanManageInventorySetup, useCanViewInventorySetup } from '../../utils/inventoryAccess'
 import { displayArabicName, getInventoryLocalizedName } from '../../utils/inventoryDisplay'
 import { getDisplayUomLabel, getStockUomLabel } from '../../utils/inventoryUom'
 import { InventoryAccessDenied } from './InventoryAccessDenied'
@@ -47,8 +47,8 @@ export function MaterialsPage() {
   const notify = useNotify()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const canView = canViewInventorySetup()
-  const canManage = canManageInventorySetup()
+  const canView = useCanViewInventorySetup()
+  const canManage = useCanManageInventorySetup()
   const { categories } = useInventoryLookups()
   const { activeUoms } = useUomLookup()
   const uoms = activeUoms as unknown as UomResponse[]

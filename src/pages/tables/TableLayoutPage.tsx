@@ -14,7 +14,7 @@ import type { RestaurantTable, TableShape } from '../../types/table'
 import type { TableSection } from '../../types/tableSection'
 import { getLocalizedBranchName } from '../../utils/branchDisplay'
 import { translateApiError } from '../../utils/errors'
-import { canManageTables, canViewTables } from '../../utils/tableAccess'
+import { useCanManageTables, useCanViewTables } from '../../utils/tableAccess'
 
 const CANVAS_WIDTH = 1000
 const CANVAS_HEIGHT = 700
@@ -30,8 +30,8 @@ const SHAPES: TableShape[] = ['ROUND', 'SQUARE', 'RECTANGLE']
 
 export function TableLayoutPage() {
   const { t, locale } = useTranslation()
-  const canView = canViewTables()
-  const canManage = canManageTables()
+  const canView = useCanViewTables()
+  const canManage = useCanManageTables()
   const canvasRef = useRef<HTMLDivElement | null>(null)
   const [branches, setBranches] = useState<BranchResponse[]>([])
   const [tables, setTables] = useState<RestaurantTable[]>([])

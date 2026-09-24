@@ -14,6 +14,7 @@ import {
 } from '../../../components/entity-detail/EntityOverviewPanel'
 import { CompactDateCell } from '../../../components/ui/CompactDateCell'
 import { Dropdown } from '../../../components/ui/Dropdown'
+import { ImageUploader } from '../../../components/ui/ImageUploader'
 import { useTranslation } from '../../../i18n/useTranslation'
 import * as branchService from '../../../services/branchService'
 import * as employeeService from '../../../services/employeeService'
@@ -497,7 +498,22 @@ export function EmployeeOverviewPanel({
       savingLabel={t('employees.actions.saving')}
     >
       <SectionGroup title={t('employees.sections.personalInfo')} divider={false}>
-        {renderPersonalFields()}
+        <div className="employee-overview__identity">
+          {/*
+            The photo is not part of the edit form: it commits on its own the moment a file is
+            chosen, and cancelling the form does not put it back. Saying so by leaving it outside
+            the form's fields is clearer than a disclaimer under a control that looks like a field.
+          */}
+          <ImageUploader
+            purpose="EMPLOYEE_PHOTO"
+            ownerType="EMPLOYEE"
+            ownerId={employee.id}
+            shape="avatar"
+            previewVariant="MEDIUM"
+            labelKey="media.photo.label"
+          />
+          <div className="employee-overview__identity-fields">{renderPersonalFields()}</div>
+        </div>
       </SectionGroup>
 
       <SectionGroup title={t('employees.sections.employmentInfo')}>

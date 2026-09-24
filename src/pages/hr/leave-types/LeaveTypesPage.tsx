@@ -28,7 +28,7 @@ import { useTranslation } from '../../../i18n/useTranslation'
 import * as leaveTypeService from '../../../services/leaveTypeService'
 import type { LeaveTypeResponse } from '../../../types/leaveType'
 import { translateApiError } from '../../../utils/errors'
-import { canManageLeaveTypes } from '../../../utils/hrAccess'
+import { useCanManageLeaveTypes } from '../../../utils/hrAccess'
 import {
   formatDecimalDays,
   getLocalizedLeaveTypeResponseName,
@@ -49,7 +49,7 @@ function matchesSearch(type: LeaveTypeResponse, query: string, locale: 'en' | 'a
 
 export function LeaveTypesPage() {
   const { t, locale } = useTranslation()
-  const canManage = canManageLeaveTypes()
+  const canManage = useCanManageLeaveTypes()
 
   const [leaveTypes, setLeaveTypes] = useState<LeaveTypeResponse[]>([])
   const [loading, setLoading] = useState(true)

@@ -27,7 +27,7 @@ import { useUomLookup } from '../../../../hooks/useUomLookup'
 import * as uomService from '../../../../services/uomService'
 import type { UomResponse } from '../../../../types/inventory'
 import { translateApiError } from '../../../../utils/errors'
-import { canViewInventorySetup } from '../../../../utils/inventoryAccess'
+import { useCanViewInventorySetup } from '../../../../utils/inventoryAccess'
 import { InventoryAccessDenied } from '../../InventoryAccessDenied'
 import { getTenantUomTypeLabel, isGlobalUom } from './tenantUomDisplay'
 import { TenantUomFormModal } from './TenantUomFormModal'
@@ -52,7 +52,7 @@ export function TenantUomPage() {
   const { t } = useTranslation()
   const { invalidateAndRefetch } = useUomLookup()
   const notify = useNotify()
-  const canView = canViewInventorySetup()
+  const canView = useCanViewInventorySetup()
 
   const [uoms, setUoms] = useState<UomResponse[]>([])
   const [loading, setLoading] = useState(true)

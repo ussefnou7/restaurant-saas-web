@@ -25,7 +25,7 @@ import type {
   OrderConsumptionMaterialsSummaryResponse,
 } from '../../../types/orderConsumption'
 import type { UserResponse } from '../../../types/user'
-import { canManageInventoryStock, canViewInventoryStock } from '../../../utils/inventoryAccess'
+import { useCanManageInventoryStock, useCanViewInventoryStock } from '../../../utils/inventoryAccess'
 import { translateApiError } from '../../../utils/errors'
 import { formatDate, formatDateTime } from '../../../utils/format'
 import { StockAccessDenied } from '../StockAccessDenied'
@@ -58,8 +58,8 @@ export function OrderConsumptionDetailPage() {
   const { id } = useParams<{ id: string }>()
   const notify = useNotify()
   const { uomLabel, uomSymbol } = useUomLookup()
-  const canView = canViewInventoryStock()
-  const canManage = canManageInventoryStock()
+  const canView = useCanViewInventoryStock()
+  const canManage = useCanManageInventoryStock()
   const [doc, setDoc] = useState<OrderConsumptionDocDetailResponse | null>(null)
   const [users, setUsers] = useState<UserResponse[]>([])
   const [usersError, setUsersError] = useState('')

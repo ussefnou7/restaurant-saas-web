@@ -3,13 +3,13 @@ import { ModuleHubPage, type HubNavCardConfig } from '../../components/hub/Modul
 import { ListPage } from '../../components/ui/ListPage'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { useTranslation } from '../../i18n/useTranslation'
-import { canViewInventorySetup } from '../../utils/inventoryAccess'
-import { canViewPurchaseInvoices } from '../../utils/inventoryPurchaseAccess'
+import { useCanViewInventorySetup } from '../../utils/inventoryAccess'
+import { useCanViewPurchaseInvoices } from '../../utils/inventoryPurchaseAccess'
 
 export function PurchaseHubPage() {
   const { t } = useTranslation()
-  const canViewSuppliers = canViewInventorySetup()
-  const canViewPurchasing = canViewPurchaseInvoices()
+  const canViewSuppliers = useCanViewInventorySetup()
+  const canViewPurchasing = useCanViewPurchaseInvoices()
 
   const cards: HubNavCardConfig[] = []
 

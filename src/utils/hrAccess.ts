@@ -1,49 +1,62 @@
-import { authService } from '../services/authService'
-import type { AuthUser, RoleCode } from '../types/auth'
+import { hasPermission } from '../access/can'
+import { useAuthSession } from '../access/useAuthSession'
 
-const PAYROLL_ROLES: RoleCode[] = ['OWNER', 'BRANCH_MANAGER', 'HR_MANAGER', 'SYS_ADMIN']
-const LEAVE_MANAGE_ROLES: RoleCode[] = ['OWNER', 'BRANCH_MANAGER', 'HR_MANAGER', 'SYS_ADMIN']
+/**
+ * HR used to be one grantable permission (`HR_MANAGE`) covering leave requests, leave balances,
+ * leave types, salaries and salary adjustments, so a tenant could not grant an accountant payroll
+ * without also handing them leave approval. It is now a VIEW/MANAGE pair per feature, mirroring
+ * `INVENTORY_SETUP_VIEW`/`MANAGE` and `INVENTORY_STOCK_VIEW`/`MANAGE`. See
+ * V66__hr_granular_permissions.sql in the backend repo, which deactivates `HR_MANAGE` and the
+ * unenforced `HR_ACCESS` module gate.
+ */
 
-function hasPermission(user: AuthUser, code: string): boolean {
-  return user.permissions.includes(code)
+export function useCanViewLeaveRequests(): boolean {
+  const { user } = useAuthSession()
+  return hasPermission(user, 'HR_LEAVE_REQUESTS_VIEW')
 }
 
-function hasRole(user: AuthUser, roles: RoleCode[]): boolean {
-  return roles.includes(user.roleCode)
+export function useCanManageLeaveRequests(): boolean {
+  const { user } = useAuthSession()
+  return hasPermission(user, 'HR_LEAVE_REQUESTS_MANAGE')
 }
 
-export function canManageHrPayroll(): boolean {
-  const user = authService.getAuthUser()
-  if (!user) return false
-  if (hasRole(user, PAYROLL_ROLES)) return true
-  return (
-    hasPermission(user, 'HR_SALARY_ADDITIONS_CREATE') ||
-    hasPermission(user, 'HR_SALARY_ADDITIONS_UPDATE') ||
-    hasPermission(user, 'HR_EMPLOYEES_UPDATE')
-  )
+export function useCanViewLeaveBalances(): boolean {
+  const { user } = useAuthSession()
+  return hasPermission(user, 'HR_LEAVE_BALANCES_VIEW')
 }
 
-export function canManageLeaveRequests(): boolean {
-  const user = authService.getAuthUser()
-  if (!user) return false
-  if (hasRole(user, LEAVE_MANAGE_ROLES)) return true
-  return (
-    hasPermission(user, 'HR_LEAVES_CREATE') || hasPermission(user, 'HR_LEAVES_UPDATE_STATUS')
-  )
+export function useCanManageLeaveBalances(): boolean {
+  const { user } = useAuthSession()
+  return hasPermission(user, 'HR_LEAVE_BALANCES_MANAGE')
 }
 
-export function canViewLeaveTypes(): boolean {
-  const user = authService.getAuthUser()
-  if (!user) return false
-  return hasRole(user, LEAVE_MANAGE_ROLES) || hasPermission(user, 'HR_LEAVES_VIEW')
+/** Reading leave types is its own grant -- `GET /api/hr/leave-types` gates on `HR_LEAVES_VIEW`. */
+export function useCanViewLeaveTypes(): boolean {
+  const { user } = useAuthSession()
+  return hasPermission(user, 'HR_LEAVES_VIEW')
 }
 
-export function canManageLeaveTypes(): boolean {
-  const user = authService.getAuthUser()
-  if (!user) return false
-  if (hasRole(user, ['OWNER', 'SYS_ADMIN'])) return true
-  return (
-    hasPermission(user, 'HR_LEAVE_TYPES_CREATE') ||
-    hasPermission(user, 'HR_LEAVE_TYPES_UPDATE')
-  )
+export function useCanManageLeaveTypes(): boolean {
+  const { user } = useAuthSession()
+  return hasPermission(user, 'HR_LEAVE_TYPES_MANAGE')
+}
+
+export function useCanViewSalaries(): boolean {
+  const { user } = useAuthSession()
+  return hasPermission(user, 'HR_SALARIES_VIEW')
+}
+
+export function useCanManageSalaries(): boolean {
+  const { user } = useAuthSession()
+  return hasPermission(user, 'HR_SALARIES_MANAGE')
+}
+
+export function useCanViewSalaryAdjustments(): boolean {
+  const { user } = useAuthSession()
+  return hasPermission(user, 'HR_SALARY_ADJUSTMENTS_VIEW')
+}
+
+export function useCanManageSalaryAdjustments(): boolean {
+  const { user } = useAuthSession()
+  return hasPermission(user, 'HR_SALARY_ADJUSTMENTS_MANAGE')
 }

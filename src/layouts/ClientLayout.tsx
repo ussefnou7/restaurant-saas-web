@@ -14,11 +14,18 @@ import {
 import { LanguageSwitcher } from '../components/ui/LanguageSwitcher'
 import { useTranslation } from '../i18n/useTranslation'
 import type { TranslationKey } from '../i18n/types'
+import { canOpenScreen } from '../access/screenAccess'
+import { SCREEN_MAP, type ScreenId } from '../access/screen-map'
+import { useAuthSession } from '../access/useAuthSession'
 import { authService } from '../services/authService'
-import { canViewExpenses } from '../utils/expenseAccess'
 
 type TopNavItem = {
-  id: string
+  /**
+   * A SCREEN_MAP id when the module is gated. `home` and `admin` are hubs with no gate of their
+   * own — everything inside them is gated individually, so hiding the hub would hide screens the
+   * user can legitimately open.
+   */
+  id: ScreenId | 'home' | 'admin'
   labelKey: TranslationKey
   path: string
   icon: LucideIcon
@@ -76,15 +83,17 @@ export function ClientLayout() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { pathname } = useLocation()
+  const { user } = useAuthSession()
 
   function handleLogout() {
     authService.logout()
     navigate('/login')
   }
 
+  // Same map the route guard reads, so a visible link always opens.
   const visibleNavItems = topNavItems.filter((item) => {
-    if (item.id === 'expenses') return canViewExpenses()
-    return true
+    if (item.id === 'home' || item.id === 'admin') return true
+    return canOpenScreen(user, item.id) || SCREEN_MAP[item.id].onDenied !== 'hide'
   })
 
   return (

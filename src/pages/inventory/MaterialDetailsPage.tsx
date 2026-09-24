@@ -13,7 +13,7 @@ import { useUomLookup } from '../../hooks/useUomLookup'
 import * as inventoryService from '../../services/inventoryService'
 import type { MaterialResponse, UomResponse } from '../../types/inventory'
 import { translateApiError } from '../../utils/errors'
-import { canManageInventorySetup, canViewInventorySetup } from '../../utils/inventoryAccess'
+import { useCanManageInventorySetup, useCanViewInventorySetup } from '../../utils/inventoryAccess'
 import { getInventoryLocalizedName } from '../../utils/inventoryDisplay'
 import { InventoryAccessDenied } from './InventoryAccessDenied'
 import { MaterialOverviewPanel } from './MaterialOverviewPanel'
@@ -28,8 +28,8 @@ export function MaterialDetailsPage() {
   const { materialId } = useParams<{ materialId: string }>()
 
   const isCreate = !materialId || materialId === 'new'
-  const canView = canViewInventorySetup()
-  const canManage = canManageInventorySetup()
+  const canView = useCanViewInventorySetup()
+  const canManage = useCanManageInventorySetup()
   const { categories, loading: loadingLookups } = useInventoryLookups()
   const { activeUoms } = useUomLookup()
   const uoms = activeUoms as unknown as UomResponse[]

@@ -26,10 +26,10 @@ import * as physicalCountService from '../../../services/physicalCountService'
 import type { MaterialResponse, WarehouseResponse } from '../../../types/inventory'
 import type { PhysicalCountResponse } from '../../../types/inventoryOperations'
 import {
-  canDeletePhysicalCount,
-  canManageInventoryStock,
-  canRevertPhysicalCountToDraft,
-  canViewInventoryStock,
+  useCanDeletePhysicalCount,
+  useCanManageInventoryStock,
+  useCanRevertPhysicalCountToDraft,
+  useCanViewInventoryStock,
 } from '../../../utils/inventoryAccess'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { toLocalDateTimeInputValue } from '../../../utils/inventoryStockDisplay'
@@ -50,8 +50,8 @@ import { PhysicalCountDocumentHeader } from './PhysicalCountDocumentHeader'
 import { getMaterialDisplayName, getPhysicalCountUomDisplay } from './physicalCountDisplay'
 
 export function PhysicalCountCreatePage() {
-  const canView = canViewInventoryStock()
-  const canManage = canManageInventoryStock()
+  const canView = useCanViewInventoryStock()
+  const canManage = useCanManageInventoryStock()
   const { t, locale } = useTranslation()
   const navigate = useNavigate()
   const notify = useNotify()
@@ -279,10 +279,10 @@ export function PhysicalCountCreatePage() {
 
 export function PhysicalCountViewPage() {
   const { id } = useParams<{ id: string }>()
-  const canView = canViewInventoryStock()
-  const canManage = canManageInventoryStock()
-  const canRevert = canRevertPhysicalCountToDraft()
-  const canDelete = canDeletePhysicalCount()
+  const canView = useCanViewInventoryStock()
+  const canManage = useCanManageInventoryStock()
+  const canRevert = useCanRevertPhysicalCountToDraft()
+  const canDelete = useCanDeletePhysicalCount()
   const { t, locale } = useTranslation()
   const navigate = useNavigate()
   const notify = useNotify()

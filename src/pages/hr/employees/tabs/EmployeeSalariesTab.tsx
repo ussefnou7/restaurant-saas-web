@@ -6,7 +6,7 @@ import { useTranslation } from '../../../../i18n/useTranslation'
 import * as employeeHrService from '../../../../services/employeeHrService'
 import type { EmployeeResponse } from '../../../../types/employee'
 import type { EmployeeSalaryRecord } from '../../../../types/employeeSalary'
-import { canManageHrPayroll } from '../../../../utils/hrAccess'
+import { useCanManageSalaries } from '../../../../utils/hrAccess'
 import { formatMoney } from '../../../../utils/format'
 import { ChangeSalaryModal } from './ChangeSalaryModal'
 
@@ -17,7 +17,7 @@ interface EmployeeSalariesTabProps {
 
 export function EmployeeSalariesTab({ employee, onEmployeeUpdated }: EmployeeSalariesTabProps) {
   const { t } = useTranslation()
-  const canManage = canManageHrPayroll()
+  const canManage = useCanManageSalaries()
 
   const [currentSalary, setCurrentSalary] = useState(employee.salary)
   const [history, setHistory] = useState<EmployeeSalaryRecord[]>([])

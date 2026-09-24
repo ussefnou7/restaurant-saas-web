@@ -1,18 +1,14 @@
-import { authService } from '../services/authService'
+import { hasPermission } from '../access/can'
+import { useAuthSession } from '../access/useAuthSession'
 
-const TABLES_VIEW = 'TABLES_VIEW'
-const TABLES_MANAGE = 'TABLES_MANAGE'
+/** `OWNER` bypass removed: the backend bypasses `SYS_ADMIN` only. */
 
-export function canViewTables(): boolean {
-  const user = authService.getAuthUser()
-  if (!user) return false
-  if (user.roleCode === 'OWNER' || user.roleCode === 'SYS_ADMIN') return true
-  return user.permissions.includes(TABLES_VIEW)
+export function useCanViewTables(): boolean {
+  const { user } = useAuthSession()
+  return hasPermission(user, 'TABLES_VIEW')
 }
 
-export function canManageTables(): boolean {
-  const user = authService.getAuthUser()
-  if (!user) return false
-  if (user.roleCode === 'OWNER' || user.roleCode === 'SYS_ADMIN') return true
-  return user.permissions.includes(TABLES_MANAGE)
+export function useCanManageTables(): boolean {
+  const { user } = useAuthSession()
+  return hasPermission(user, 'TABLES_MANAGE')
 }

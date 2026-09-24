@@ -36,8 +36,8 @@ import type { PurchaseReturnResponse, PurchaseReturnStatus } from '../../../type
 import { translateApiError } from '../../../utils/errors'
 import { formatDate, formatMoney } from '../../../utils/format'
 import {
-  canManagePurchaseInvoices,
-  canViewPurchaseInvoices,
+  useCanManagePurchaseInvoices,
+  useCanViewPurchaseInvoices,
 } from '../../../utils/inventoryPurchaseAccess'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { notifyStockBalancesRefresh } from '../../../utils/inventoryStockRefresh'
@@ -61,8 +61,8 @@ export function PurchaseReturnsPage() {
   const { t, locale } = useTranslation()
   const navigate = useNavigate()
   const notify = useNotify()
-  const canView = canViewPurchaseInvoices()
-  const canManage = canManagePurchaseInvoices()
+  const canView = useCanViewPurchaseInvoices()
+  const canManage = useCanManagePurchaseInvoices()
 
   const [returns, setReturns] = useState<PurchaseReturnResponse[]>([])
   const [suppliers, setSuppliers] = useState<SupplierResponse[]>([])

@@ -1,4 +1,4 @@
-import { BarChart3, ClipboardList, UtensilsCrossed } from 'lucide-react'
+import { BarChart3, ClipboardList, Clock3, UtensilsCrossed } from 'lucide-react'
 import { ModuleHubPage } from '../../components/hub/ModuleHubPage'
 import { useTranslation } from '../../i18n/useTranslation'
 
@@ -25,6 +25,13 @@ export function SalesHubPage() {
           title: t('hubs.sales.operations.title'),
           description: t('hubs.sales.operations.description'),
           to: '/orders',
+        },
+        {
+          id: 'shifts',
+          icon: Clock3,
+          title: t('hubs.sales.shifts.title'),
+          description: t('hubs.sales.shifts.description'),
+          to: '/shifts',
         },
         {
           id: 'reports',

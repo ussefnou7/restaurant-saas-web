@@ -9,7 +9,7 @@ import { useTranslation } from '../../../i18n/useTranslation'
 import { authService } from '../../../services/authService'
 import * as adminInventoryService from '../../../services/adminInventoryService'
 import type { InventorySeedSummaryResponse } from '../../../types/inventory'
-import { isSysAdmin } from '../../../utils/inventoryAccess'
+import { useIsSysAdmin } from '../../../utils/inventoryAccess'
 import { AdminInventoryAccessDenied } from './AdminInventoryAccessDenied'
 
 type SeedAction = 'global' | 'tenant' | null
@@ -56,7 +56,7 @@ function SeedResultSummary({
 export function InventorySeedPage() {
   const { t } = useTranslation()
   const notify = useNotify()
-  const canAccess = isSysAdmin()
+  const canAccess = useIsSysAdmin()
   const authUser = authService.getAuthUser()
 
   const [tenantId, setTenantId] = useState(

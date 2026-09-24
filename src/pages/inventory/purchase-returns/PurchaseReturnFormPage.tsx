@@ -47,10 +47,10 @@ import type {
 import { translateApiError } from '../../../utils/errors'
 import { formatDate, formatMoney, todayLocalDate } from '../../../utils/format'
 import {
-  canManagePurchaseInvoices,
-  canUncompletePurchaseReturns,
-  canUnpostPurchaseReturns,
-  canViewPurchaseInvoices,
+  useCanManagePurchaseInvoices,
+  useCanUncompletePurchaseReturns,
+  useCanUnpostPurchaseReturns,
+  useCanViewPurchaseInvoices,
 } from '../../../utils/inventoryPurchaseAccess'
 import { notifyStockBalancesRefresh } from '../../../utils/inventoryStockRefresh'
 import { getPurchaseReturnReasonLabel } from '../../../utils/purchaseInvoiceDisplay'
@@ -181,10 +181,10 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
   const navigate = useNavigate()
   const notify = useNotify()
   const { id } = useParams<{ id: string }>()
-  const canView = canViewPurchaseInvoices()
-  const canManage = canManagePurchaseInvoices()
-  const canUnpost = canUnpostPurchaseReturns()
-  const canUncomplete = canUncompletePurchaseReturns()
+  const canView = useCanViewPurchaseInvoices()
+  const canManage = useCanManagePurchaseInvoices()
+  const canUnpost = useCanUnpostPurchaseReturns()
+  const canUncomplete = useCanUncompletePurchaseReturns()
 
   const { uoms: cachedUoms, uomSymbol } = useUomLookup()
   const [purchaseReturn, setPurchaseReturn] = useState<PurchaseReturnResponse | null>(null)

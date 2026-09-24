@@ -43,7 +43,7 @@ import {
 } from '../../../types/wasteDocument'
 import { translateApiError } from '../../../utils/errors'
 import { formatDate, todayLocalDate } from '../../../utils/format'
-import { canManageInventoryStock, canUncompleteWasteDocuments, canViewInventoryStock } from '../../../utils/inventoryAccess'
+import { useCanManageInventoryStock, useCanUncompleteWasteDocuments, useCanViewInventoryStock } from '../../../utils/inventoryAccess'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import { notifyStockBalancesRefresh } from '../../../utils/inventoryStockRefresh'
 import { StockAccessDenied } from '../StockAccessDenied'
@@ -133,9 +133,9 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
   const { t, locale } = useTranslation()
   const navigate = useNavigate()
   const notify = useNotify()
-  const canView = canViewInventoryStock()
-  const canManage = canManageInventoryStock()
-  const canUncomplete = canUncompleteWasteDocuments()
+  const canView = useCanViewInventoryStock()
+  const canManage = useCanManageInventoryStock()
+  const canUncomplete = useCanUncompleteWasteDocuments()
 
   const isCreate = mode === 'create'
 

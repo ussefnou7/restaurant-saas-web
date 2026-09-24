@@ -1,4 +1,5 @@
 import { mergeMessages } from '../../mergeMessages'
+import { accessAr } from './access'
 import { authAr } from './auth'
 import { assetsAr } from './assets'
 import { branchDetailsAr } from './branchDetails'
@@ -12,6 +13,7 @@ import { hubsAr } from './hubs'
 import { inventoryAr } from './inventory'
 import { jobsAr } from './jobs'
 import { layoutAr } from './layout'
+import { mediaAr } from './media'
 import { menuAr } from './menu'
 import { ordersAr } from './orders'
 import { orderConsumptionAr } from './orderConsumption'
@@ -22,6 +24,7 @@ import { leaveTypesAr } from './leaveTypes'
 import { payrollAr } from './payroll'
 import { permissionsAr } from './permissions'
 import { reportsAr } from './reports'
+import { shiftsAr } from './shifts'
 import { tablesAr } from './tables'
 import { userDetailsAr } from './userDetails'
 import { expensesAr } from './expenses'
@@ -48,11 +51,14 @@ export const ar = mergeMessages(
   leaveTypesAr,
   hubsAr,
   inventoryAr,
+  mediaAr,
   menuAr,
   ordersAr,
   orderConsumptionAr,
   tablesAr,
   reportsAr,
   expensesAr,
+  shiftsAr,
   errorsAr,
+  accessAr,
 )

@@ -1,45 +1,24 @@
-import { authService } from '../services/authService'
-import type { AuthUser, RoleCode } from '../types/auth'
+import { hasPermission } from '../access/can'
+import { useAuthSession } from '../access/useAuthSession'
 
-const EXPENSES_VIEW = 'EXPENSES_VIEW'
-const EXPENSES_CREATE = 'EXPENSES_CREATE'
-const EXPENSES_VOID = 'EXPENSES_VOID'
-const EXPENSES_CATEGORY_MANAGE = 'EXPENSES_CATEGORY_MANAGE'
+/** `OWNER` bypass removed: the backend bypasses `SYS_ADMIN` only. */
 
-const BYPASS_ROLES: RoleCode[] = ['OWNER', 'SYS_ADMIN']
-
-function hasPermission(user: AuthUser, code: string): boolean {
-  return Array.isArray(user.permissions) && user.permissions.includes(code)
+export function useCanViewExpenses(): boolean {
+  const { user } = useAuthSession()
+  return hasPermission(user, 'EXPENSES_VIEW')
 }
 
-function hasRole(user: AuthUser, roles: RoleCode[]): boolean {
-  return roles.includes(user.roleCode)
+export function useCanCreateExpense(): boolean {
+  const { user } = useAuthSession()
+  return hasPermission(user, 'EXPENSES_CREATE')
 }
 
-export function canViewExpenses(): boolean {
-  const user = authService.getAuthUser()
-  if (!user) return false
-  if (hasRole(user, BYPASS_ROLES)) return true
-  return hasPermission(user, EXPENSES_VIEW)
+export function useCanVoidExpense(): boolean {
+  const { user } = useAuthSession()
+  return hasPermission(user, 'EXPENSES_VOID')
 }
 
-export function canCreateExpense(): boolean {
-  const user = authService.getAuthUser()
-  if (!user) return false
-  if (hasRole(user, BYPASS_ROLES)) return true
-  return hasPermission(user, EXPENSES_CREATE)
-}
-
-export function canVoidExpense(): boolean {
-  const user = authService.getAuthUser()
-  if (!user) return false
-  if (hasRole(user, BYPASS_ROLES)) return true
-  return hasPermission(user, EXPENSES_VOID)
-}
-
-export function canManageExpenseCategories(): boolean {
-  const user = authService.getAuthUser()
-  if (!user) return false
-  if (hasRole(user, BYPASS_ROLES)) return true
-  return hasPermission(user, EXPENSES_CATEGORY_MANAGE)
+export function useCanManageExpenseCategories(): boolean {
+  const { user } = useAuthSession()
+  return hasPermission(user, 'EXPENSES_CATEGORY_MANAGE')
 }
