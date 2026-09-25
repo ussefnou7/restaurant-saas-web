@@ -37,7 +37,7 @@ export function RecipeIngredientsReadOnly({ items, emptyMessage }: RecipeIngredi
         <TableBody>
           {items.map((item) => (
             <TableRow key={`${item.materialId}-${item.uomId}`}>
-              <Td>{getInventoryLocalizedName(item, locale)}</Td>
+              <Td>{getInventoryLocalizedName({ name: item.materialName, nameAr: item.materialNameAr }, locale)}</Td>
               <Td dir="ltr" className="table-cell--numeric">{item.quantity}</Td>
               <Td>
                 {uomSymbol(item.uomId) !== '—'

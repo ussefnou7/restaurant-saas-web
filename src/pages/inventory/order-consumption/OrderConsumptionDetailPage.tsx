@@ -267,7 +267,7 @@ export function OrderConsumptionDetailPage() {
                       className="order-consumption-conflicts__item"
                       title={item.exceptionClass ?? undefined}
                     >
-                      <strong>{getInventoryLocalizedName(item, locale)}</strong>
+                      <strong>{getInventoryLocalizedName({ name: item.materialName, nameAr: item.materialNameAr }, locale)}</strong>
                       <span>{item.exceptionMessage}</span>
                       <span className="order-consumption-conflicts__meta">
                         {item.exceptionClass}
@@ -310,7 +310,7 @@ export function OrderConsumptionDetailPage() {
 
                         return (
                           <TableRow key={item.materialId}>
-                            <Td column="entity">{getInventoryLocalizedName(item, locale)}</Td>
+                            <Td column="entity">{getInventoryLocalizedName({ name: item.materialName, nameAr: item.materialNameAr }, locale)}</Td>
                             <Td dir="ltr">
                               {formatQuantityWithUnit(item.requiredQuantity, materialUom)}
                             </Td>
@@ -382,7 +382,7 @@ export function OrderConsumptionDetailPage() {
                   <TableBody>
                     {materialsSummary.materials.map((summary) => (
                       <TableRow key={`${summary.materialId}-${summary.uom}`}>
-                        <Td column="entity">{getInventoryLocalizedName(summary, locale)}</Td>
+                        <Td column="entity">{getInventoryLocalizedName({ name: summary.materialName, nameAr: summary.materialNameAr }, locale)}</Td>
                         <Td dir="ltr">{formatDecimalString(summary.totalQtyConsumed)}</Td>
                         <Td>{getSummaryUom(summary)}</Td>
                         <Td dir="ltr">{summary.orderCount}</Td>
