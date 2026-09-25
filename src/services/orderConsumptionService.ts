@@ -19,6 +19,7 @@ export async function getOrderConsumptionDocs(
   const response = await api.get<SpringPageResponse<OrderConsumptionDocListResponse>>(
     `${orderConsumptionEndpoints.list}${toSearchParams({
       warehouseId: params.warehouseId,
+      type: params.type,
       status: params.status,
       dateFrom: params.dateFrom,
       dateTo: params.dateTo,

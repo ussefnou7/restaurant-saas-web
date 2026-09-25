@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { ClearFiltersButton } from '../../../components/ui/ClearFiltersButton'
 import { DatePicker } from '../../../components/ui/DatePicker'
 import { OrderConsumptionStatusBadge } from '../../../components/inventory/OrderConsumptionStatusBadge'
+import { OrderConsumptionTypeBadge } from '../../../components/inventory/OrderConsumptionTypeBadge'
 import { ErrorState } from '../../../components/ui/ErrorState'
 import {
   ListCard,
@@ -32,6 +33,7 @@ import * as orderConsumptionService from '../../../services/orderConsumptionServ
 import type {
   OrderConsumptionDocListResponse,
   OrderConsumptionStatus,
+  OrderConsumptionType,
 } from '../../../types/orderConsumption'
 import { useCanManageInventoryStock, useCanViewInventoryStock } from '../../../utils/inventoryAccess'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
@@ -50,6 +52,7 @@ const STATUS_FILTERS: Array<OrderConsumptionStatus | ''> = [
   'POSTED',
   'CONFLICT',
 ]
+const TYPE_FILTERS: Array<OrderConsumptionType | ''> = ['', 'ORDINARY', 'WASTE']
 
 // TEMP: recalculate is shown for every status while testing.
 // Restore: `status === 'PARTIAL' || status === 'CONFLICT'` (param: OrderConsumptionStatus).
@@ -70,6 +73,7 @@ export function OrderConsumptionListPage() {
   const [totalPages, setTotalPages] = useState(0)
   const [totalElements, setTotalElements] = useState(0)
   const [warehouseId, setWarehouseId] = useState('')
+  const [type, setType] = useState<OrderConsumptionType | ''>('')
   const [status, setStatus] = useState<OrderConsumptionStatus | ''>('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
@@ -83,6 +87,7 @@ export function OrderConsumptionListPage() {
     try {
       const result = await orderConsumptionService.getOrderConsumptionDocs({
         warehouseId: warehouseId || undefined,
+        type: type || undefined,
         status: status || undefined,
         dateFrom: dateFrom || undefined,
         dateTo: dateTo || undefined,
@@ -100,7 +105,7 @@ export function OrderConsumptionListPage() {
     } finally {
       setLoading(false)
     }
-  }, [dateFrom, dateTo, page, status, t, warehouseId])
+  }, [dateFrom, dateTo, page, status, t, type, warehouseId])
 
   useEffect(() => {
     if (!canView) return
@@ -123,7 +128,7 @@ export function OrderConsumptionListPage() {
 
   if (!canView) return <StockAccessDenied />
 
-  const hasFilters = Boolean(warehouseId || status || dateFrom || dateTo)
+  const hasFilters = Boolean(warehouseId || type || status || dateFrom || dateTo)
   const showEmpty = !loading && !error && docs.length === 0 && !hasFilters
   const showFilterEmpty = !loading && !error && docs.length === 0 && hasFilters
   const showTable = !loading && !error && docs.length > 0
@@ -158,6 +163,20 @@ export function OrderConsumptionListPage() {
                   })),
                 ]}
                 ariaLabel={t('orderConsumption.filter.warehouse')}
+              />
+              <SelectFilter
+                value={type}
+                onChange={(value) => {
+                  setType(value as OrderConsumptionType | '')
+                  setPage(0)
+                }}
+                options={TYPE_FILTERS.map((value) => ({
+                  value,
+                  label: value
+                    ? t(`orderConsumption.type.${value}`)
+                    : t('orderConsumption.filter.allTypes'),
+                }))}
+                ariaLabel={t('orderConsumption.filter.type')}
               />
               <SelectFilter
                 value={status}
@@ -197,6 +216,7 @@ export function OrderConsumptionListPage() {
                 <ClearFiltersButton
                   onClick={() => {
                     setWarehouseId('')
+                    setType('')
                     setStatus('')
                     setDateFrom('')
                     setDateTo('')
@@ -216,7 +236,7 @@ export function OrderConsumptionListPage() {
           <ListPageStates
             loading={loading}
             loadingMessage={t('orderConsumption.loading')}
-            loadingColumns={6}
+            loadingColumns={7}
             showEmpty={showEmpty}
             emptyTitle={t('orderConsumption.empty.title')}
             emptyDescription={t('orderConsumption.empty.description')}
@@ -229,6 +249,7 @@ export function OrderConsumptionListPage() {
                 <TableHead>
                   <TableRow>
                     <Th column="entity">{t('orderConsumption.col.reference')}</Th>
+                    <Th column="status">{t('orderConsumption.col.type')}</Th>
                     <Th column="status">{t('orderConsumption.col.status')}</Th>
                     <Th column="date">{t('orderConsumption.col.createdAt')}</Th>
                     <Th column="date">{t('orderConsumption.col.processedAt')}</Th>
@@ -243,6 +264,7 @@ export function OrderConsumptionListPage() {
                       onClick={() => navigate(`/inventory/order-consumption/${doc.id}`)}
                     >
                       <Td column="entity">{getReference(doc)}</Td>
+                      <Td column="status"><OrderConsumptionTypeBadge type={doc.type} /></Td>
                       <Td column="status"><OrderConsumptionStatusBadge status={doc.status} /></Td>
                       <Td column="date" dir="ltr">{formatDateTime(doc.createdAt)}</Td>
                       <Td column="date" dir="ltr">{formatDateTime(doc.processedAt)}</Td>

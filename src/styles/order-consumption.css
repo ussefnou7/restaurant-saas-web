@@ -18,7 +18,9 @@
   color: var(--color-text-muted);
 }
 
-.order-consumption-status {
+/* D20: the doc type shares the status badge's shape — same row, same weight. */
+.order-consumption-status,
+.order-consumption-type {
   display: inline-flex;
   align-items: center;
   gap: var(--space-xs);
@@ -48,6 +50,17 @@
 }
 
 .order-consumption-status--danger {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.order-consumption-type--ordinary {
+  background: var(--color-surface-soft);
+  color: var(--color-text-muted);
+}
+
+.order-consumption-type--waste {
   background: var(--color-danger-soft);
   color: var(--color-danger);
   border-color: var(--color-danger);

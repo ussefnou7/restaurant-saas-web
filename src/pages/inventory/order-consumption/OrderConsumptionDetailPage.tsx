@@ -5,6 +5,7 @@ import { DetailsCard } from '../../../components/fields'
 import { DetailTabPanel, DetailTabs } from '../../../components/entity-detail/DetailTabs'
 import { EntityDetailScreen } from '../../../components/entity-detail/EntityDetailScreen'
 import { OrderConsumptionStatusBadge } from '../../../components/inventory/OrderConsumptionStatusBadge'
+import { OrderConsumptionTypeBadge } from '../../../components/inventory/OrderConsumptionTypeBadge'
 import { Button } from '../../../components/ui/Button'
 import { LoadingState } from '../../../components/ui/LoadingState'
 import { useNotify } from '../../../components/ui/NotificationContext'
@@ -196,6 +197,7 @@ export function OrderConsumptionDetailPage() {
   const blockedMaterials =
     doc?.materials.filter((item) => item.failureReason === 'INSUFFICIENT_STOCK') ?? []
   const canRecalculate = canManage && (doc ? canRecalculateStatus(doc.status) : false)
+  const hasWasteLines = doc?.lines.some((line) => line.lineType === 'WASTE') ?? false
 
   const actions = doc && canRecalculate ? (
     <Button variant="primary" onClick={() => void handleRecalculate()} disabled={recalculating}>
@@ -213,6 +215,14 @@ export function OrderConsumptionDetailPage() {
           {t('orderConsumption.col.reference')}
         </span>
         <span className="order-consumption-detail__value">{getReference(doc)}</span>
+      </div>
+      <div className="order-consumption-detail__info">
+        <span className="order-consumption-detail__label">
+          {t('orderConsumption.col.type')}
+        </span>
+        <span className="order-consumption-detail__value">
+          <OrderConsumptionTypeBadge type={doc.type} />
+        </span>
       </div>
       <div className="order-consumption-detail__info">
         <span className="order-consumption-detail__label">
@@ -343,6 +353,8 @@ export function OrderConsumptionDetailPage() {
                     <TableRow>
                       <Th>{t('orderConsumption.lines.orderId')}</Th>
                       <Th column="entity">{t('orderConsumption.lines.createdBy')}</Th>
+                      {/* Only on a waste doc: the stage is why the line consumed at all (D20). */}
+                      {hasWasteLines ? <Th>{t('orderConsumption.lines.wasteStage')}</Th> : null}
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -350,6 +362,13 @@ export function OrderConsumptionDetailPage() {
                       <TableRow key={line.id}>
                         <Td dir="ltr">#{line.orderId}</Td>
                         <Td column="entity">{getCreatedByName(line.createdBy)}</Td>
+                        {hasWasteLines ? (
+                          <Td>
+                            {line.wasteStage
+                              ? t(`orderConsumption.wasteStage.${line.wasteStage}`)
+                              : t('common.empty.dash')}
+                          </Td>
+                        ) : null}
                       </TableRow>
                     ))}
                   </TableBody>
