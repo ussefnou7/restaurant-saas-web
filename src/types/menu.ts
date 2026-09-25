@@ -63,6 +63,7 @@ export type CreateProductAddOnRequest = {
 export type RecipeItemView = {
   materialId: number
   materialName: string
+  materialNameAr?: string | null
   quantity: number
   /** The unit only; resolve the name from the UOM lookup cache (D111 phase 3). */
   uomId: number

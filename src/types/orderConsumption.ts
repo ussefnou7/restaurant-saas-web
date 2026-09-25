@@ -21,6 +21,7 @@ export type OrderConsumptionFailureReason = 'INSUFFICIENT_STOCK' | 'TECHNICAL_FA
 export interface OrderConsumptionDocMaterialResponse {
   materialId: number
   materialName: string
+  materialNameAr?: string | null
   requiredQuantity: string
   uomId: number
   uomSymbol?: string | null
@@ -57,6 +58,7 @@ export interface OrderConsumptionMaterialsSummaryResponse {
 export interface OrderConsumptionMaterialSummaryResponse {
   materialId: number
   materialName: string
+  materialNameAr?: string | null
   uomId?: number | null
   uom: string
   totalQtyConsumed: string

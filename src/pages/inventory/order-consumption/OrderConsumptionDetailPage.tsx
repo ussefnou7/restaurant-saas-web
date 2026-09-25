@@ -29,6 +29,7 @@ import { useCanManageInventoryStock, useCanViewInventoryStock } from '../../../u
 import { translateApiError } from '../../../utils/errors'
 import { formatDate, formatDateTime } from '../../../utils/format'
 import { StockAccessDenied } from '../StockAccessDenied'
+import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
 import '../../../styles/order-consumption.css'
 
 const TAB_DETAILS = 'details'
@@ -54,7 +55,7 @@ function formatQuantityWithUnit(
 }
 
 export function OrderConsumptionDetailPage() {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const notify = useNotify()
   const { uomLabel, uomSymbol } = useUomLookup()
@@ -266,7 +267,7 @@ export function OrderConsumptionDetailPage() {
                       className="order-consumption-conflicts__item"
                       title={item.exceptionClass ?? undefined}
                     >
-                      <strong>{item.materialName}</strong>
+                      <strong>{getInventoryLocalizedName(item, locale)}</strong>
                       <span>{item.exceptionMessage}</span>
                       <span className="order-consumption-conflicts__meta">
                         {item.exceptionClass}
@@ -309,7 +310,7 @@ export function OrderConsumptionDetailPage() {
 
                         return (
                           <TableRow key={item.materialId}>
-                            <Td column="entity">{item.materialName}</Td>
+                            <Td column="entity">{getInventoryLocalizedName(item, locale)}</Td>
                             <Td dir="ltr">
                               {formatQuantityWithUnit(item.requiredQuantity, materialUom)}
                             </Td>
@@ -381,7 +382,7 @@ export function OrderConsumptionDetailPage() {
                   <TableBody>
                     {materialsSummary.materials.map((summary) => (
                       <TableRow key={`${summary.materialId}-${summary.uom}`}>
-                        <Td column="entity">{summary.materialName}</Td>
+                        <Td column="entity">{getInventoryLocalizedName(summary, locale)}</Td>
                         <Td dir="ltr">{formatDecimalString(summary.totalQtyConsumed)}</Td>
                         <Td>{getSummaryUom(summary)}</Td>
                         <Td dir="ltr">{summary.orderCount}</Td>

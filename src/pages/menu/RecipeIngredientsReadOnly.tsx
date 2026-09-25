@@ -9,6 +9,7 @@ import {
 import { useTranslation } from '../../i18n/useTranslation'
 import { useUomLookup } from '../../hooks/useUomLookup'
 import type { RecipeItemView } from '../../types/menu'
+import { getInventoryLocalizedName } from '../../utils/inventoryDisplay'
 
 interface RecipeIngredientsReadOnlyProps {
   items: RecipeItemView[]
@@ -16,7 +17,7 @@ interface RecipeIngredientsReadOnlyProps {
 }
 
 export function RecipeIngredientsReadOnly({ items, emptyMessage }: RecipeIngredientsReadOnlyProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const { uomLabel, uomSymbol } = useUomLookup()
 
   if (items.length === 0) {
@@ -36,7 +37,7 @@ export function RecipeIngredientsReadOnly({ items, emptyMessage }: RecipeIngredi
         <TableBody>
           {items.map((item) => (
             <TableRow key={`${item.materialId}-${item.uomId}`}>
-              <Td>{item.materialName}</Td>
+              <Td>{getInventoryLocalizedName(item, locale)}</Td>
               <Td dir="ltr" className="table-cell--numeric">{item.quantity}</Td>
               <Td>
                 {uomSymbol(item.uomId) !== '—'
