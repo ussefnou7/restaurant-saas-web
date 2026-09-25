@@ -1,8 +1,13 @@
 import { AlertTriangle, Lock } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { DetailsCard } from '../../components/fields'
-import { EntityDetailScreen } from '../../components/entity-detail/EntityDetailScreen'
+import { DetailField, FieldGrid } from '../../components/fields'
+import {
+  DetailTabPanel,
+  DetailTabs,
+  type DetailTabItem,
+} from '../../components/entity-detail'
+import { DocumentBackButton } from '../../components/layout/DocumentLayout/DocumentBackButton'
 import { CloseShiftModal } from '../../components/shifts/CloseShiftModal'
 import {
   ForcedCloseBadge,
@@ -12,9 +17,20 @@ import {
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { EmptyState } from '../../components/ui/EmptyState'
+import { LoadingRows } from '../../components/ui/LoadingRows'
+import {
+  DataTable,
+  TableBody,
+  TableHead,
+  TableRow,
+  Td,
+  Th,
+} from '../../components/ui/Table'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 import { useTranslation } from '../../i18n/useTranslation'
+import * as branchService from '../../services/branchService'
 import * as shiftService from '../../services/shiftService'
+import type { BranchResponse } from '../../types/branch'
 import type {
   ShiftDetailResponse,
   ShiftExpenseLine,
@@ -22,6 +38,7 @@ import type {
   ShiftOrderStatus,
   ShiftPaymentMethod,
 } from '../../types/shift'
+import { resolveBranchName } from '../../utils/branchDisplay'
 import { translateApiError } from '../../utils/errors'
 import { formatDateTime, formatMoney } from '../../utils/format'
 import { useCanCloseShift, useCanViewShiftVariance } from '../../utils/shiftAccess'
@@ -33,15 +50,8 @@ import {
 } from '../../utils/shiftDisplay'
 
 const PAYMENT_METHODS: ShiftPaymentMethod[] = ['CASH', 'CARD', 'WALLET']
-
-function InfoItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="shifts-detail-info__item">
-      <span className="shifts-detail-info__label">{label}</span>
-      <span className="shifts-detail-info__value">{value}</span>
-    </div>
-  )
-}
+const TAB_ORDERS = 'orders'
+const TAB_EXPENSES = 'expenses'
 
 function OrderStatusBadge({ status }: { status: ShiftOrderStatus }) {
   const { t } = useTranslation()
@@ -57,10 +67,13 @@ export function ShiftDetailPage() {
   const { shiftId } = useParams<{ shiftId: string }>()
   const showVariance = useCanViewShiftVariance()
   const canClose = useCanCloseShift()
+
   const [detail, setDetail] = useState<ShiftDetailResponse | null>(null)
+  const [branches, setBranches] = useState<BranchResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState<string>(TAB_ORDERS)
 
   useDocumentTitle(shiftId ? t('shifts.detail.documentTitle', { id: shiftId }) : undefined)
 
@@ -81,42 +94,16 @@ export function ShiftDetailPage() {
 
   useEffect(() => {
     void loadShift()
+    void branchService.getBranches().then(setBranches).catch(() => setBranches([]))
   }, [loadShift])
 
   const shift = detail?.shift
-
-  const title = shift ? t('shifts.detail.title', { id: shift.id }) : undefined
-  const subtitle = shift
-    ? [
-        shift.cashierName ?? t('common.empty.dash'),
-        shift.deviceName,
-        formatShiftBusinessDate(shift.businessDate, locale),
-      ].join(' · ')
-    : undefined
+  const title = shift ? t('shifts.detail.title', { id: shift.id }) : ''
 
   const badges = shift ? (
-    <div className="shifts-detail__badges">
+    <div className="shift-detail__badges">
       <ShiftStatusBadge status={shift.status} />
       <ForcedCloseBadge forcedClose={shift.forcedClose} />
-    </div>
-  ) : undefined
-
-  const overview = shift ? (
-    <div className="shifts-detail-info">
-      <InfoItem label={t('shifts.columns.cashier')} value={shift.cashierName ?? t('common.empty.dash')} />
-      <InfoItem label={t('shifts.columns.closedBy')} value={shift.closedByUserName ?? t('common.empty.dash')} />
-      <InfoItem label={t('shifts.columns.device')} value={shift.deviceName} />
-      <InfoItem label={t('shifts.columns.branch')} value={shift.branchName} />
-      <InfoItem
-        label={t('shifts.columns.businessDate')}
-        value={formatShiftBusinessDate(shift.businessDate, locale)}
-      />
-      <InfoItem label={t('shifts.columns.duration')} value={formatShiftDuration(shift.durationMinutes, t)} />
-      <InfoItem label={t('shifts.columns.openedAt')} value={formatDateTime(shift.openedAt, locale)} />
-      <InfoItem
-        label={t('shifts.columns.closedAt')}
-        value={shift.closedAt ? formatDateTime(shift.closedAt, locale) : t('common.empty.dash')}
-      />
     </div>
   ) : null
 
@@ -127,6 +114,21 @@ export function ShiftDetailPage() {
       amount: detail.salesByPaymentMethod?.[method],
     }))
   }, [detail])
+
+  const tabs = useMemo<DetailTabItem[]>(() => {
+    const ordersCount = detail?.orders?.length ?? 0
+    const expensesCount = detail?.expenses?.length ?? 0
+    return [
+      {
+        id: TAB_ORDERS,
+        label: t('shifts.tabs.orders', { count: ordersCount }),
+      },
+      {
+        id: TAB_EXPENSES,
+        label: t('shifts.tabs.expenses', { count: expensesCount }),
+      },
+    ]
+  }, [detail, t])
 
   function empty(): string {
     return t('common.empty.dash')
@@ -151,45 +153,45 @@ export function ShiftDetailPage() {
     }
 
     return (
-      <div className="table-wrap shifts-detail__table-wrap">
-        <table className="shifts-detail-table shifts-detail-table--orders">
-          <thead>
-            <tr className="shifts-detail-table__row shifts-detail-table__row--head">
-              <th className="shifts-detail-table__th">{t('shifts.orders.columns.orderNo')}</th>
-              <th className="shifts-detail-table__th">{t('shifts.orders.columns.orderDate')}</th>
-              <th className="shifts-detail-table__th">{t('shifts.orders.columns.status')}</th>
-              <th className="shifts-detail-table__th">{t('shifts.orders.columns.paymentMethod')}</th>
-              <th className="shifts-detail-table__th shifts-detail-table__th--numeric">
+      <div className="list-card-content table-wrap">
+        <DataTable>
+          <TableHead>
+            <TableRow>
+              <Th column="entity">{t('shifts.orders.columns.orderNo')}</Th>
+              <Th column="date">{t('shifts.orders.columns.orderDate')}</Th>
+              <Th column="status">{t('shifts.orders.columns.status')}</Th>
+              <Th>{t('shifts.orders.columns.paymentMethod')}</Th>
+              <Th className="table-cell--numeric">
                 {t('shifts.orders.columns.totalAmount')}
-              </th>
-              <th className="shifts-detail-table__th">{t('shifts.orders.columns.recordedBy')}</th>
-            </tr>
-          </thead>
-          <tbody>
+              </Th>
+              <Th>{t('shifts.orders.columns.recordedBy')}</Th>
+            </TableRow>
+          </TableHead>
+          <TableBody>
             {orders.map((order) => (
-              <tr key={order.id} className="shifts-detail-table__row">
-                <td className="shifts-detail-table__cell">
+              <TableRow key={order.id}>
+                <Td column="entity">
                   {order.orderNo ?? t('shifts.orders.orderFallback', { id: order.id })}
-                </td>
-                <td className="shifts-detail-table__cell shifts-detail-table__cell--numeric" dir="ltr">
+                </Td>
+                <Td column="date" dir="ltr">
                   {formatDateTime(order.orderDate, locale)}
-                </td>
-                <td className="shifts-detail-table__cell">
+                </Td>
+                <Td column="status">
                   <OrderStatusBadge status={order.status} />
-                </td>
-                <td className="shifts-detail-table__cell">
+                </Td>
+                <Td>
                   {getShiftPaymentMethodLabel(order.paymentMethod, t)}
-                </td>
-                <td className="shifts-detail-table__cell shifts-detail-table__cell--amount" dir="ltr">
+                </Td>
+                <Td className="table-cell--numeric" dir="ltr">
                   {money(order.totalAmount)}
-                </td>
-                <td className="shifts-detail-table__cell">
+                </Td>
+                <Td>
                   {order.createdByName ?? t('common.empty.dash')}
-                </td>
-              </tr>
+                </Td>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </DataTable>
       </div>
     )
   }
@@ -205,124 +207,216 @@ export function ShiftDetailPage() {
     }
 
     return (
-      <div className="table-wrap shifts-detail__table-wrap">
-        <table className="shifts-detail-table shifts-detail-table--expenses">
-          <thead>
-            <tr className="shifts-detail-table__row shifts-detail-table__row--head">
-              <th className="shifts-detail-table__th">{t('shifts.expenses.columns.expenseDate')}</th>
-              <th className="shifts-detail-table__th">{t('shifts.expenses.columns.category')}</th>
-              <th className="shifts-detail-table__th">{t('shifts.expenses.columns.description')}</th>
-              <th className="shifts-detail-table__th">{t('shifts.expenses.columns.payee')}</th>
-              <th className="shifts-detail-table__th shifts-detail-table__th--numeric">
+      <div className="list-card-content table-wrap">
+        <DataTable>
+          <TableHead>
+            <TableRow>
+              <Th column="date">{t('shifts.expenses.columns.expenseDate')}</Th>
+              <Th>{t('shifts.expenses.columns.category')}</Th>
+              <Th>{t('shifts.expenses.columns.description')}</Th>
+              <Th>{t('shifts.expenses.columns.payee')}</Th>
+              <Th className="table-cell--numeric">
                 {t('shifts.expenses.columns.amount')}
-              </th>
-              <th className="shifts-detail-table__th">{t('shifts.expenses.columns.status')}</th>
-              <th className="shifts-detail-table__th">{t('shifts.expenses.columns.recordedBy')}</th>
-              <th className="shifts-detail-table__th">{t('shifts.expenses.columns.recordedAt')}</th>
-              <th className="shifts-detail-table__th">{t('shifts.expenses.columns.late')}</th>
-            </tr>
-          </thead>
-          <tbody>
+              </Th>
+              <Th column="status">{t('shifts.expenses.columns.status')}</Th>
+              <Th>{t('shifts.expenses.columns.recordedBy')}</Th>
+              <Th column="date">{t('shifts.expenses.columns.recordedAt')}</Th>
+              <Th>{t('shifts.expenses.columns.late')}</Th>
+            </TableRow>
+          </TableHead>
+          <TableBody>
             {expenses.map((expense) => (
-              <tr key={expense.id} className="shifts-detail-table__row">
-                <td className="shifts-detail-table__cell shifts-detail-table__cell--numeric" dir="ltr">
+              <TableRow key={expense.id}>
+                <Td column="date" dir="ltr">
                   {formatShiftBusinessDate(expense.expenseDate, locale)}
-                </td>
-                <td className="shifts-detail-table__cell">
+                </Td>
+                <Td>
                   {expense.categoryName ?? t('common.empty.dash')}
-                </td>
-                <td className="shifts-detail-table__cell">
+                </Td>
+                <Td>
                   {expense.description ?? t('common.empty.dash')}
-                </td>
-                <td className="shifts-detail-table__cell">
+                </Td>
+                <Td>
                   {expense.payeeName ?? t('common.empty.dash')}
-                </td>
-                <td className="shifts-detail-table__cell shifts-detail-table__cell--amount" dir="ltr">
+                </Td>
+                <Td className="table-cell--numeric" dir="ltr">
                   {money(expense.amount)}
-                </td>
-                <td className="shifts-detail-table__cell">
+                </Td>
+                <Td column="status">
                   <ShiftExpenseStatusBadge status={expense.status} />
-                </td>
-                <td className="shifts-detail-table__cell">
+                </Td>
+                <Td>
                   {expense.recordedByName ?? t('common.empty.dash')}
-                </td>
-                <td className="shifts-detail-table__cell shifts-detail-table__cell--numeric" dir="ltr">
+                </Td>
+                <Td column="date" dir="ltr">
                   {formatDateTime(expense.createdAt, locale)}
-                </td>
-                <td className="shifts-detail-table__cell">
+                </Td>
+                <Td>
                   {expense.recordedAfterClose ? (
-                    <span className="shifts-detail-table__late" title={t('shifts.expenses.lateTitle')}>
+                    <span className="shifts-late-expense-tag" title={t('shifts.expenses.lateTitle')}>
                       <AlertTriangle size={14} aria-hidden />
                       {t('shifts.expenses.late')}
                     </span>
                   ) : (
                     t('shifts.expenses.onTime')
                   )}
-                </td>
-              </tr>
+                </Td>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </DataTable>
       </div>
     )
   }
 
+  if (loading) {
+    return (
+      <main className="shift-detail-page">
+        <LoadingRows columns={2} rows={4} />
+      </main>
+    )
+  }
+
+  if (!detail || !shift) {
+    return (
+      <main className="shift-detail-page">
+        <div className="shift-detail__topbar">
+          <DocumentBackButton to="/shifts" />
+        </div>
+        <EmptyState
+          title={t('shifts.detail.notFound.title')}
+          description={t('shifts.detail.notFound.description')}
+        />
+      </main>
+    )
+  }
+
   return (
-    <>
-      <EntityDetailScreen
-        title={title}
-        subtitle={subtitle}
-        badge={badges}
-        actions={
-          shift && shift.status === 'OPEN' && canClose ? (
+    <main className="shift-detail-page">
+      <div className="shift-detail__topbar">
+        <div className="shift-detail__topbar-start">
+          <DocumentBackButton to="/shifts" />
+          <div className="shift-detail__heading">
+            <h1>{title}</h1>
+            {badges}
+          </div>
+        </div>
+        <div className="shift-detail__topbar-actions">
+          {shift.status === 'OPEN' && canClose ? (
             <Button variant="primary" onClick={() => setIsCloseModalOpen(true)}>
               <Lock size={16} aria-hidden />
               <span>{t('shifts.actions.close')}</span>
             </Button>
-          ) : undefined
-        }
-        backTo="/shifts"
-        backLabel={t('shifts.detail.back')}
-        loading={loading}
-        loadingMessage={t('shifts.detail.loading')}
-        notFound={!loading && !detail && !error}
-        notFoundTitle={t('shifts.detail.notFound.title')}
-        notFoundMessage={t('shifts.detail.notFound.description')}
-        error={error}
-        overview={overview}
-      >
-        {detail ? (
-          <div className="shifts-detail">
-            {showVariance ? (
-              <DetailsCard title={t('shifts.breakdown.title')}>
-                <div className="shifts-breakdown-grid">
-                  <InfoItem label={t('shifts.breakdown.cashSales')} value={money(detail.cashSales)} />
-                  <InfoItem label={t('shifts.breakdown.expensesAtClose')} value={money(detail.expensesAtClose)} />
-                  <InfoItem label={t('shifts.breakdown.varianceAtClose')} value={signedMoney(detail.shift.variance)} />
-                  <InfoItem label={t('shifts.breakdown.lateExpenses')} value={money(detail.lateExpenses)} />
-                  <InfoItem label={t('shifts.breakdown.explainedVariance')} value={signedMoney(detail.explainedVariance)} />
-                </div>
-                <div className="shifts-payment-breakdown">
-                  {paymentBreakdown.map((item) => (
-                    <div key={item.method} className="shifts-payment-breakdown__item">
-                      <span>{getShiftPaymentMethodLabel(item.method, t)}</span>
-                      <strong dir="ltr">{money(item.amount)}</strong>
-                    </div>
-                  ))}
-                </div>
-              </DetailsCard>
-            ) : null}
+          ) : null}
+        </div>
+      </div>
 
-            <DetailsCard title={t('shifts.orders.title')}>
-              {renderOrders(detail.orders)}
-            </DetailsCard>
+      {error ? <div className="page-error-banner">{error}</div> : null}
 
-            <DetailsCard title={t('shifts.expenses.title')}>
-              {renderExpenses(detail.expenses)}
-            </DetailsCard>
-          </div>
+      {/* Top Master Card */}
+      <div className="shift-detail__card">
+        <div className="shift-detail__card-section">
+          <FieldGrid columns={3}>
+            <DetailField
+              label={t('shifts.columns.cashier')}
+              value={shift.cashierName ?? t('common.empty.dash')}
+            />
+            <DetailField
+              label={t('shifts.columns.closedBy')}
+              value={shift.closedByUserName ?? t('common.empty.dash')}
+            />
+            <DetailField
+              label={t('shifts.columns.device')}
+              value={shift.deviceName}
+            />
+            <DetailField
+              label={t('shifts.columns.branch')}
+              value={resolveBranchName(shift.branchId, branches, locale, { branchName: shift.branchName })}
+            />
+            <DetailField
+              label={t('shifts.columns.businessDate')}
+              value={formatShiftBusinessDate(shift.businessDate, locale)}
+              dir="ltr"
+            />
+            <DetailField
+              label={t('shifts.columns.duration')}
+              value={formatShiftDuration(shift.durationMinutes, t)}
+              dir="ltr"
+            />
+            <DetailField
+              label={t('shifts.columns.openedAt')}
+              value={formatDateTime(shift.openedAt, locale)}
+              dir="ltr"
+            />
+            <DetailField
+              label={t('shifts.columns.closedAt')}
+              value={shift.closedAt ? formatDateTime(shift.closedAt, locale) : undefined}
+              dir="ltr"
+            />
+          </FieldGrid>
+        </div>
+
+        {showVariance ? (
+          <>
+            <div className="shift-detail__divider" />
+            <div className="shift-detail__card-section">
+              <h3 className="shift-detail__section-title">{t('shifts.breakdown.title')}</h3>
+              <FieldGrid columns={3}>
+                <DetailField
+                  label={t('shifts.breakdown.cashSales')}
+                  value={money(detail.cashSales)}
+                  dir="ltr"
+                />
+                <DetailField
+                  label={t('shifts.breakdown.expensesAtClose')}
+                  value={money(detail.expensesAtClose)}
+                  dir="ltr"
+                />
+                <DetailField
+                  label={t('shifts.breakdown.varianceAtClose')}
+                  value={signedMoney(detail.shift.variance)}
+                  dir="ltr"
+                />
+                <DetailField
+                  label={t('shifts.breakdown.lateExpenses')}
+                  value={money(detail.lateExpenses)}
+                  dir="ltr"
+                />
+                <DetailField
+                  label={t('shifts.breakdown.explainedVariance')}
+                  value={signedMoney(detail.explainedVariance)}
+                  dir="ltr"
+                />
+              </FieldGrid>
+              <div className="shifts-payment-breakdown">
+                {paymentBreakdown.map((item) => (
+                  <div key={item.method} className="shifts-payment-breakdown__item">
+                    <span>{getShiftPaymentMethodLabel(item.method, t)}</span>
+                    <strong dir="ltr">{money(item.amount)}</strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
         ) : null}
-      </EntityDetailScreen>
+      </div>
+
+      {/* Sub Tabs for Orders & Drawer Expenses */}
+      <DetailTabs
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        variant="sub"
+        className="shift-detail__tabs"
+      >
+        <DetailTabPanel id={TAB_ORDERS} active={activeTab === TAB_ORDERS}>
+          {renderOrders(detail.orders)}
+        </DetailTabPanel>
+
+        <DetailTabPanel id={TAB_EXPENSES} active={activeTab === TAB_EXPENSES}>
+          {renderExpenses(detail.expenses)}
+        </DetailTabPanel>
+      </DetailTabs>
 
       <CloseShiftModal
         shift={shift ?? null}
@@ -333,6 +427,6 @@ export function ShiftDetailPage() {
           void loadShift()
         }}
       />
-    </>
+    </main>
   )
 }

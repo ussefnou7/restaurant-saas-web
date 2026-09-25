@@ -1,10 +1,11 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { FieldGrid, FormField, FormInput, FormTextarea } from '../../components/fields'
+import { FieldGrid, FormField, FormInput, FormTextarea, PhoneInput } from '../../components/fields'
 import { Modal } from '../../components/ui/Modal'
 import { TenantCodeInput } from '../../components/ui/TenantCodeInput'
 import { useTranslation } from '../../i18n/useTranslation'
 import * as branchService from '../../services/branchService'
 import type { BranchResponse } from '../../types/branch'
+import { validatePhone } from '../../utils/phoneValidation'
 
 type FormMode = 'create' | 'edit'
 
@@ -57,6 +58,8 @@ export function BranchFormModal({ open, mode, branch, onClose, onSuccess }: Bran
   function validate(): string | null {
     if (!form.name.trim()) return 'Branch name is required'
     if (!form.code.trim()) return 'Branch code is required'
+    const phoneError = validatePhone(form.phone, t)
+    if (phoneError) return phoneError
     return null
   }
 
@@ -168,13 +171,12 @@ export function BranchFormModal({ open, mode, branch, onClose, onSuccess }: Bran
             helperText="Only type the suffix after KFC-BR-. The full code is generated automatically."
           />
 
-          <FormField label="Phone" htmlFor="branchPhone">
-            <FormInput
+          <FormField label={t('branchDetails.fields.phone')} htmlFor="branchPhone">
+            <PhoneInput
               id="branchPhone"
-              type="tel"
               value={form.phone}
               onChange={(event) => setForm((prev) => ({ ...prev, phone: event.target.value }))}
-              placeholder="+201000000000"
+              placeholder={t('branchDetails.placeholders.phone')}
               disabled={saving}
             />
           </FormField>

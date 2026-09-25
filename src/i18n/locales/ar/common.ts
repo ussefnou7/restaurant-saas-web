@@ -49,6 +49,8 @@ export const commonAr: TranslationDictionary = {
   'common.view': 'العرض',
   'common.unsavedChanges': 'لديك تغييرات غير محفوظة في البند. هل تريد المغادرة دون حفظ؟',
   'common.requiredField': 'هذا الحقل مطلوب',
+  'common.validation.phoneInvalid': 'رقم الهاتف يجب أن يتكون من 11 رقماً ويبدأ بـ 01',
+  'common.placeholders.phone': '01000000000',
   'common.noResults': 'لا توجد نتائج',
   'common.tryAdjustFilters': 'جرّب تعديل البحث أو عوامل التصفية.',
 

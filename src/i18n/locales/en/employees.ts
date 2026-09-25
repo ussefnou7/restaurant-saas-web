@@ -108,7 +108,7 @@ export const employeesEn: TranslationDictionary = {
   'employees.placeholders.selectBranch': 'Select branch',
   'employees.placeholders.noLinkedUser': 'No linked user',
   'employees.placeholders.email': 'employee@example.com',
-  'employees.placeholders.phone': '+201000000000',
+  'employees.placeholders.phone': '01000000000',
   'employees.placeholders.address': 'Street, city, country',
   'employees.placeholders.notes': 'Optional HR notes',
 

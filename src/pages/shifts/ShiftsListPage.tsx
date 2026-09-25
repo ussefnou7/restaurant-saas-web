@@ -1,15 +1,22 @@
-import { Eye, Lock } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { CloseShiftModal } from '../../components/shifts/CloseShiftModal'
 import { ForcedCloseBadge, ShiftStatusBadge } from '../../components/shifts/ShiftBadges'
-import { Button } from '../../components/ui/Button'
 import { ClearFiltersButton } from '../../components/ui/ClearFiltersButton'
 import { DatePicker } from '../../components/ui/DatePicker'
+import { EntityCell } from '../../components/ui/EntityCell'
 import { ListCard, ListCardHeader, ListPage, ListPageStates } from '../../components/ui/ListPage'
 import { ListPagination } from '../../components/ui/ListPagination'
 import { PageHeader } from '../../components/ui/PageHeader'
 import { SelectFilter } from '../../components/ui/SelectFilter'
+import {
+  ClickableTableRow,
+  DataTable,
+  TableBody,
+  TableHead,
+  TableRow,
+  Td,
+  Th,
+} from '../../components/ui/Table'
 import { useTranslation } from '../../i18n/useTranslation'
 import * as branchService from '../../services/branchService'
 import * as deviceService from '../../services/deviceService'
@@ -19,10 +26,10 @@ import type { BranchResponse } from '../../types/branch'
 import type { Device } from '../../types/device'
 import type { ShiftListItemResponse, ShiftListParams, ShiftStatus } from '../../types/shift'
 import type { UserResponse } from '../../types/user'
-import { getLocalizedBranchName } from '../../utils/branchDisplay'
+import { getLocalizedBranchName, resolveBranchName } from '../../utils/branchDisplay'
 import { translateApiError } from '../../utils/errors'
 import { formatDateTime } from '../../utils/format'
-import { useCanCloseShift, useCanViewShifts, useCanViewShiftVariance } from '../../utils/shiftAccess'
+import { useCanViewShifts, useCanViewShiftVariance } from '../../utils/shiftAccess'
 import {
   formatShiftBusinessDate,
   formatShiftDuration,
@@ -38,7 +45,6 @@ export function ShiftsListPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const canView = useCanViewShifts()
   const showVariance = useCanViewShiftVariance()
-  const canClose = useCanCloseShift()
 
   const branchId = searchParams.get('branchId') ?? ''
   const deviceId = searchParams.get('deviceId') ?? ''
@@ -53,7 +59,6 @@ export function ShiftsListPage() {
   const [devices, setDevices] = useState<Device[]>([])
   const [users, setUsers] = useState<UserResponse[]>([])
   const [shifts, setShifts] = useState<ShiftListItemResponse[]>([])
-  const [closingShift, setClosingShift] = useState<ShiftListItemResponse | null>(null)
   const [totalPages, setTotalPages] = useState(0)
   const [totalElements, setTotalElements] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -135,17 +140,22 @@ export function ShiftsListPage() {
   const deviceOptions = useMemo(
     () => [
       { value: '', label: t('shifts.filters.allDevices') },
-      ...devices.map((device) => ({
-        value: String(device.id),
-        label: device.branchName
-          ? t('shifts.filters.deviceWithBranch', {
-              device: device.name,
-              branch: device.branchName,
-            })
-          : device.name,
-      })),
+      ...devices.map((device) => {
+        const branchLabel = resolveBranchName(device.branchId, branches, locale, {
+          branchName: device.branchName,
+        })
+        return {
+          value: String(device.id),
+          label: branchLabel && branchLabel !== '—'
+            ? t('shifts.filters.deviceWithBranch', {
+                device: device.name,
+                branch: branchLabel,
+              })
+            : device.name,
+        }
+      }),
     ],
-    [devices, t],
+    [branches, devices, locale, t],
   )
 
   const cashierOptions = useMemo(
@@ -262,7 +272,7 @@ export function ShiftsListPage() {
         <ListPageStates
           loading={loading}
           loadingMessage={t('shifts.list.loading')}
-          loadingColumns={showVariance ? 12 : 10}
+          loadingColumns={showVariance ? 11 : 9}
           showEmpty={!loading && totalElements === 0 && !hasFilters}
           emptyTitle={t('shifts.empty.title')}
           emptyDescription={t('shifts.empty.description')}
@@ -271,101 +281,81 @@ export function ShiftsListPage() {
           filterEmptyDescription={t('shifts.emptyFilter.description')}
           showTable={!loading && totalElements > 0}
           table={
-            <table className="shifts-table">
-              <thead>
-                <tr className="shifts-table__row shifts-table__row--head">
-                  <th className="shifts-table__th">{t('shifts.columns.cashier')}</th>
-                  <th className="shifts-table__th">{t('shifts.columns.device')}</th>
-                  <th className="shifts-table__th">{t('shifts.columns.branch')}</th>
-                  <th className="shifts-table__th">{t('shifts.columns.businessDate')}</th>
-                  <th className="shifts-table__th">{t('shifts.columns.openedAt')}</th>
-                  <th className="shifts-table__th">{t('shifts.columns.closedAt')}</th>
-                  <th className="shifts-table__th">{t('shifts.columns.duration')}</th>
-                  {showVariance ? (
-                    <>
-                      <th className="shifts-table__th shifts-table__th--numeric">
-                        {t('shifts.columns.variance')}
-                      </th>
-                      <th className="shifts-table__th shifts-table__th--numeric">
-                        {t('shifts.columns.handoverVariance')}
-                      </th>
-                    </>
-                  ) : null}
-                  <th className="shifts-table__th">{t('shifts.columns.forcedClose')}</th>
-                  <th className="shifts-table__th">{t('shifts.columns.status')}</th>
-                  <th className="shifts-table__th shifts-table__th--actions">
-                    {t('shifts.columns.actions')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {shifts.map((shift) => (
-                  <tr key={shift.id} className="shifts-table__row">
-                    <td className="shifts-table__cell">
-                      {shift.cashierName ?? t('common.empty.dash')}
-                    </td>
-                    <td className="shifts-table__cell">{shift.deviceName}</td>
-                    <td className="shifts-table__cell">{shift.branchName}</td>
-                    <td className="shifts-table__cell shifts-table__cell--numeric" dir="ltr">
-                      {formatShiftBusinessDate(shift.businessDate, locale)}
-                    </td>
-                    <td className="shifts-table__cell shifts-table__cell--numeric" dir="ltr">
-                      {formatDateTime(shift.openedAt, locale)}
-                    </td>
-                    <td className="shifts-table__cell shifts-table__cell--numeric" dir="ltr">
-                      {shift.closedAt
-                        ? formatDateTime(shift.closedAt, locale)
-                        : t('common.empty.dash')}
-                    </td>
-                    <td className="shifts-table__cell shifts-table__cell--numeric" dir="ltr">
-                      {formatShiftDuration(shift.durationMinutes, t)}
-                    </td>
+            <div className="list-card-content table-wrap">
+              <DataTable>
+                <TableHead>
+                  <TableRow>
+                    <Th column="entity">{t('shifts.columns.cashier')}</Th>
+                    <Th>{t('shifts.columns.device')}</Th>
+                    <Th>{t('shifts.columns.branch')}</Th>
+                    <Th column="date">{t('shifts.columns.businessDate')}</Th>
+                    <Th column="date">{t('shifts.columns.openedAt')}</Th>
+                    <Th column="date">{t('shifts.columns.closedAt')}</Th>
+                    <Th className="table-cell--numeric">{t('shifts.columns.duration')}</Th>
                     {showVariance ? (
                       <>
-                        <td className="shifts-table__cell shifts-table__cell--amount" dir="ltr">
-                          {moneyCell(shift.variance)}
-                        </td>
-                        <td className="shifts-table__cell shifts-table__cell--amount" dir="ltr">
-                          {moneyCell(shift.handoverVariance)}
-                        </td>
+                        <Th className="table-cell--numeric">
+                          {t('shifts.columns.variance')}
+                        </Th>
+                        <Th className="table-cell--numeric">
+                          {t('shifts.columns.handoverVariance')}
+                        </Th>
                       </>
                     ) : null}
-                    <td className="shifts-table__cell">
-                      <ForcedCloseBadge forcedClose={shift.forcedClose} />
-                    </td>
-                    <td className="shifts-table__cell">
-                      <ShiftStatusBadge status={shift.status} />
-                    </td>
-                    <td className="shifts-table__cell shifts-table__td--actions">
-                      <div className="shifts-table__actions-wrap">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate(`/shifts/${shift.id}`)}
-                          aria-label={t('shifts.actions.view')}
-                          title={t('shifts.actions.view')}
-                        >
-                          <Eye size={15} aria-hidden />
-                          <span>{t('shifts.actions.view')}</span>
-                        </Button>
-                        {shift.status === 'OPEN' && canClose ? (
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => setClosingShift(shift)}
-                            aria-label={t('shifts.actions.close')}
-                            title={t('shifts.actions.close')}
-                          >
-                            <Lock size={15} aria-hidden />
-                            <span>{t('shifts.actions.closeShort')}</span>
-                          </Button>
-                        ) : null}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    <Th>{t('shifts.columns.forcedClose')}</Th>
+                    <Th column="status">{t('shifts.columns.status')}</Th>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {shifts.map((shift) => (
+                    <ClickableTableRow
+                      key={shift.id}
+                      onClick={() => navigate(`/shifts/${shift.id}`)}
+                    >
+                      <Td column="entity">
+                        <EntityCell
+                          name={shift.cashierName ?? t('common.empty.dash')}
+                          code={`#${shift.id}`}
+                          compact
+                        />
+                      </Td>
+                      <Td>{shift.deviceName}</Td>
+                      <Td>{resolveBranchName(shift.branchId, branches, locale, { branchName: shift.branchName })}</Td>
+                      <Td column="date" dir="ltr">
+                        {formatShiftBusinessDate(shift.businessDate, locale)}
+                      </Td>
+                      <Td column="date" dir="ltr">
+                        {formatDateTime(shift.openedAt, locale)}
+                      </Td>
+                      <Td column="date" dir="ltr">
+                        {shift.closedAt
+                          ? formatDateTime(shift.closedAt, locale)
+                          : t('common.empty.dash')}
+                      </Td>
+                      <Td className="table-cell--numeric" dir="ltr">
+                        {formatShiftDuration(shift.durationMinutes, t)}
+                      </Td>
+                      {showVariance ? (
+                        <>
+                          <Td className="table-cell--numeric" dir="ltr">
+                            {moneyCell(shift.variance)}
+                          </Td>
+                          <Td className="table-cell--numeric" dir="ltr">
+                            {moneyCell(shift.handoverVariance)}
+                          </Td>
+                        </>
+                      ) : null}
+                      <Td>
+                        <ForcedCloseBadge forcedClose={shift.forcedClose} />
+                      </Td>
+                      <Td column="status">
+                        <ShiftStatusBadge status={shift.status} />
+                      </Td>
+                    </ClickableTableRow>
+                  ))}
+                </TableBody>
+              </DataTable>
+            </div>
           }
         />
 
@@ -378,16 +368,6 @@ export function ShiftsListPage() {
           translationPrefix="shifts.pagination"
         />
       </ListCard>
-
-      <CloseShiftModal
-        shift={closingShift}
-        open={Boolean(closingShift)}
-        onClose={() => setClosingShift(null)}
-        onSuccess={() => {
-          setClosingShift(null)
-          void loadShifts()
-        }}
-      />
     </ListPage>
   )
 }

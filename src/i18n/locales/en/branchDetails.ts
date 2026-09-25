@@ -32,7 +32,7 @@ export const branchDetailsEn: TranslationDictionary = {
 
   'branchDetails.placeholders.name': 'Downtown Branch',
   'branchDetails.placeholders.nameAr': 'Optional Arabic branch name',
-  'branchDetails.placeholders.phone': '+201000000000',
+  'branchDetails.placeholders.phone': '01000000000',
   'branchDetails.placeholders.address': 'Street, city, country',
 
   'branchDetails.helpers.active': 'Inactive branches will not be available for operations.',

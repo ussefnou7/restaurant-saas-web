@@ -5,6 +5,7 @@ import {
   FormField,
   FormInput,
   FormTextarea,
+  PhoneInput,
   SectionGroup,
   formDropdownClassName,
 } from '../../../components/fields'
@@ -23,6 +24,7 @@ import * as userService from '../../../services/userService'
 import type { BranchResponse } from '../../../types/branch'
 import type { EmployeeResponse } from '../../../types/employee'
 import type { JobResponse } from '../../../types/job'
+import { validatePhone } from '../../../utils/phoneValidation'
 import type { UserResponse } from '../../../types/user'
 import { getLocalizedBranchName } from '../../../utils/branchDisplay'
 import {
@@ -236,6 +238,8 @@ export function EmployeeOverviewPanel({
     if (!form.branchId) return t('employees.validation.branchRequired')
     if (!form.jobId) return t('employees.validation.jobRequired')
     if (!form.hireDate) return t('employees.validation.hireDateRequired')
+    const phoneError = validatePhone(form.phone, t)
+    if (phoneError) return phoneError
     return null
   }
 
@@ -346,10 +350,8 @@ export function EmployeeOverviewPanel({
           />
         </FormField>
         <FormField label={t('employees.fields.phone')} htmlFor="emp-overview-phone">
-          <FormInput
+          <PhoneInput
             id="emp-overview-phone"
-            type="tel"
-            ltr
             value={form.phone}
             onChange={(event) => setForm((prev) => ({ ...prev, phone: event.target.value }))}
             placeholder={t('employees.placeholders.phone')}

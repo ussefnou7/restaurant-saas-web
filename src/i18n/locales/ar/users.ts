@@ -52,7 +52,7 @@ export const usersAr: TranslationDictionary = {
   'users.placeholders.fullName': 'مثال: أحمد حسن',
   'users.placeholders.username': 'admin',
   'users.placeholders.password': '••••••••',
-  'users.placeholders.phone': '+201000000000',
+  'users.placeholders.phone': '01000000000',
   'users.placeholders.selectRole': 'اختر الدور',
   'users.placeholders.selectBranch': 'اختر الفرع',
   'users.placeholders.noBranch': 'بدون فرع / وصول على مستوى المطعم',

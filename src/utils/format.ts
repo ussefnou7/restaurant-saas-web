@@ -7,20 +7,32 @@ export function formatCurrency(value: number, currency = 'EGP'): string {
   }).format(value)
 }
 
-function resolveIntlLocale(locale?: string): string | undefined {
-  if (locale === 'ar') return 'ar-EG-u-nu-latn'
-  if (locale === 'en') return 'en-US-u-nu-latn'
-  return undefined
-}
-
 export function formatDate(value?: string | null, locale?: string): string {
+  void locale
   if (!value) return '-'
-  return new Date(value).toLocaleDateString(resolveIntlLocale(locale))
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return value
+  }
+  const date = new Date(value)
+  if (isNaN(date.getTime())) return String(value)
+  const yyyy = date.getFullYear()
+  const mm = String(date.getMonth() + 1).padStart(2, '0')
+  const dd = String(date.getDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}`
 }
 
 export function formatDateTime(value?: string | null, locale?: string): string {
+  void locale
   if (!value) return '-'
-  return new Date(value).toLocaleString(resolveIntlLocale(locale))
+  const date = new Date(value)
+  if (isNaN(date.getTime())) return String(value)
+  const yyyy = date.getFullYear()
+  const mm = String(date.getMonth() + 1).padStart(2, '0')
+  const dd = String(date.getDate()).padStart(2, '0')
+  const hh = String(date.getHours()).padStart(2, '0')
+  const min = String(date.getMinutes()).padStart(2, '0')
+  const sec = String(date.getSeconds()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd} ${hh}:${min}:${sec}`
 }
 
 export function formatMoney(value?: number | null): string {
@@ -40,4 +52,3 @@ export function todayLocalDate(): string {
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
-

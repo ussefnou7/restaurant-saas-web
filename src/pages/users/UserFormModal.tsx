@@ -3,6 +3,7 @@ import {
   FieldGrid,
   FormField,
   FormInput,
+  PhoneInput,
   SectionGroup,
   StatusSwitch,
   formDropdownClassName,
@@ -17,6 +18,7 @@ import * as userService from '../../services/userService'
 import type { BranchResponse } from '../../types/branch'
 import type { UserResponse } from '../../types/user'
 import { translateApiError } from '../../utils/errors'
+import { validatePhone } from '../../utils/phoneValidation'
 import { USER_ROLE_OPTIONS } from './userRoles'
 
 function buildBranchOptions(
@@ -158,6 +160,8 @@ export function UserFormModal({ open, mode, user, onClose, onSuccess }: UserForm
     if (!form.fullName.trim()) return t('users.validation.fullNameRequired')
     if (isCreate && !form.password.trim()) return t('users.validation.passwordRequired')
     if (!form.roleCode) return t('users.validation.roleRequired')
+    const phoneError = validatePhone(form.phone, t)
+    if (phoneError) return phoneError
     return null
   }
 
@@ -289,10 +293,8 @@ export function UserFormModal({ open, mode, user, onClose, onSuccess }: UserForm
             ) : null}
 
             <FormField label={t('users.fields.phone')} htmlFor="phone">
-              <FormInput
+              <PhoneInput
                 id="phone"
-                type="tel"
-                ltr
                 value={form.phone}
                 onChange={(event) => setForm((prev) => ({ ...prev, phone: event.target.value }))}
                 placeholder={t('users.placeholders.phone')}

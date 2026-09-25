@@ -32,7 +32,7 @@ export const branchDetailsAr: TranslationDictionary = {
 
   'branchDetails.placeholders.name': 'فرع وسط البلد',
   'branchDetails.placeholders.nameAr': 'اسم الفرع بالعربي - اختياري',
-  'branchDetails.placeholders.phone': '+201000000000',
+  'branchDetails.placeholders.phone': '01000000000',
   'branchDetails.placeholders.address': 'الشارع، المدينة، الدولة',
 
   'branchDetails.helpers.active': 'الفروع غير النشطة لن تكون متاحة للعمليات.',

@@ -92,6 +92,9 @@ export const shiftsAr: TranslationDictionary = {
   'shifts.paymentMethod.CARD': 'بطاقة',
   'shifts.paymentMethod.WALLET': 'محفظة',
 
+  'shifts.tabs.orders': 'الطلبات ({{count}})',
+  'shifts.tabs.expenses': 'مصروفات الدرج ({{count}})',
+
   'shifts.orderStatus.COMPLETE': 'مكتمل',
   'shifts.orderStatus.CANCELLED': 'ملغي',
   'shifts.orders.title': 'الطلبات',

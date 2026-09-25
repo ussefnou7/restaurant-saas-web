@@ -107,7 +107,7 @@ export const employeesAr: TranslationDictionary = {
   'employees.placeholders.selectBranch': 'اختر الفرع',
   'employees.placeholders.noLinkedUser': 'بدون مستخدم مرتبط',
   'employees.placeholders.email': 'employee@example.com',
-  'employees.placeholders.phone': '+201000000000',
+  'employees.placeholders.phone': '01000000000',
   'employees.placeholders.address': 'الشارع، المدينة، الدولة',
   'employees.placeholders.notes': 'ملاحظات الموارد البشرية - اختياري',
 

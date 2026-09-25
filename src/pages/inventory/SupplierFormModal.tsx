@@ -4,6 +4,7 @@ import {
   FormField,
   FormInput,
   FormTextarea,
+  PhoneInput,
   StatusSwitch,
 } from '../../components/fields'
 import { Button } from '../../components/ui/Button'
@@ -11,6 +12,7 @@ import { Modal } from '../../components/ui/Modal'
 import { useTranslation } from '../../i18n/useTranslation'
 import * as inventoryService from '../../services/inventoryService'
 import type { SupplierResponse } from '../../types/inventory'
+import { validatePhone } from '../../utils/phoneValidation'
 
 type FormMode = 'create' | 'edit'
 
@@ -71,6 +73,8 @@ export function SupplierFormModal({
 
   function validate(): string | null {
     if (!form.name.trim()) return t('inventory.suppliers.validation.nameRequired')
+    const phoneError = validatePhone(form.phone, t)
+    if (phoneError) return phoneError
     return null
   }
 
@@ -159,12 +163,11 @@ export function SupplierFormModal({
             />
           </FormField>
           <FormField label={t('inventory.col.phone')} htmlFor="supplier-phone">
-            <FormInput
+            <PhoneInput
               id="supplier-phone"
-              type="tel"
-              ltr
               value={form.phone}
               onChange={(e) => setForm((prev) => ({ ...prev, phone: e.target.value }))}
+              placeholder={t('common.placeholders.phone')}
               disabled={saving}
             />
           </FormField>

@@ -1,6 +1,7 @@
 export { DetailField, type DetailFieldProps } from './DetailField'
 export { FormField, type FormFieldProps } from './FormField'
 export { FormInput, FormSelect, FormTextarea } from './FormControls'
+export { PhoneInput, type PhoneInputProps } from './PhoneInput'
 export {
   formDropdownClassName,
   formInputClassName,

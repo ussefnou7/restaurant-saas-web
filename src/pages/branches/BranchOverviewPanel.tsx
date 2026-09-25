@@ -6,6 +6,7 @@ import {
   FormField,
   FormInput,
   FormTextarea,
+  PhoneInput,
   SectionGroup,
 } from '../../components/fields'
 import { Button } from '../../components/ui/Button'
@@ -15,6 +16,7 @@ import { useTranslation } from '../../i18n/useTranslation'
 import * as branchService from '../../services/branchService'
 import type { BranchResponse } from '../../types/branch'
 import { getBranchFormNames, getLocalizedBranchAddress } from '../../utils/branchDisplay'
+import { validatePhone } from '../../utils/phoneValidation'
 
 type EditForm = {
   name: string
@@ -74,6 +76,8 @@ export function BranchOverviewPanel({
 
   function validate(): string | null {
     if (!form.name.trim()) return t('branchDetails.validation.nameRequired')
+    const phoneError = validatePhone(form.phone, t)
+    if (phoneError) return phoneError
     return null
   }
 
@@ -202,10 +206,8 @@ export function BranchOverviewPanel({
             </FormField>
 
             <FormField label={t('branchDetails.fields.phone')} htmlFor="branch-overview-phone">
-              <FormInput
+              <PhoneInput
                 id="branch-overview-phone"
-                type="tel"
-                ltr
                 value={form.phone}
                 onChange={(event) => setForm((prev) => ({ ...prev, phone: event.target.value }))}
                 placeholder={t('branchDetails.placeholders.phone')}

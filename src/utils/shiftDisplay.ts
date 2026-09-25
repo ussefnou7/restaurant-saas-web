@@ -1,5 +1,6 @@
 import type { TranslationKey, TranslationValues } from '../i18n/types'
 import type { ShiftExpenseStatus, ShiftPaymentMethod, ShiftStatus } from '../types/shift'
+import { formatDate } from './format'
 
 type TranslateFn = (key: TranslationKey, values?: TranslationValues) => string
 type BadgeVariant = 'success' | 'warning' | 'danger' | 'muted' | 'primary' | 'inactive'
@@ -45,8 +46,5 @@ export function formatSignedMoney(value?: number | null, empty = '-'): string {
 }
 
 export function formatShiftBusinessDate(value?: string | null, locale?: string): string {
-  if (!value) return '-'
-  return new Date(`${value}T00:00:00`).toLocaleDateString(
-    locale === 'ar' ? 'ar-EG-u-nu-latn' : 'en-US-u-nu-latn',
-  )
+  return formatDate(value, locale)
 }

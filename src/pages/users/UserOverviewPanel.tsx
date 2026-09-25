@@ -4,6 +4,7 @@ import {
   FieldGrid,
   FormField,
   FormInput,
+  PhoneInput,
   SectionGroup,
   formDropdownClassName,
 } from '../../components/fields'
@@ -19,6 +20,7 @@ import * as userService from '../../services/userService'
 import type { BranchResponse } from '../../types/branch'
 import type { UserResponse } from '../../types/user'
 import { getLocalizedBranchName, getLocalizedRoleName, getLocalizedUserBranchName } from '../../utils/roleDisplay'
+import { validatePhone } from '../../utils/phoneValidation'
 import { USER_ROLE_OPTIONS } from './userRoles'
 
 type EditForm = {
@@ -159,6 +161,8 @@ export function UserOverviewPanel({
   function validate(): string | null {
     if (!form.fullName.trim()) return t('users.validation.fullNameRequired')
     if (!form.roleCode) return t('users.validation.roleRequired')
+    const phoneError = validatePhone(form.phone, t)
+    if (phoneError) return phoneError
     return null
   }
 
@@ -241,10 +245,8 @@ export function UserOverviewPanel({
         </FormField>
 
         <FormField label={t('userDetails.fields.phone')} htmlFor="user-overview-phone">
-          <FormInput
+          <PhoneInput
             id="user-overview-phone"
-            type="tel"
-            ltr
             value={form.phone}
             onChange={(event) => setForm((prev) => ({ ...prev, phone: event.target.value }))}
             placeholder={t('users.placeholders.phone')}

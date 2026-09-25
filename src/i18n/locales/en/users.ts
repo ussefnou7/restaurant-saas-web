@@ -53,7 +53,7 @@ export const usersEn: TranslationDictionary = {
   'users.placeholders.fullName': 'John Doe',
   'users.placeholders.username': 'admin',
   'users.placeholders.password': '••••••••',
-  'users.placeholders.phone': '+201000000000',
+  'users.placeholders.phone': '01000000000',
   'users.placeholders.selectRole': 'Select a role',
   'users.placeholders.selectBranch': 'Select branch',
   'users.placeholders.noBranch': 'No branch / tenant-wide access',

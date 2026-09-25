@@ -6,6 +6,7 @@ import {
   FormInput,
   FormSelect,
   FormTextarea,
+  PhoneInput,
   SectionGroup,
   StatusSwitch,
 } from '../../../components/fields'
@@ -20,6 +21,7 @@ import type { EmployeeResponse } from '../../../types/employee'
 import type { JobResponse } from '../../../types/job'
 import type { UserResponse } from '../../../types/user'
 import { translateApiError } from '../../../utils/errors'
+import { validatePhone } from '../../../utils/phoneValidation'
 
 type FormMode = 'create' | 'edit'
 
@@ -189,6 +191,9 @@ export function EmployeeFormModal({
     if (Number.isNaN(salary) || salary <= 0) {
       return t('employees.validation.salaryPositive')
     }
+
+    const phoneError = validatePhone(form.phone, t)
+    if (phoneError) return phoneError
 
     return null
   }
@@ -391,10 +396,8 @@ export function EmployeeFormModal({
         <SectionGroup title={t('employees.sections.contact')}>
           <FieldGrid columns={2}>
             <FormField label={t('employees.fields.phone')} htmlFor="phone">
-              <FormInput
+              <PhoneInput
                 id="phone"
-                type="tel"
-                ltr
                 value={form.phone}
                 onChange={(event) => setForm((prev) => ({ ...prev, phone: event.target.value }))}
                 placeholder={t('employees.placeholders.phone')}

@@ -49,6 +49,8 @@ export const commonEn: TranslationDictionary = {
   'common.view': 'View',
   'common.unsavedChanges': 'You have unsaved line changes. Leave without saving?',
   'common.requiredField': 'This field is required',
+  'common.validation.phoneInvalid': 'Phone number must be 11 digits and start with 01',
+  'common.placeholders.phone': '01000000000',
   'common.noResults': 'No results found',
   'common.tryAdjustFilters': 'Try adjusting your search or filters.',
 
