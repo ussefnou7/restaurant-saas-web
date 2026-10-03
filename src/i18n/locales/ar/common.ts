@@ -3,6 +3,7 @@ import type { TranslationDictionary } from '../../types'
 export const commonAr: TranslationDictionary = {
   'common.appName': 'ريستورو',
   'common.notFound': 'الصفحة غير موجودة',
+  'common.accessDenied': 'تم رفض الوصول',
 
   'common.active': 'نشط',
   'common.inactive': 'غير نشط',

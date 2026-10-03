@@ -36,6 +36,9 @@ export const ordersEn: TranslationDictionary = {
   'orders.orderType.DINE_IN': 'Dine in',
   'orders.orderType.TAKEAWAY': 'Takeaway',
   'orders.orderType.DELIVERY': 'Delivery',
+  'orders.type.DINE_IN': 'Dine in',
+  'orders.type.TAKEAWAY': 'Takeaway',
+  'orders.type.DELIVERY': 'Delivery',
 
   'orders.orderSource.POS': 'POS',
   'orders.orderSource.ONLINE': 'Online',

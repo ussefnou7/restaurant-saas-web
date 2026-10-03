@@ -575,6 +575,7 @@ export const inventoryAr: TranslationDictionary = {
   'inventory.purchase.lines.expiryDate': 'تاريخ انتهاء الصلاحية',
   'inventory.purchase.lines.lineTotal': 'الإجمالي',
   'inventory.purchase.lines.delete': 'حذف',
+  'inventory.purchase.lines.notes': 'ملاحظات',
   'inventory.purchase.lines.stockUomHint': 'وحدة المخزون: {{uom}}',
   'inventory.purchase.totals.subtotal': 'المجموع',
   'inventory.purchase.totals.subtotalFull': 'المجموع الفرعي',

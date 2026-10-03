@@ -37,6 +37,9 @@ export const ordersAr: TranslationDictionary = {
   'orders.orderType.DINE_IN': 'تناول في المطعم',
   'orders.orderType.TAKEAWAY': 'تيك أواي',
   'orders.orderType.DELIVERY': 'توصيل',
+  'orders.type.DINE_IN': 'تناول في المطعم',
+  'orders.type.TAKEAWAY': 'تيك أواي',
+  'orders.type.DELIVERY': 'توصيل',
 
   'orders.orderSource.POS': 'نقطة البيع',
   'orders.orderSource.ONLINE': 'إلكتروني',

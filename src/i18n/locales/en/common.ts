@@ -3,6 +3,7 @@ import type { TranslationDictionary } from '../../types'
 export const commonEn: TranslationDictionary = {
   'common.appName': 'Restoro',
   'common.notFound': 'Page Not Found',
+  'common.accessDenied': 'Access Denied',
 
   'common.active': 'Active',
   'common.inactive': 'Inactive',
