@@ -50,6 +50,10 @@ export const assetsEn: TranslationDictionary = {
   'assets.lines.validation.quantityRequired': 'Quantity is required and must be greater than zero.',
   'assets.lines.validation.unitCostRequired': 'Unit cost is required and must be greater than zero.',
   'assets.lines.validation.purchaseDateRequired': 'Purchase date is required.',
+  'assets.lines.validation.purchaseDateFuture': 'Purchase date cannot be in the future.',
+  'errors.ASSET_DATE_IN_FUTURE': 'Date {{date}} cannot be after today ({{maxDate}}).',
+  'errors.ASSET_OPERATION_BEFORE_PURCHASE_DATE':
+    'Date {{date}} cannot be before the selected line purchase date ({{purchaseDate}}).',
 
   'assets.operation.asset': 'Asset',
   'assets.operation.line': 'Line',

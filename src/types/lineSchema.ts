@@ -45,6 +45,7 @@ export interface LineField<
   dir?: 'ltr' | 'rtl'
   step?: string | number
   min?: number
+  max?: string | number
 
   // Field dependencies and cascading reset
   dependsOn?: Array<keyof TLine & string>

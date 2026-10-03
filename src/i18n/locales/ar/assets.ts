@@ -50,6 +50,10 @@ export const assetsAr: TranslationDictionary = {
   'assets.lines.validation.quantityRequired': 'الكمية مطلوبة ويجب أن تكون أكبر من صفر.',
   'assets.lines.validation.unitCostRequired': 'تكلفة الوحدة مطلوبة ويجب أن تكون أكبر من صفر.',
   'assets.lines.validation.purchaseDateRequired': 'تاريخ الشراء مطلوب.',
+  'assets.lines.validation.purchaseDateFuture': 'لا يمكن أن يكون تاريخ الشراء في المستقبل.',
+  'errors.ASSET_DATE_IN_FUTURE': 'لا يمكن أن يكون التاريخ {{date}} بعد تاريخ اليوم ({{maxDate}}).',
+  'errors.ASSET_OPERATION_BEFORE_PURCHASE_DATE':
+    'لا يمكن أن يكون التاريخ {{date}} قبل تاريخ شراء البند المختار ({{purchaseDate}}).',
 
   'assets.operation.asset': 'الأصل',
   'assets.operation.line': 'البند',

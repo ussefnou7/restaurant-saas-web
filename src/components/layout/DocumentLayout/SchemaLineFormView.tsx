@@ -266,6 +266,7 @@ export function SchemaLineFormView<
       <input
         type={field.type === 'number' || field.type === 'money' ? 'number' : field.type === 'date' ? 'date' : 'text'}
         min={field.min ?? 0}
+        max={field.max}
         step={field.step ?? 'any'}
         className={`pi-form-field__input${field.dir === 'ltr' ? ' pi-form-field__input--ltr' : ''}`}
         value={String(val)}

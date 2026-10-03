@@ -318,6 +318,20 @@ export function AssetDisposalForm({
       setError(t('assets.disposal.validation.quantityExceeded'))
       return
     }
+    if (disposalDate > todayLocalDate()) {
+      setError(t('errors.ASSET_DATE_IN_FUTURE', {
+        date: disposalDate,
+        maxDate: todayLocalDate(),
+      }))
+      return
+    }
+    if (selectedLine && disposalDate < selectedLine.purchaseDate) {
+      setError(t('errors.ASSET_OPERATION_BEFORE_PURCHASE_DATE', {
+        date: disposalDate,
+        purchaseDate: selectedLine.purchaseDate,
+      }))
+      return
+    }
 
     setSaving(true)
     setError('')
@@ -398,6 +412,8 @@ export function AssetDisposalForm({
               <input
                 type="date"
                 value={disposalDate}
+                min={selection.selectedLine?.purchaseDate}
+                max={todayLocalDate()}
                 onChange={(event) => setDisposalDate(event.target.value)}
                 required
               />
@@ -491,6 +507,21 @@ export function AssetMaintenanceForm({
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
+    const selectedLine = selection.selectedLine
+    if (maintenanceDate > todayLocalDate()) {
+      setError(t('errors.ASSET_DATE_IN_FUTURE', {
+        date: maintenanceDate,
+        maxDate: todayLocalDate(),
+      }))
+      return
+    }
+    if (selectedLine && maintenanceDate < selectedLine.purchaseDate) {
+      setError(t('errors.ASSET_OPERATION_BEFORE_PURCHASE_DATE', {
+        date: maintenanceDate,
+        purchaseDate: selectedLine.purchaseDate,
+      }))
+      return
+    }
     setSaving(true)
     setError('')
     try {
@@ -554,6 +585,8 @@ export function AssetMaintenanceForm({
               <input
                 type="date"
                 value={maintenanceDate}
+                min={selection.selectedLine?.purchaseDate}
+                max={todayLocalDate()}
                 onChange={(event) => setMaintenanceDate(event.target.value)}
                 required
               />

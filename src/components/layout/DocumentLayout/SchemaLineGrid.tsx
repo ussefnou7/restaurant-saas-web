@@ -234,6 +234,7 @@ export function SchemaLineGrid<
       <input
         type={field.type === 'number' || field.type === 'money' ? 'number' : field.type === 'date' ? 'date' : 'text'}
         min={field.min ?? 0}
+        max={field.max}
         step={field.step ?? 'any'}
         className={`pi-form-line-row__input${field.dir === 'ltr' ? ' pi-form-line-row__input--ltr' : ''}`}
         value={String(val)}

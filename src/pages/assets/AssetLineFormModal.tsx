@@ -4,6 +4,7 @@ import { Modal } from '../../components/ui/Modal'
 import { useTranslation } from '../../i18n/useTranslation'
 import * as assetService from '../../services/assetService'
 import { translateApiError } from '../../utils/errors'
+import { todayLocalDate } from '../../utils/format'
 
 interface AssetLineFormModalProps {
   open: boolean
@@ -23,6 +24,10 @@ export function AssetLineFormModal({ open, assetId, onClose, onSaved }: AssetLin
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
+    if (purchaseDate > todayLocalDate()) {
+      setError(t('assets.lines.validation.purchaseDateFuture'))
+      return
+    }
     setSaving(true)
     setError('')
     try {
@@ -81,7 +86,13 @@ export function AssetLineFormModal({ open, assetId, onClose, onSaved }: AssetLin
         </label>
         <label className="form-field">
           <span>{t('assets.lines.purchaseDate')}</span>
-          <input type="date" value={purchaseDate} onChange={(event) => setPurchaseDate(event.target.value)} required />
+          <input
+            type="date"
+            value={purchaseDate}
+            max={todayLocalDate()}
+            onChange={(event) => setPurchaseDate(event.target.value)}
+            required
+          />
         </label>
       </form>
     </Modal>

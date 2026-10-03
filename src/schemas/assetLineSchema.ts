@@ -2,6 +2,7 @@ import type { LineSchema, LineSchemaDeps } from '../types/lineSchema'
 import type { BranchResponse } from '../types/branch'
 import type { AssetStatus } from '../types/assets'
 import { formatAssetLineLabel } from '../utils/assetDisplay'
+import { todayLocalDate } from '../utils/format'
 
 export interface AssetLineFormState {
   id?: number
@@ -91,10 +92,16 @@ export function createAssetLineSchema(
         type: 'date',
         readOnly: (ctx) => !ctx.isNew,
         required: true,
+        max: todayLocalDate(),
         showIn: ['grid', 'form'],
         tableWidth: '14%',
         columnClass: 'asset-lines-col--date',
-        validate: (val) => (!val ? 'assets.lines.validation.purchaseDateRequired' : null),
+        validate: (val) => {
+          if (!val) return 'assets.lines.validation.purchaseDateRequired'
+          return String(val) > todayLocalDate()
+            ? 'assets.lines.validation.purchaseDateFuture'
+            : null
+        },
       },
       {
         id: 'status',
