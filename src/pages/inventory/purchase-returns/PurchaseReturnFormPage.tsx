@@ -472,6 +472,8 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
     }
     if (!header.returnDate) {
       errors.returnDate = t('inventory.purchaseReturn.validation.returnDateRequired')
+    } else if (header.returnDate > todayLocalDate()) {
+      errors.returnDate = t('inventory.purchaseReturn.validation.returnDateFuture')
     }
     if (!header.reason) {
       errors.reason = t('inventory.purchaseReturn.validation.reasonRequired')
@@ -971,6 +973,7 @@ function PurchaseReturnForm({ mode }: { mode: FormMode }) {
                       <DatePicker
                         value={header.returnDate}
                         onChange={(val) => setHeader((prev) => ({ ...prev, returnDate: val }))}
+                        maxDate={todayLocalDate()}
                         placeholder={t('inventory.purchaseReturn.fields.returnDate')}
                         ariaLabel={t('inventory.purchaseReturn.fields.returnDate')}
                         size="md"

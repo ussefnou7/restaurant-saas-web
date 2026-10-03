@@ -383,6 +383,9 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
     const fieldRequired = t('inventory.waste.validation.fieldRequired')
     if (!header.warehouseId) errors.warehouseId = fieldRequired
     if (!header.wasteDate) errors.wasteDate = fieldRequired
+    else if (header.wasteDate > todayLocalDate()) {
+      errors.wasteDate = t('inventory.waste.validation.dateFuture')
+    }
     return errors
   }
 
@@ -814,6 +817,7 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                       <DatePicker
                         value={header.wasteDate}
                         onChange={(val) => setHeader((prev) => ({ ...prev, wasteDate: val }))}
+                        maxDate={todayLocalDate()}
                         placeholder={t('inventory.waste.fields.wasteDate')}
                         ariaLabel={t('inventory.waste.fields.wasteDate')}
                         size="md"

@@ -429,6 +429,9 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
     if (!header.warehouseId) errors.warehouseId = fieldRequired
     if (!header.invoiceDate) errors.invoiceDate = fieldRequired
     if (!header.receiptDate) errors.receiptDate = fieldRequired
+    else if (header.receiptDate > todayLocalDate()) {
+      errors.receiptDate = t('inventory.purchase.validation.receiptDateFuture')
+    }
     return errors
   }
 
@@ -1003,6 +1006,7 @@ function PurchaseInvoiceForm({ mode }: { mode: FormMode }) {
                       <DatePicker
                         value={header.receiptDate}
                         onChange={(val) => setHeader((prev) => ({ ...prev, receiptDate: val }))}
+                        maxDate={todayLocalDate()}
                         placeholder={t('inventory.purchase.fields.receiptDate')}
                         ariaLabel={t('inventory.purchase.fields.receiptDate')}
                         size="md"

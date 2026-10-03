@@ -28,6 +28,8 @@ export const errorsAr: TranslationDictionary = {
   'errors.UOM_CONVERSION_FAILED':
     'إعداد تحويل الوحدات غير مكتمل للمادة {{materialName}} ({{materialCode}}): لا يمكن التحويل من {{fromUom}} إلى {{toUom}}.',
   'errors.EMPTY_DOCUMENT_LINES': 'لا يمكن تنفيذ العملية: المستند لا يحتوي على أي بنود',
+  'errors.INVENTORY_MOVEMENT_DATE_IN_FUTURE':
+    'لا يمكن أن يكون تاريخ حركة المخزون بعد {{maxDate}}.',
   'errors.PURCHASE_INVOICE_EXPIRY_DATE_REQUIRED':
     'أدخل تاريخ انتهاء الصلاحية للمادة {{materialName}} قبل ترحيل فاتورة الشراء.',
   'errors.ORDER_CONSUMPTION_PENDING_DOC_RACE_LOST':
