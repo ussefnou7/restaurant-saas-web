@@ -64,11 +64,9 @@ export interface ExpenseResponse {
 
 export interface ExpenseCategoryResponse {
   id: number
-  tenantId: number | null
   name: string
   nameAr: string | null
   active: boolean
-  global: boolean
   createdBy: number | null
   createdAt: string
 }

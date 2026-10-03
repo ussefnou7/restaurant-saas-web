@@ -95,7 +95,7 @@ export const expensesAr = {
   'expenses.void.success': 'تم إلغاء المصروف بنجاح',
   'expenses.void.viewReason': 'سبب الإلغاء: {{reason}}',
 
-  // Categories Management (D116)
+  // Categories Management (D137)
   'expenses.categories.new': 'تصنيف جديد',
   'expenses.categories.edit': 'تعديل التصنيف',
   'expenses.categories.nameEn': 'اسم التصنيف (بالإنجليزية)',
@@ -103,10 +103,6 @@ export const expensesAr = {
   'expenses.categories.namePlaceholder': 'أدخل اسم التصنيف',
   'expenses.categories.nameArPlaceholder': 'الاسم بالعربية اختياري',
   'expenses.categories.filters.search': 'البحث في اسم التصنيف...',
-  'expenses.categories.scope': 'النوع',
-  'expenses.categories.scopeAll': 'جميع الأنواع',
-  'expenses.categories.scopeGlobal': 'افتراضي عام',
-  'expenses.categories.scopeTenant': 'تصنيف مخصص',
   'expenses.categories.statusActive': 'نشط',
   'expenses.categories.statusInactive': 'غير نشط',
   'expenses.categories.activate': 'تفعيل',
@@ -152,6 +148,5 @@ export const expensesAr = {
   'errors.EXPENSE_ALREADY_VOIDED': 'المصروف رقم {{expenseId}} تم إلغاؤه بالفعل بتاريخ {{voidedAt}}',
   'errors.EXPENSE_NOT_MANUAL': 'لا يمكن إلغاء المصروف رقم {{expenseId}} مباشرة لأن نوع المصدر هو {{sourceType}}',
   'errors.EXPENSE_VOID_REASON_REQUIRED': 'سبب الإلغاء مطلوب لإلغاء المصروف رقم {{expenseId}}',
-  'errors.EXPENSE_CATEGORY_IS_GLOBAL': 'لا يمكن تعديل أو تعطيل التصنيف العام للمصروفات (رقم: {{categoryId}})',
   'errors.EXPENSE_CATEGORY_NAME_EXISTS': 'يوجد تصنيف مصروفات آخر بالاسم "{{name}}"',
 }

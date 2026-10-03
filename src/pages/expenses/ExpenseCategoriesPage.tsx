@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, Globe, Lock, Pencil, Plus, Power, PowerOff } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Pencil, Plus, Power, PowerOff } from 'lucide-react'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
 import { ClearFiltersButton } from '../../components/ui/ClearFiltersButton'
@@ -21,7 +21,6 @@ import { translateApiError } from '../../utils/errors'
 import { useCanManageExpenseCategories, useCanViewExpenses } from '../../utils/expenseAccess'
 import { ExpenseCategoryFormModal } from './ExpenseCategoryFormModal'
 
-type ScopeFilter = 'all' | 'global' | 'tenant'
 type StatusFilter = 'all' | 'active' | 'inactive'
 
 export function ExpenseCategoriesPage() {
@@ -36,7 +35,6 @@ export function ExpenseCategoriesPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
-  const [scopeFilter, setScopeFilter] = useState<ScopeFilter>('all')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
 
   // Modal state
@@ -74,9 +72,6 @@ export function ExpenseCategoriesPage() {
           if (!matchesName && !matchesNameAr) return false
         }
 
-        if (scopeFilter === 'global' && !cat.global) return false
-        if (scopeFilter === 'tenant' && cat.global) return false
-
         if (statusFilter === 'active' && !cat.active) return false
         if (statusFilter === 'inactive' && cat.active) return false
 
@@ -88,7 +83,7 @@ export function ExpenseCategoriesPage() {
         const nameB = locale === 'ar' && b.nameAr ? b.nameAr : b.name
         return nameA.localeCompare(nameB, locale)
       })
-  }, [categories, search, scopeFilter, statusFilter, locale])
+  }, [categories, search, statusFilter, locale])
 
   function handleOpenCreate() {
     setModalMode('create')
@@ -97,14 +92,13 @@ export function ExpenseCategoriesPage() {
   }
 
   function handleOpenEdit(cat: ExpenseCategoryResponse) {
-    if (cat.global) return // Read-only guard
     setModalMode('edit')
     setEditingCategory(cat)
     setIsModalOpen(true)
   }
 
   async function handleToggleStatus(cat: ExpenseCategoryResponse) {
-    if (cat.global || !canManage) return // Guard global categories and permission
+    if (!canManage) return
     setActionId(cat.id)
     try {
       if (cat.active) {
@@ -138,7 +132,7 @@ export function ExpenseCategoriesPage() {
     )
   }
 
-  const hasFilters = Boolean(search || scopeFilter !== 'all' || statusFilter !== 'all')
+  const hasFilters = Boolean(search || statusFilter !== 'all')
 
   return (
     <ListPage className="expenses-page">
@@ -175,16 +169,6 @@ export function ExpenseCategoriesPage() {
                 ariaLabel={t('expenses.categories.filters.search')}
               />
               <SelectFilter
-                value={scopeFilter}
-                onChange={(val) => setScopeFilter(val as ScopeFilter)}
-                options={[
-                  { value: 'all', label: t('expenses.categories.scopeAll') },
-                  { value: 'global', label: t('expenses.categories.scopeGlobal') },
-                  { value: 'tenant', label: t('expenses.categories.scopeTenant') },
-                ]}
-                ariaLabel={t('expenses.categories.scope')}
-              />
-              <SelectFilter
                 value={statusFilter}
                 onChange={(val) => setStatusFilter(val as StatusFilter)}
                 options={[
@@ -198,7 +182,6 @@ export function ExpenseCategoriesPage() {
                 <ClearFiltersButton
                   onClick={() => {
                     setSearch('')
-                    setScopeFilter('all')
                     setStatusFilter('all')
                   }}
                 />
@@ -210,7 +193,7 @@ export function ExpenseCategoriesPage() {
         <ListPageStates
           loading={loading}
           loadingMessage={t('common.loading')}
-          loadingColumns={5}
+          loadingColumns={4}
           showEmpty={!loading && categories.length === 0 && !hasFilters}
           emptyTitle={t('expenses.categories.empty.title')}
           emptyDescription={t('expenses.categories.empty.description')}
@@ -226,7 +209,6 @@ export function ExpenseCategoriesPage() {
                 <colgroup>
                   <col style={{ width: '260px' }} />
                   <col style={{ width: '260px' }} />
-                  <col style={{ width: '160px' }} />
                   <col style={{ width: '120px' }} />
                   <col style={{ width: '160px' }} />
                 </colgroup>
@@ -234,7 +216,6 @@ export function ExpenseCategoriesPage() {
                   <tr>
                     <th className="expenses-table__th">{t('expenses.categories.nameEn')}</th>
                     <th className="expenses-table__th">{t('expenses.categories.nameAr')}</th>
-                    <th className="expenses-table__th">{t('expenses.categories.scope')}</th>
                     <th className="expenses-table__th">{t('expenses.columns.status')}</th>
                     <th className="expenses-table__th expenses-table__th--actions">
                       {t('expenses.columns.actions')}
@@ -254,18 +235,6 @@ export function ExpenseCategoriesPage() {
                           {cat.nameAr || '-'}
                         </td>
                         <td className="expenses-table__cell">
-                          {cat.global ? (
-                            <span className="expenses-category-badge expenses-category-badge--global">
-                              <Globe size={13} aria-hidden />
-                              <span>{t('expenses.categories.scopeGlobal')}</span>
-                            </span>
-                          ) : (
-                            <span className="expenses-category-badge expenses-category-badge--tenant">
-                              <span>{t('expenses.categories.scopeTenant')}</span>
-                            </span>
-                          )}
-                        </td>
-                        <td className="expenses-table__cell">
                           <Badge variant={cat.active ? 'success' : 'inactive'}>
                             {cat.active
                               ? t('expenses.categories.statusActive')
@@ -273,22 +242,7 @@ export function ExpenseCategoriesPage() {
                           </Badge>
                         </td>
                         <td className="expenses-table__cell expenses-table__td--actions">
-                          {cat.global ? (
-                            <span
-                              className="text-muted"
-                              title={t('expenses.categories.globalReadOnlyNotice')}
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                                fontSize: '0.75rem',
-                                color: 'var(--color-text-muted)',
-                              }}
-                            >
-                              <Lock size={13} aria-hidden />
-                              <span>{t('expenses.categories.scopeGlobal')}</span>
-                            </span>
-                          ) : canManage ? (
+                          {canManage ? (
                             <div
                               style={{
                                 display: 'inline-flex',

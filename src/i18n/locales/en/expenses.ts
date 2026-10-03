@@ -95,7 +95,7 @@ export const expensesEn = {
   'expenses.void.success': 'Expense voided successfully',
   'expenses.void.viewReason': 'Void reason: {{reason}}',
 
-  // Categories Management (D116)
+  // Categories Management (D137)
   'expenses.categories.new': 'New Category',
   'expenses.categories.edit': 'Edit Category',
   'expenses.categories.nameEn': 'Category Name (English)',
@@ -103,10 +103,6 @@ export const expensesEn = {
   'expenses.categories.namePlaceholder': 'Enter category name',
   'expenses.categories.nameArPlaceholder': 'Optional Arabic name',
   'expenses.categories.filters.search': 'Search category name...',
-  'expenses.categories.scope': 'Scope',
-  'expenses.categories.scopeAll': 'All Scopes',
-  'expenses.categories.scopeGlobal': 'Global Default',
-  'expenses.categories.scopeTenant': 'Custom Category',
   'expenses.categories.statusActive': 'Active',
   'expenses.categories.statusInactive': 'Inactive',
   'expenses.categories.activate': 'Activate',
@@ -152,6 +148,5 @@ export const expensesEn = {
   'errors.EXPENSE_ALREADY_VOIDED': 'Expense #{{expenseId}} has already been voided on {{voidedAt}}',
   'errors.EXPENSE_NOT_MANUAL': 'Expense #{{expenseId}} cannot be voided directly because its source type is {{sourceType}}',
   'errors.EXPENSE_VOID_REASON_REQUIRED': 'A reason is required to void expense #{{expenseId}}',
-  'errors.EXPENSE_CATEGORY_IS_GLOBAL': 'Global expense category (ID: {{categoryId}}) cannot be modified or deactivated',
   'errors.EXPENSE_CATEGORY_NAME_EXISTS': 'An expense category named "{{name}}" already exists',
 }
