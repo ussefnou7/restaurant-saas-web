@@ -162,6 +162,10 @@ export const errorsAr: TranslationDictionary = {
   'errors.DEVICE_IDENTITY_REQUIRED':
     'هذا الإجراء يتطلب جلسة جهاز نقطة بيع تحتوي على {{claim}}.',
   'errors.NO_OPEN_SHIFT_FOR_DEVICE': 'لا توجد وردية مفتوحة لهذا الجهاز.',
+  'errors.EXPENSE_DRAWER_BRANCH_REQUIRED':
+    'اختر الفرع الذي دُفع منه المصروف من درج الكاشير.',
+  'errors.EXPENSE_DRAWER_SHIFT_REQUIRED':
+    'اختر وردية درج الكاشير التي دُفع منها هذا المصروف.',
   'errors.EXPENSE_SHIFT_NOT_FOUND': 'وردية الدرج المحددة غير موجودة.',
   'errors.EXPENSE_SHIFT_BRANCH_MISMATCH':
     'وردية الدرج المحددة تتبع فرعًا مختلفًا.',

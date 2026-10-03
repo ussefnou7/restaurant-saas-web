@@ -78,13 +78,18 @@ export function ExpenseCreatePage() {
 
   const branchOptions = useMemo(() => {
     return [
-      { value: '', label: t('expenses.create.branchCompanyLevel') },
+      {
+        value: '',
+        label: form.paymentSource === 'CASH_DRAWER'
+          ? t('expenses.create.branchPlaceholder')
+          : t('expenses.create.branchCompanyLevel'),
+      },
       ...branches.map((b) => ({
         value: String(b.id),
         label: getLocalizedBranchName(b, locale),
       })),
     ]
-  }, [branches, locale, t])
+  }, [branches, form.paymentSource, locale, t])
 
   const categoryOptions = useMemo(() => {
     return [
@@ -124,6 +129,12 @@ export function ExpenseCreatePage() {
     }
     if (!form.paymentSource) {
       errors.paymentSource = t('expenses.create.paymentSourcePlaceholder')
+    }
+    if (form.paymentSource === 'CASH_DRAWER' && !form.branchSelection) {
+      errors.branchId = t('errors.EXPENSE_DRAWER_BRANCH_REQUIRED')
+    }
+    if (form.paymentSource === 'CASH_DRAWER' && form.paidFromShiftId === null) {
+      errors.paidFromShiftId = t('errors.EXPENSE_DRAWER_SHIFT_REQUIRED')
     }
     if (form.description.length > 500) {
       errors.description = t('errors.VALIDATION_FAILED.field', { constraint: 'max 500' })
@@ -257,6 +268,7 @@ export function ExpenseCreatePage() {
 
             <FormField
               label={t('expenses.create.branch')}
+              required={form.paymentSource === 'CASH_DRAWER'}
               error={fieldErrors.branchId}
               className={openDropdown === 'branch' ? 'field-box--open' : ''}
             >
@@ -289,7 +301,12 @@ export function ExpenseCreatePage() {
                     paymentSource: val as ExpensePaymentSource | '',
                     paidFromShiftId: null,
                   }))
-                  setFieldErrors((prev) => ({ ...prev, paymentSource: '' }))
+                  setFieldErrors((prev) => ({
+                    ...prev,
+                    paymentSource: '',
+                    branchId: '',
+                    paidFromShiftId: '',
+                  }))
                   setOpenDropdown(null)
                 }}
                 onOpen={() => setOpenDropdown('paymentSource')}
@@ -309,6 +326,7 @@ export function ExpenseCreatePage() {
                 onChange={handleShiftChange}
                 disabled={submitting}
                 error={fieldErrors.paidFromShiftId}
+                required
               />
             )}
 

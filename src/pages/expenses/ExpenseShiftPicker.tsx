@@ -17,9 +17,18 @@ interface ExpenseShiftPickerProps {
   onChange: (value: number | null) => void
   disabled: boolean
   error?: string
+  required?: boolean
 }
 
-export function ExpenseShiftPicker({ branchId, expenseDate, value, onChange, disabled, error }: ExpenseShiftPickerProps) {
+export function ExpenseShiftPicker({
+  branchId,
+  expenseDate,
+  value,
+  onChange,
+  disabled,
+  error,
+  required = false,
+}: ExpenseShiftPickerProps) {
   const { t, locale } = useTranslation()
   const [days, setDays] = useState(7)
   const [shifts, setShifts] = useState<SelectableExpenseShift[]>([])
@@ -59,7 +68,7 @@ export function ExpenseShiftPicker({ branchId, expenseDate, value, onChange, dis
 
   const selected = shifts.find((shift) => shift.id === value)
   const options = [
-    { value: '', label: t('expenses.shift.none') },
+    { value: '', label: required ? t('expenses.shift.select') : t('expenses.shift.none') },
     ...shifts.map((shift) => ({
       value: String(shift.id),
       label: (
@@ -92,9 +101,11 @@ export function ExpenseShiftPicker({ branchId, expenseDate, value, onChange, dis
           </FormSelect>
         </FormField>
       )}
-      <FormField label={t('expenses.shift.label')} error={error}
+      <FormField label={t('expenses.shift.label')} required={required} error={error}
         className={`expense-shift-picker${open ? ' field-box--open' : ''}`}
-        helper={branchId === null ? t('expenses.shift.branchRequired') : t('expenses.shift.optional')}>
+        helper={branchId === null
+          ? t('expenses.shift.branchRequired')
+          : required ? t('errors.EXPENSE_DRAWER_SHIFT_REQUIRED') : t('expenses.shift.optional')}>
         <Dropdown value={value === null ? '' : String(value)} options={options}
           ariaLabel={t('expenses.shift.label')} disabled={disabled || branchId === null || loading || loadError !== null}
           onOpen={() => setOpen(true)} onClose={() => setOpen(false)}

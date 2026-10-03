@@ -1,6 +1,7 @@
 export const expensesEn = {
   'expenses.shift.label': 'Paid from shift',
   'expenses.shift.none': 'No linked shift',
+  'expenses.shift.select': 'Select the drawer shift',
   'expenses.shift.branchRequired': 'Choose a branch to link a drawer shift.',
   'expenses.shift.empty': 'No shifts found in this window. Extend the window to search older shifts.',
   'expenses.shift.window': 'Recent window',

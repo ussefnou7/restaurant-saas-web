@@ -1,6 +1,7 @@
 export const expensesAr = {
   'expenses.shift.label': 'الوردية التي دُفع منها',
   'expenses.shift.none': 'بدون ربط بوردية',
+  'expenses.shift.select': 'اختر وردية درج الكاشير',
   'expenses.shift.branchRequired': 'اختر فرعًا لربط المصروف بوردية درج النقد.',
   'expenses.shift.empty': 'لا توجد ورديات في هذه الفترة. وسّع الفترة للبحث عن ورديات أقدم.',
   'expenses.shift.window': 'فترة البحث',
