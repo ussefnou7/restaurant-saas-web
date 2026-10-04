@@ -1,6 +1,7 @@
 import type { TranslationDictionary } from '../../types'
 
 export const errorsEn: TranslationDictionary = {
+  'errors.LEAVE_REQUEST_OVERLAP': 'These dates overlap an approved leave request for this employee.',
   'errors.SALARY_ADJUSTMENT_DATE_IN_FUTURE': 'The adjustment date cannot be later than {{today}}.',
   'errors.SALARY_ADJUSTMENT_BEFORE_HIRE': 'The adjustment date cannot be before the hire date ({{hireDate}}).',
   'errors.SALARY_DEDUCTION_EXCEEDS_SALARY': 'The deduction cannot exceed the salary of {{salaryAmount}} effective on {{adjustmentDate}}.',
