@@ -1,0 +1,38 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+
+      # `build` is lint + `tsc -b` + vite, per package.json. That is the whole
+      # mechanical gate this repo has: it carries no tests and no test runner
+      # (ledger row L016). When the first test lands, add a `npm test` step
+      # above this one rather than folding it into `build`.
+      - run: npm run build
+
+# Deliberately *not* checked here: whether `src/access/permissions.generated.ts`
+# is current. `npm run sync:permissions` reads
+# `../../restaurant-saas/docs/contracts/permission-manifest.json` — a sibling
+# repository this job does not check out, so the step would fail on every run
+# rather than on drift. The equivalent check lives in the backend workflow,
+# where the manifest is generated and both halves are present.
