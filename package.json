@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build": "npm run lint && tsc -b && vite build",
+    "test": "node --no-warnings --loader ./scripts/ts-loader.mjs --test tests/*.test.ts",
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "serve -s dist -l tcp://0.0.0.0:${PORT:-3000}",

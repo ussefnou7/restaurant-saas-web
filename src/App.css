@@ -871,6 +871,32 @@ textarea {
   border-radius: var(--radius-md);
 }
 
+.login-lock-banner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.login-lock-banner p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.login-countdown-text {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.login-countdown-digits {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
 .form-actions {
   margin-top: var(--space-2);
 }
