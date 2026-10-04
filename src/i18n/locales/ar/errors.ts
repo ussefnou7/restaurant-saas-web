@@ -1,6 +1,9 @@
 import type { TranslationDictionary } from '../../types'
 
 export const errorsAr: TranslationDictionary = {
+  'errors.SALARY_ADJUSTMENT_DATE_IN_FUTURE': 'لا يمكن أن يكون تاريخ التعديل بعد {{today}}.',
+  'errors.SALARY_ADJUSTMENT_BEFORE_HIRE': 'لا يمكن أن يكون تاريخ التعديل قبل تاريخ التعيين ({{hireDate}}).',
+  'errors.SALARY_DEDUCTION_EXCEEDS_SALARY': 'لا يمكن أن يتجاوز الخصم الراتب البالغ {{salaryAmount}} الساري في {{adjustmentDate}}.',
   'errors.USER_INACTIVE': 'حسابك غير نشط. تواصل مع مسؤول النظام.',
   'errors.ROLE_INACTIVE': 'دورك غير نشط. تواصل مع مسؤول النظام.',
   'errors.TOKEN_EXPIRED': 'انتهت صلاحية جلستك. يرجى تسجيل الدخول مرة أخرى.',

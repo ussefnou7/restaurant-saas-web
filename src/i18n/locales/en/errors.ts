@@ -1,6 +1,9 @@
 import type { TranslationDictionary } from '../../types'
 
 export const errorsEn: TranslationDictionary = {
+  'errors.SALARY_ADJUSTMENT_DATE_IN_FUTURE': 'The adjustment date cannot be later than {{today}}.',
+  'errors.SALARY_ADJUSTMENT_BEFORE_HIRE': 'The adjustment date cannot be before the hire date ({{hireDate}}).',
+  'errors.SALARY_DEDUCTION_EXCEEDS_SALARY': 'The deduction cannot exceed the salary of {{salaryAmount}} effective on {{adjustmentDate}}.',
   'errors.USER_INACTIVE': 'Your account is inactive. Contact your administrator.',
   'errors.ROLE_INACTIVE': 'Your role is inactive. Contact your administrator.',
   'errors.TOKEN_EXPIRED': 'Your session has expired. Please sign in again.',
