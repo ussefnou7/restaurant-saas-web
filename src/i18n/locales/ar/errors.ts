@@ -61,6 +61,10 @@ export const errorsAr: TranslationDictionary = {
   'errors.VALIDATION_FAILED': 'بعض الحقول تحتوي على قيم غير صالحة، يرجى مراجعتها',
   'errors.VALIDATION_FAILED.field': 'قيمة غير صالحة ({{constraint}})',
   'errors.VALIDATION_FAILED.fieldGeneric': 'قيمة غير صالحة',
+  'errors.PASSWORD_REQUIRED': 'كلمة المرور مطلوبة',
+  'errors.PASSWORD_LENGTH': 'يجب أن تتكون كلمة المرور من 8 إلى 64 حرفاً',
+  'errors.PASSWORD_PATTERN':
+    'يجب أن تتكون كلمة المرور من 8 إلى 64 حرفاً، وتحتوي على حرف واحد على الأقل بأي لغة ورقم واحد على الأقل، وألا تحتوي على أحرف تحكم مثل السطر الجديد أو Tab',
 
   // HR / Users / Branches / Jobs (shared HrErrorCode)
   'errors.INACTIVE_REFERENCE': 'العنصر المرجعي غير نشط ({{entityType}} رقم {{entityId}})',
@@ -147,6 +151,8 @@ export const errorsAr: TranslationDictionary = {
   // Auth
   'errors.INVALID_CREDENTIALS':
     'بيانات الدخول غير صحيحة، تحقق من رمز المطعم واسم المستخدم وكلمة المرور',
+  'errors.LOGIN_TEMPORARILY_LOCKED':
+    'تم قفل الحساب مؤقتاً لمدة 5 دقائق بسبب تكرار محاولات الدخول.',
   'errors.POS_LOGIN_NOT_PERMITTED': 'هذا المستخدم غير مسموح له بفتح الورديات على جهاز نقاط البيع',
   'errors.DEVICE_BRANCH_MISMATCH': 'هذا المستخدم غير مرتبط بفرع جهاز نقاط البيع المحدد',
 

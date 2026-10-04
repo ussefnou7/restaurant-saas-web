@@ -1,7 +1,7 @@
 import type { TranslationDictionary } from '../../types'
 
 export const commonAr: TranslationDictionary = {
-  'common.appName': 'ريستورو',
+  'common.appName': 'RestorO',
   'common.notFound': 'الصفحة غير موجودة',
   'common.accessDenied': 'تم رفض الوصول',
 

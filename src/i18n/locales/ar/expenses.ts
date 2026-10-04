@@ -81,6 +81,12 @@ export const expensesAr = {
   'expenses.create.submitting': 'جاري التسجيل...',
   'expenses.create.cancel': 'إلغاء',
   'expenses.create.success': 'تم تسجيل المصروف بنجاح',
+  'expenses.create.noCategoriesTitle': 'لا توجد تصنيفات مصروفات',
+  'expenses.create.noCategoriesDescription': 'يجب إنشاء تصنيف مصروفات واحد على الأقل قبل أن تتمكن من تسجيل المصروفات.',
+  'expenses.create.noCategoriesMessage': 'لا توجد تصنيفات حالياً. يجب إنشاء تصنيف لتسجيل المصروفات.',
+  'expenses.create.createCategoryLink': 'الانتقال إلى تصنيفات المصروفات',
+  'expenses.create.createCategoryAction': 'إنشاء تصنيف',
+  'expenses.create.noCategoriesPermissionHint': 'يرجى التواصل مع مسؤول يملك صلاحية إدارة التصنيفات لإضافة تصنيف.',
 
   // Void Modal (D117)
   'expenses.void.title': 'إلغاء المصروف رقم #{{id}}',

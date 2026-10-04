@@ -204,13 +204,13 @@ export function ExpenseCategoriesPage() {
           filterEmptyDescription={t('common.tryAdjustFilters')}
           showTable={!loading && filteredCategories.length > 0}
           table={
-            <div className="expenses-table-wrap">
+            <div className="expenses-table-wrap expenses-table-wrap--categories">
               <table className="expenses-table">
                 <colgroup>
                   <col style={{ width: '260px' }} />
                   <col style={{ width: '260px' }} />
                   <col style={{ width: '120px' }} />
-                  <col style={{ width: '160px' }} />
+                  <col style={{ width: 'var(--expenses-actions-width, 160px)' }} />
                 </colgroup>
                 <thead>
                   <tr>
@@ -243,13 +243,7 @@ export function ExpenseCategoriesPage() {
                         </td>
                         <td className="expenses-table__cell expenses-table__td--actions">
                           {canManage ? (
-                            <div
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: 'var(--space-xs)',
-                              }}
-                            >
+                            <div className="expenses-table__actions">
                               <Button
                                 size="sm"
                                 variant="ghost"

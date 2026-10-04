@@ -334,7 +334,7 @@ export function ExpensesListPage() {
                   <col style={{ width: '130px' }} />
                   <col style={{ width: '130px' }} />
                   <col style={{ width: '100px' }} />
-                  <col style={{ width: '150px' }} />
+                  <col style={{ width: 'var(--expenses-actions-width, 260px)' }} />
                 </colgroup>
                 <thead>
                   <tr>
@@ -400,35 +400,40 @@ export function ExpensesListPage() {
                             {t(`expenses.status.${exp.status}`)}
                           </Badge>
                         </td>
-                        <td className="expenses-table__cell expenses-table__td--actions">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              navigate(`/expenses/${exp.id}`)
-                            }}
-                            aria-label={t('expenses.detail.viewDetails')}
-                            title={t('expenses.detail.viewDetails')}
-                          >
-                            <Eye size={15} aria-hidden />
-                            <span>{t('expenses.detail.viewDetails')}</span>
-                          </Button>
-                          {!isVoided && canVoid ? (
+                        <td
+                          className="expenses-table__cell expenses-table__td--actions"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="expenses-table__actions">
                             <Button
                               size="sm"
                               variant="ghost"
                               onClick={(e) => {
                                 e.stopPropagation()
-                                setVoidingExpense(exp)
+                                navigate(`/expenses/${exp.id}`)
                               }}
-                              aria-label={t('expenses.void.button')}
-                              title={t('expenses.void.button')}
+                              aria-label={t('expenses.detail.viewDetails')}
+                              title={t('expenses.detail.viewDetails')}
                             >
-                              <Ban size={15} aria-hidden />
-                              <span>{t('expenses.void.button')}</span>
+                              <Eye size={15} aria-hidden />
+                              <span>{t('expenses.detail.viewDetails')}</span>
                             </Button>
-                          ) : null}
+                            {!isVoided && canVoid ? (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setVoidingExpense(exp)
+                                }}
+                                aria-label={t('expenses.void.button')}
+                                title={t('expenses.void.button')}
+                              >
+                                <Ban size={15} aria-hidden />
+                                <span>{t('expenses.void.button')}</span>
+                              </Button>
+                            ) : null}
+                          </div>
                         </td>
                       </tr>
                     )

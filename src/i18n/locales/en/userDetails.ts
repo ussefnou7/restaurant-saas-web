@@ -23,6 +23,7 @@ export const userDetailsEn: TranslationDictionary = {
 
   'userDetails.fields.fullName': 'Full Name',
   'userDetails.fields.username': 'Username',
+  'userDetails.fields.newPassword': 'New Password',
   'userDetails.fields.phone': 'Phone',
   'userDetails.fields.role': 'Role',
   'userDetails.fields.branch': 'Branch',

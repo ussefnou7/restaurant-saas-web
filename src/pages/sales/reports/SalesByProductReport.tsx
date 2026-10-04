@@ -18,6 +18,7 @@ import type { BranchResponse } from '../../../types/branch'
 import type { OrderTypeFilter, SalesByProductRow, SalesFilterParams } from '../../../types/reports'
 import type { UserResponse } from '../../../types/user'
 import { translateApiError } from '../../../utils/errors'
+import { getOrderTypeLabel } from '../../../utils/orderDisplay'
 
 const reportMeta = getReportCatalogEntry('sales-by-product')!
 
@@ -203,7 +204,7 @@ export function SalesByProductReport() {
 
     const branchText = selectedBranch ? (locale === 'ar' ? selectedBranch.nameAr || selectedBranch.name : selectedBranch.name) : t('reports.filters.allBranches')
     const userText = selectedUser ? selectedUser.fullName : t('reports.filters.allCashiers')
-    const orderTypeText = urlOrderType ? t(`orders.type.${urlOrderType}`) : t('reports.filters.allOrderTypes')
+    const orderTypeText = urlOrderType ? getOrderTypeLabel(urlOrderType, t) : t('reports.filters.allOrderTypes')
 
     return locale === 'ar'
       ? `مفلتر حسب الفرع ${branchText}، المستخدم ${userText}، نوع الطلب ${orderTypeText}. مرتب حسب الإيراد (قبل الضريبة) تنازلياً.`
@@ -322,9 +323,9 @@ export function SalesByProductReport() {
                   disabled={loadingOptions}
                 >
                   <option value="">{t('reports.filters.allOrderTypes')}</option>
-                  <option value="DINE_IN">{t('orders.type.DINE_IN')}</option>
-                  <option value="TAKEAWAY">{t('orders.type.TAKEAWAY')}</option>
-                  <option value="DELIVERY">{t('orders.type.DELIVERY')}</option>
+                  <option value="DINE_IN">{getOrderTypeLabel('DINE_IN', t)}</option>
+                  <option value="TAKEAWAY">{getOrderTypeLabel('TAKEAWAY', t)}</option>
+                  <option value="DELIVERY">{getOrderTypeLabel('DELIVERY', t)}</option>
                 </select>
               </div>
             </div>

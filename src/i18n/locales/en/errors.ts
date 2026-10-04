@@ -63,6 +63,10 @@ export const errorsEn: TranslationDictionary = {
   'errors.VALIDATION_FAILED': 'Some fields contain invalid values, please review them',
   'errors.VALIDATION_FAILED.field': 'Invalid value ({{constraint}})',
   'errors.VALIDATION_FAILED.fieldGeneric': 'Invalid value',
+  'errors.PASSWORD_REQUIRED': 'Password is required',
+  'errors.PASSWORD_LENGTH': 'Password must be between 8 and 64 characters',
+  'errors.PASSWORD_PATTERN':
+    'Password must be 8 to 64 characters long, contain at least one letter in any language and at least one number, and must not contain control characters such as newlines or tabs',
 
   // HR / Users / Branches / Jobs (shared HrErrorCode)
   'errors.INACTIVE_REFERENCE': 'The referenced item is inactive ({{entityType}} #{{entityId}})',
@@ -152,6 +156,8 @@ export const errorsEn: TranslationDictionary = {
   // Auth
   'errors.INVALID_CREDENTIALS':
     'Invalid credentials, check the restaurant code, username, and password',
+  'errors.LOGIN_TEMPORARILY_LOCKED':
+    'Your account is temporarily locked for 5 minutes due to repeated login attempts.',
   'errors.POS_LOGIN_NOT_PERMITTED': 'This user is not allowed to open shifts on a POS device',
   'errors.DEVICE_BRANCH_MISMATCH': 'This user is not assigned to the selected POS device branch',
 

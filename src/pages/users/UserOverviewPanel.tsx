@@ -18,7 +18,9 @@ import { useTranslation } from '../../i18n/useTranslation'
 import * as branchService from '../../services/branchService'
 import * as userService from '../../services/userService'
 import type { BranchResponse } from '../../types/branch'
-import type { UserResponse } from '../../types/user'
+import type { UpdateUserRequest, UserResponse } from '../../types/user'
+import { translateApiError } from '../../utils/errors'
+import { validatePassword } from '../../utils/passwordValidation'
 import { getLocalizedBranchName, getLocalizedRoleName, getLocalizedUserBranchName } from '../../utils/roleDisplay'
 import { validatePhone } from '../../utils/phoneValidation'
 import { USER_ROLE_OPTIONS } from './userRoles'
@@ -26,6 +28,7 @@ import { USER_ROLE_OPTIONS } from './userRoles'
 type EditForm = {
   fullName: string
   phone: string
+  password: string
   roleCode: string
   branchId: string
   active: boolean
@@ -50,6 +53,7 @@ function formFromUser(user: UserResponse): EditForm {
   return {
     fullName: user.fullName,
     phone: user.phone ?? '',
+    password: '',
     roleCode: user.role.code,
     branchId: user.branchId != null ? String(user.branchId) : '',
     active: user.active,
@@ -74,6 +78,7 @@ export function UserOverviewPanel({
   const { t, locale } = useTranslation()
   const [form, setForm] = useState<EditForm>(() => formFromUser(user))
   const [saveError, setSaveError] = useState('')
+  const [passwordError, setPasswordError] = useState('')
   const [saving, setSaving] = useState(false)
   const [branches, setBranches] = useState<BranchResponse[]>([])
   const [loadingBranches, setLoadingBranches] = useState(false)
@@ -95,6 +100,7 @@ export function UserOverviewPanel({
     if (!editing || prevUser.id !== user.id) {
       setForm(formFromUser(user))
       setSaveError('')
+      setPasswordError('')
     }
   }
 
@@ -158,36 +164,69 @@ export function UserOverviewPanel({
     return Number.isNaN(parsed) ? null : parsed
   }, [])
 
-  function validate(): string | null {
-    if (!form.fullName.trim()) return t('users.validation.fullNameRequired')
-    if (!form.roleCode) return t('users.validation.roleRequired')
+  function validate(): boolean {
+    setSaveError('')
+    setPasswordError('')
+
+    const pwError = validatePassword(form.password, false, t)
+    if (pwError) {
+      setPasswordError(pwError)
+      return false
+    }
+
+    if (!form.fullName.trim()) {
+      setSaveError(t('users.validation.fullNameRequired'))
+      return false
+    }
+    if (!form.roleCode) {
+      setSaveError(t('users.validation.roleRequired'))
+      return false
+    }
     const phoneError = validatePhone(form.phone, t)
-    if (phoneError) return phoneError
-    return null
+    if (phoneError) {
+      setSaveError(phoneError)
+      return false
+    }
+    return true
   }
 
   async function handleSave(event: FormEvent) {
     event.preventDefault()
     setSaveError('')
+    setPasswordError('')
 
-    const validationError = validate()
-    if (validationError) {
-      setSaveError(validationError)
+    if (!validate()) {
       return
     }
 
     setSaving(true)
     try {
-      const updated = await userService.updateUser(user.id, {
+      const payload: UpdateUserRequest = {
         fullName: form.fullName.trim(),
         phone: form.phone.trim() || undefined,
         roleCode: form.roleCode,
         branchId: parseBranchId(form.branchId),
         active: form.active,
-      })
+      }
+      if (form.password.trim()) {
+        payload.password = form.password
+      }
+      const updated = await userService.updateUser(user.id, payload)
       onSaved(updated)
-    } catch {
-      // API errors are translated and toasted by the global axios interceptor.
+    } catch (err) {
+      const translated = translateApiError(err, t)
+      if (translated.fieldErrors?.password) {
+        setPasswordError(translated.fieldErrors.password)
+      }
+      const otherFieldErrors = Object.entries(translated.fieldErrors ?? {})
+        .filter(([field]) => field !== 'password')
+        .map(([field, msg]) => `${field}: ${msg}`)
+
+      if (otherFieldErrors.length > 0) {
+        setSaveError(otherFieldErrors.join('\n'))
+      } else if (!translated.fieldErrors?.password) {
+        setSaveError(translated.message)
+      }
     } finally {
       setSaving(false)
     }
@@ -220,7 +259,7 @@ export function UserOverviewPanel({
     }
 
     return (
-      <FieldGrid columns={3}>
+      <FieldGrid columns={2}>
         <FormField label={t('userDetails.fields.fullName')} htmlFor="user-overview-fullName">
           <FormInput
             id="user-overview-fullName"
@@ -241,6 +280,25 @@ export function UserOverviewPanel({
             value={user.username}
             readOnly
             disabled
+          />
+        </FormField>
+
+        <FormField
+          label={t('users.fields.newPassword')}
+          htmlFor="user-overview-password"
+          helper={t('users.helpers.passwordOptional')}
+          error={passwordError}
+        >
+          <FormInput
+            id="user-overview-password"
+            type="password"
+            value={form.password}
+            onChange={(event) => {
+              setPasswordError('')
+              setForm((prev) => ({ ...prev, password: event.target.value }))
+            }}
+            placeholder={t('users.placeholders.newPassword')}
+            disabled={saving}
           />
         </FormField>
 

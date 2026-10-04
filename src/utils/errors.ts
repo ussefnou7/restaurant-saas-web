@@ -136,17 +136,51 @@ function translateUnpostBlockedBatchConsumed(
   return [header, ...lines].join('\n')
 }
 
+function getConstraintCode(fieldError: ApiFieldError): string {
+  const fromParams = fieldError.params?.constraint
+  if (typeof fromParams === 'string' && fromParams.trim()) {
+    return fromParams.trim()
+  }
+  if (typeof fieldError.errorCode === 'string' && fieldError.errorCode.trim()) {
+    return fieldError.errorCode.trim()
+  }
+  return ''
+}
+
 function translateFieldErrors(
   t: TranslateFn,
   fieldErrors: ApiFieldError[],
 ): TranslatedApiError {
   const byField: Record<string, string> = {}
   for (const fieldError of fieldErrors) {
-    const constraint = fieldError.params?.constraint
-    byField[fieldError.field] =
-      typeof constraint === 'string' && constraint.trim()
-        ? t('errors.VALIDATION_FAILED.field', { constraint })
-        : t('errors.VALIDATION_FAILED.fieldGeneric')
+    const rawConstraint = getConstraintCode(fieldError)
+    const upperConstraint = rawConstraint.toUpperCase()
+
+    let translatedMessage: string | null = null
+
+    if (fieldError.field === 'password') {
+      if (upperConstraint === 'PASSWORD_REQUIRED') {
+        translatedMessage = t('errors.PASSWORD_REQUIRED')
+      } else if (upperConstraint === 'PASSWORD_LENGTH') {
+        translatedMessage = t('errors.PASSWORD_LENGTH')
+      } else if (upperConstraint === 'PASSWORD_PATTERN') {
+        translatedMessage = t('errors.PASSWORD_PATTERN')
+      }
+    }
+
+    if (!translatedMessage && rawConstraint) {
+      translatedMessage =
+        translateErrorCode(t, `${fieldError.field}.${rawConstraint}`, fieldError.params) ??
+        translateErrorCode(t, rawConstraint, fieldError.params)
+    }
+
+    if (translatedMessage) {
+      byField[fieldError.field] = translatedMessage
+    } else if (rawConstraint) {
+      byField[fieldError.field] = t('errors.VALIDATION_FAILED.field', { constraint: rawConstraint })
+    } else {
+      byField[fieldError.field] = t('errors.VALIDATION_FAILED.fieldGeneric')
+    }
   }
   const summary = t('errors.VALIDATION_FAILED')
   const lines = Object.entries(byField).map(([field, message]) => `${field}: ${message}`)
@@ -171,6 +205,12 @@ export function translateApiError(error: unknown, t: TranslateFn): TranslatedApi
   }
 
   if (body?.errorCode) {
+    const upperCode = body.errorCode.toUpperCase()
+    const isPasswordConstraint =
+      upperCode === 'PASSWORD_REQUIRED' ||
+      upperCode === 'PASSWORD_LENGTH' ||
+      upperCode === 'PASSWORD_PATTERN'
+
     const translated =
       body.errorCode === 'FREEZE_CONFLICT'
         ? translateFreezeConflict(t, body.params)
@@ -180,7 +220,10 @@ export function translateApiError(error: unknown, t: TranslateFn): TranslatedApi
             ? translateUnpostBlockedBatchConsumed(t, body.params)
             : translateErrorCode(t, body.errorCode, body.params)
     if (translated !== null) {
-      return { message: translated }
+      return {
+        message: translated,
+        ...(isPasswordConstraint ? { fieldErrors: { password: translated } } : {}),
+      }
     }
     console.error(
       `[api] Unmapped errorCode "${body.errorCode}": ${body.message ?? '(no message)'}`,
@@ -190,6 +233,10 @@ export function translateApiError(error: unknown, t: TranslateFn): TranslatedApi
   }
 
   // Network failure or a non-structured error body.
+  if (axios.isAxiosError(error) && error.response?.status === 429) {
+    return { message: t('errors.LOGIN_TEMPORARILY_LOCKED') }
+  }
+
   console.error('[api] Unstructured API error:', error)
   return { message: t('errors.GENERIC_ERROR') }
 }
@@ -206,11 +253,14 @@ export function getApiErrorCode(error: unknown): string | undefined {
  */
 export function getApiErrorDetails(error: unknown): ApiErrorDetails {
   const body = extractApiErrorBody(error)
+  const is429 = axios.isAxiosError(error) && error.response?.status === 429
+  const defaultCode = is429 ? 'LOGIN_TEMPORARILY_LOCKED' : 'GENERIC_ERROR'
+
   return {
     errorCode:
       typeof body?.errorCode === 'string' && body.errorCode.trim()
         ? body.errorCode
-        : 'GENERIC_ERROR',
+        : defaultCode,
     ...(body?.params ? { params: body.params } : {}),
   }
 }

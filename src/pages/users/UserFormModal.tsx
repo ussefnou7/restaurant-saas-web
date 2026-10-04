@@ -16,8 +16,9 @@ import type { TranslationKey } from '../../i18n/types'
 import * as branchService from '../../services/branchService'
 import * as userService from '../../services/userService'
 import type { BranchResponse } from '../../types/branch'
-import type { UserResponse } from '../../types/user'
+import type { UpdateUserRequest, UserResponse } from '../../types/user'
 import { translateApiError } from '../../utils/errors'
+import { validatePassword } from '../../utils/passwordValidation'
 import { validatePhone } from '../../utils/phoneValidation'
 import { USER_ROLE_OPTIONS } from './userRoles'
 
@@ -60,6 +61,7 @@ export function UserFormModal({ open, mode, user, onClose, onSuccess }: UserForm
   const { t } = useTranslation()
   const [form, setForm] = useState(emptyForm)
   const [error, setError] = useState('')
+  const [passwordError, setPasswordError] = useState('')
   const [saving, setSaving] = useState(false)
   const [loadingOptions, setLoadingOptions] = useState(false)
   const [branches, setBranches] = useState<BranchResponse[]>([])
@@ -100,6 +102,7 @@ export function UserFormModal({ open, mode, user, onClose, onSuccess }: UserForm
     if (!open) return
 
     setError('')
+    setPasswordError('')
     if (isCreate) {
       setForm(emptyForm)
       return
@@ -155,23 +158,42 @@ export function UserFormModal({ open, mode, user, onClose, onSuccess }: UserForm
     return Number.isNaN(parsed) ? null : parsed
   }
 
-  function validate(): string | null {
-    if (isCreate && !form.username.trim()) return t('users.validation.usernameRequired')
-    if (!form.fullName.trim()) return t('users.validation.fullNameRequired')
-    if (isCreate && !form.password.trim()) return t('users.validation.passwordRequired')
-    if (!form.roleCode) return t('users.validation.roleRequired')
+  function validate(): boolean {
+    setError('')
+    setPasswordError('')
+
+    const pwError = validatePassword(form.password, isCreate, t)
+    if (pwError) {
+      setPasswordError(pwError)
+      return false
+    }
+
+    if (isCreate && !form.username.trim()) {
+      setError(t('users.validation.usernameRequired'))
+      return false
+    }
+    if (!form.fullName.trim()) {
+      setError(t('users.validation.fullNameRequired'))
+      return false
+    }
+    if (!form.roleCode) {
+      setError(t('users.validation.roleRequired'))
+      return false
+    }
     const phoneError = validatePhone(form.phone, t)
-    if (phoneError) return phoneError
-    return null
+    if (phoneError) {
+      setError(phoneError)
+      return false
+    }
+    return true
   }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setError('')
+    setPasswordError('')
 
-    const validationError = validate()
-    if (validationError) {
-      setError(validationError)
+    if (!validate()) {
       return
     }
 
@@ -191,19 +213,35 @@ export function UserFormModal({ open, mode, user, onClose, onSuccess }: UserForm
           active: form.active,
         })
       } else if (user) {
-        await userService.updateUser(user.id, {
+        const payload: UpdateUserRequest = {
           fullName: form.fullName.trim(),
           phone,
           roleCode: form.roleCode,
           branchId,
           active: form.active,
-        })
+        }
+        if (form.password.trim()) {
+          payload.password = form.password
+        }
+        await userService.updateUser(user.id, payload)
       }
 
       onSuccess()
       onClose()
-    } catch {
-      // API errors are translated and toasted by the global axios interceptor.
+    } catch (err) {
+      const translated = translateApiError(err, t)
+      if (translated.fieldErrors?.password) {
+        setPasswordError(translated.fieldErrors.password)
+      }
+      const otherFieldErrors = Object.entries(translated.fieldErrors ?? {})
+        .filter(([field]) => field !== 'password')
+        .map(([field, msg]) => `${field}: ${msg}`)
+
+      if (otherFieldErrors.length > 0) {
+        setError(otherFieldErrors.join('\n'))
+      } else if (!translated.fieldErrors?.password) {
+        setError(translated.message)
+      }
     } finally {
       setSaving(false)
     }
@@ -276,21 +314,30 @@ export function UserFormModal({ open, mode, user, onClose, onSuccess }: UserForm
               />
             </FormField>
 
-            {isCreate ? (
-              <FormField label={t('users.fields.password')} htmlFor="password">
-                <FormInput
-                  id="password"
-                  type="password"
-                  value={form.password}
-                  onChange={(event) =>
-                    setForm((prev) => ({ ...prev, password: event.target.value }))
-                  }
-                  placeholder={t('users.placeholders.password')}
-                  required
-                  disabled={saving}
-                />
-              </FormField>
-            ) : null}
+            <FormField
+              label={isCreate ? t('users.fields.password') : t('users.fields.newPassword')}
+              htmlFor="password"
+              helper={isCreate ? undefined : t('users.helpers.passwordOptional')}
+              error={passwordError}
+              required={isCreate}
+            >
+              <FormInput
+                id="password"
+                type="password"
+                value={form.password}
+                onChange={(event) => {
+                  setPasswordError('')
+                  setForm((prev) => ({ ...prev, password: event.target.value }))
+                }}
+                placeholder={
+                  isCreate
+                    ? t('users.placeholders.password')
+                    : t('users.placeholders.newPassword')
+                }
+                required={isCreate}
+                disabled={saving}
+              />
+            </FormField>
 
             <FormField label={t('users.fields.phone')} htmlFor="phone">
               <PhoneInput

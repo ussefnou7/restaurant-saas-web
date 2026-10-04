@@ -1,0 +1,54 @@
+/* RestorO Brand Logo Styles */
+
+.restoro-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  user-select: none;
+  text-decoration: none;
+  color: inherit;
+}
+
+.restoro-logo img {
+  max-inline-size: 100%;
+}
+
+.restoro-logo--horizontal {
+  flex-direction: row;
+}
+
+.restoro-logo--stacked {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.restoro-logo--mark {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Interactive link transitions */
+a.restoro-logo,
+.sidebar-brand-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  transition: opacity 0.15s ease;
+}
+
+a.restoro-logo:hover,
+.sidebar-brand-link:hover {
+  opacity: 0.9;
+}
+
+/* Auth / Login Page integration */
+.login-logo-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto 1.25rem;
+  max-inline-size: 100%;
+}

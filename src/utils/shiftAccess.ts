@@ -16,16 +16,16 @@ export function useCanViewShifts(): boolean {
 }
 
 /**
- * Variance is a display-only grant: no endpoint enforces `SHIFTS_VIEW_VARIANCE`, the server sends
- * the figures regardless. Hiding the columns is a courtesy, not a control — which is also why the
- * code is checked directly rather than through `hasPermission`, whose `PermissionCode` type only
- * admits codes some endpoint enforces.
+ * Variance visibility is enforced by the backend in `ShiftQueryService.java` (both list and detail
+ * queries). When a user lacks `SHIFTS_VIEW_VARIANCE`, the server strips variance figures, cash
+ * totals, expenses, and explained variance from the response.
+ *
+ * Hiding variance columns in the UI aligns the presentation with the server's data filtering.
+ * Checked through the type-safe `hasPermission` path.
  */
 export function useCanViewShiftVariance(): boolean {
   const { user } = useAuthSession()
-  if (!user) return false
-  if (user.roleCode === 'SYS_ADMIN') return true
-  return Array.isArray(user.permissions) && user.permissions.includes('SHIFTS_VIEW_VARIANCE')
+  return hasPermission(user, 'SHIFTS_VIEW_VARIANCE')
 }
 
 export function useCanCloseShift(): boolean {

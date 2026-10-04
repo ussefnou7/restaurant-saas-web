@@ -12,6 +12,7 @@ import {
   ShoppingCart,
 } from 'lucide-react'
 import { LanguageSwitcher } from '../components/ui/LanguageSwitcher'
+import { Logo } from '../components/ui/Logo'
 import { useTranslation } from '../i18n/useTranslation'
 import type { TranslationKey } from '../i18n/types'
 import { canOpenScreen } from '../access/screenAccess'
@@ -100,7 +101,9 @@ export function ClientLayout() {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="sidebar-header">
-          <h1 className="sidebar-title">{t('layout.appName')}</h1>
+          <NavLink to="/dashboard" className="sidebar-brand-link" aria-label={t('layout.appName')}>
+            <Logo variant="horizontal" size="sm" />
+          </NavLink>
         </div>
         <nav className="sidebar-nav sidebar-nav--flat" aria-label={t('layout.sidebar.aria')}>
           {visibleNavItems.map((item) => {

@@ -37,6 +37,7 @@ export type CreateUserRequest = {
 export type UpdateUserRequest = {
   fullName: string
   phone?: string
+  password?: string
   roleCode: string
   branchId?: number | null
   active: boolean

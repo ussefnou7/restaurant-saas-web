@@ -81,6 +81,12 @@ export const expensesEn = {
   'expenses.create.submitting': 'Recording...',
   'expenses.create.cancel': 'Cancel',
   'expenses.create.success': 'Expense recorded successfully',
+  'expenses.create.noCategoriesTitle': 'No expense categories available',
+  'expenses.create.noCategoriesDescription': 'You must create at least one expense category before you can record expenses.',
+  'expenses.create.noCategoriesMessage': 'No categories exist. Create a category to record expenses.',
+  'expenses.create.createCategoryLink': 'Go to Expense Categories',
+  'expenses.create.createCategoryAction': 'Create Category',
+  'expenses.create.noCategoriesPermissionHint': 'Contact an administrator with category management permissions to create categories.',
 
   // Void Modal (D117)
   'expenses.void.title': 'Void Expense #{{id}}',

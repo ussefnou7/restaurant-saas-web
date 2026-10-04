@@ -45,6 +45,7 @@ export const usersEn: TranslationDictionary = {
   'users.fields.fullName': 'Full Name',
   'users.fields.username': 'Username',
   'users.fields.password': 'Password',
+  'users.fields.newPassword': 'New Password',
   'users.fields.phone': 'Phone',
   'users.fields.role': 'Role',
   'users.fields.branch': 'Branch',
@@ -53,6 +54,7 @@ export const usersEn: TranslationDictionary = {
   'users.placeholders.fullName': 'John Doe',
   'users.placeholders.username': 'admin',
   'users.placeholders.password': '••••••••',
+  'users.placeholders.newPassword': 'Leave blank to keep unchanged',
   'users.placeholders.phone': '01000000000',
   'users.placeholders.selectRole': 'Select a role',
   'users.placeholders.selectBranch': 'Select branch',
@@ -61,6 +63,7 @@ export const usersEn: TranslationDictionary = {
 
   'users.helpers.branch': 'Leave empty for tenant-wide access.',
   'users.helpers.active': 'Inactive users cannot access the system.',
+  'users.helpers.passwordOptional': 'Leave blank to keep current password',
 
   'users.actions.create': 'Create User',
   'users.actions.save': 'Save Changes',
@@ -72,6 +75,9 @@ export const usersEn: TranslationDictionary = {
   'users.validation.usernameRequired': 'Username is required',
   'users.validation.fullNameRequired': 'Full name is required',
   'users.validation.passwordRequired': 'Password is required',
+  'users.validation.passwordLength': 'Password must be between 8 and 64 characters',
+  'users.validation.passwordPattern':
+    'Password must be 8 to 64 characters long, contain at least one letter in any language and at least one number, and must not contain control characters such as newlines or tabs',
   'users.validation.roleRequired': 'Role is required',
 
   'users.errors.loadBranches': 'Failed to load branches',

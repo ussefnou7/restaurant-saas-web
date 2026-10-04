@@ -23,6 +23,7 @@ export const userDetailsAr: TranslationDictionary = {
 
   'userDetails.fields.fullName': 'الاسم بالكامل',
   'userDetails.fields.username': 'اسم المستخدم',
+  'userDetails.fields.newPassword': 'كلمة المرور الجديدة',
   'userDetails.fields.phone': 'الهاتف',
   'userDetails.fields.role': 'الدور',
   'userDetails.fields.branch': 'الفرع',

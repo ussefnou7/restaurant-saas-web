@@ -44,6 +44,7 @@ export const usersAr: TranslationDictionary = {
   'users.fields.fullName': 'الاسم بالكامل',
   'users.fields.username': 'اسم المستخدم',
   'users.fields.password': 'كلمة المرور',
+  'users.fields.newPassword': 'كلمة المرور الجديدة',
   'users.fields.phone': 'الهاتف',
   'users.fields.role': 'الدور',
   'users.fields.branch': 'الفرع',
@@ -52,6 +53,7 @@ export const usersAr: TranslationDictionary = {
   'users.placeholders.fullName': 'مثال: أحمد حسن',
   'users.placeholders.username': 'admin',
   'users.placeholders.password': '••••••••',
+  'users.placeholders.newPassword': 'اتركه فارغاً للإبقاء عليها دون تغيير',
   'users.placeholders.phone': '01000000000',
   'users.placeholders.selectRole': 'اختر الدور',
   'users.placeholders.selectBranch': 'اختر الفرع',
@@ -60,6 +62,7 @@ export const usersAr: TranslationDictionary = {
 
   'users.helpers.branch': 'اتركه فارغًا للوصول على مستوى المطعم.',
   'users.helpers.active': 'المستخدمون غير النشطين لا يمكنهم الدخول إلى النظام.',
+  'users.helpers.passwordOptional': 'اتركه فارغاً للاحتفاظ بكلمة المرور الحالية',
 
   'users.actions.create': 'إنشاء مستخدم',
   'users.actions.save': 'حفظ التغييرات',
@@ -71,6 +74,9 @@ export const usersAr: TranslationDictionary = {
   'users.validation.usernameRequired': 'اسم المستخدم مطلوب',
   'users.validation.fullNameRequired': 'الاسم بالكامل مطلوب',
   'users.validation.passwordRequired': 'كلمة المرور مطلوبة',
+  'users.validation.passwordLength': 'يجب أن تتكون كلمة المرور من 8 إلى 64 حرفاً',
+  'users.validation.passwordPattern':
+    'يجب أن تتكون كلمة المرور من 8 إلى 64 حرفاً، وتحتوي على حرف واحد على الأقل بأي لغة ورقم واحد على الأقل، وألا تحتوي على أحرف تحكم مثل السطر الجديد أو Tab',
   'users.validation.roleRequired': 'الدور مطلوب',
 
   'users.errors.loadBranches': 'فشل تحميل الفروع',

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { AlertCircle, ArrowLeft, ArrowRight } from 'lucide-react'
 import { DetailsCard, FieldGrid, FormField, FormInput, FormTextarea } from '../../components/fields'
 import { Button } from '../../components/ui/Button'
 import { Dropdown } from '../../components/ui/Dropdown'
@@ -17,7 +17,7 @@ import type {
 } from '../../types/expense'
 import { getLocalizedBranchName } from '../../utils/branchDisplay'
 import { translateApiError } from '../../utils/errors'
-import { useCanCreateExpense } from '../../utils/expenseAccess'
+import { useCanCreateExpense, useCanManageExpenseCategories } from '../../utils/expenseAccess'
 import { getExpenseCategoryDisplayName } from '../../utils/expenseDisplay'
 import { todayLocalDate } from '../../utils/format'
 import { ExpenseShiftPicker } from './ExpenseShiftPicker'
@@ -38,9 +38,11 @@ export function ExpenseCreatePage() {
   const navigate = useNavigate()
   const notify = useNotify()
   const canCreate = useCanCreateExpense()
+  const canManageCategories = useCanManageExpenseCategories()
 
   const [categories, setCategories] = useState<ExpenseCategoryResponse[]>([])
   const [branches, setBranches] = useState<BranchResponse[]>([])
+  const [loadingCategories, setLoadingCategories] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [generalError, setGeneralError] = useState('')
@@ -59,10 +61,13 @@ export function ExpenseCreatePage() {
 
   useEffect(() => {
     if (!canCreate) return
+    setLoadingCategories(true)
     void Promise.all([
       expenseService.getExpenseCategories().then(setCategories).catch(() => setCategories([])),
       branchService.getBranches().then(setBranches).catch(() => setBranches([])),
-    ])
+    ]).finally(() => {
+      setLoadingCategories(false)
+    })
   }, [canCreate])
 
   // Filter to active categories only (D116) and sort by current locale
@@ -75,6 +80,8 @@ export function ExpenseCreatePage() {
         return nameA.localeCompare(nameB, locale)
       })
   }, [categories, locale])
+
+  const hasCategories = activeCategories.length > 0
 
   const branchOptions = useMemo(() => {
     return [
@@ -117,7 +124,9 @@ export function ExpenseCreatePage() {
 
   function validate(): boolean {
     const errors: Record<string, string> = {}
-    if (!form.categoryId) {
+    if (!loadingCategories && !hasCategories) {
+      errors.categoryId = t('expenses.create.noCategoriesMessage')
+    } else if (!form.categoryId) {
       errors.categoryId = t('expenses.create.categoryPlaceholder')
     }
     const numAmount = Number(form.amount)
@@ -207,6 +216,32 @@ export function ExpenseCreatePage() {
         <form onSubmit={handleSubmit} noValidate>
           {generalError ? <div className="page-error-banner">{generalError}</div> : null}
 
+          {!loadingCategories && !hasCategories ? (
+            <div className="expense-category-empty-banner" role="alert">
+              <AlertCircle className="expense-category-empty-banner__icon" size={20} aria-hidden />
+              <div className="expense-category-empty-banner__content">
+                <p className="expense-category-empty-banner__title">
+                  {t('expenses.create.noCategoriesTitle')}
+                </p>
+                <p className="expense-category-empty-banner__description">
+                  {t('expenses.create.noCategoriesDescription')}
+                </p>
+                {canManageCategories ? (
+                  <Link
+                    to="/expenses/categories"
+                    className="expense-category-empty-banner__link"
+                  >
+                    {t('expenses.create.createCategoryLink')} &rarr;
+                  </Link>
+                ) : (
+                  <p className="expense-category-empty-banner__guidance">
+                    {t('expenses.create.noCategoriesPermissionHint')}
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : null}
+
           <FieldGrid className="expense-form__fields">
             <FormField
               label={t('expenses.create.category')}
@@ -214,19 +249,47 @@ export function ExpenseCreatePage() {
               error={fieldErrors.categoryId}
               className={openDropdown === 'category' ? 'field-box--open' : ''}
             >
-              <Dropdown
-                value={form.categoryId}
-                onChange={(val) => {
-                  setForm((prev) => ({ ...prev, categoryId: val }))
-                  setFieldErrors((prev) => ({ ...prev, categoryId: '' }))
-                  setOpenDropdown(null)
-                }}
-                onOpen={() => setOpenDropdown('category')}
-                onClose={() => setOpenDropdown((cur) => (cur === 'category' ? null : cur))}
-                options={categoryOptions}
-                ariaLabel={t('expenses.create.category')}
-                disabled={submitting}
-              />
+              {loadingCategories ? (
+                <Dropdown
+                  value=""
+                  onChange={() => {}}
+                  options={[{ value: '', label: t('common.loading') }]}
+                  ariaLabel={t('expenses.create.category')}
+                  disabled
+                />
+              ) : !hasCategories ? (
+                <div className="expense-category-field-empty">
+                  <p className="expense-category-field-empty__message">
+                    {t('expenses.create.noCategoriesMessage')}
+                  </p>
+                  {canManageCategories ? (
+                    <Link
+                      to="/expenses/categories"
+                      className="button-secondary button-sm expense-category-field-empty__action"
+                    >
+                      {t('expenses.create.createCategoryAction')}
+                    </Link>
+                  ) : (
+                    <p className="expense-category-field-empty__guidance">
+                      {t('expenses.create.noCategoriesPermissionHint')}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <Dropdown
+                  value={form.categoryId}
+                  onChange={(val) => {
+                    setForm((prev) => ({ ...prev, categoryId: val }))
+                    setFieldErrors((prev) => ({ ...prev, categoryId: '' }))
+                    setOpenDropdown(null)
+                  }}
+                  onOpen={() => setOpenDropdown('category')}
+                  onClose={() => setOpenDropdown((cur) => (cur === 'category' ? null : cur))}
+                  options={categoryOptions}
+                  ariaLabel={t('expenses.create.category')}
+                  disabled={submitting}
+                />
+              )}
             </FormField>
 
             <FormField
@@ -376,7 +439,10 @@ export function ExpenseCreatePage() {
             >
               {t('expenses.create.cancel')}
             </Button>
-            <Button type="submit" disabled={submitting}>
+            <Button
+              type="submit"
+              disabled={submitting || (!loadingCategories && !hasCategories)}
+            >
               {submitting ? t('expenses.create.submitting') : t('expenses.create.submit')}
             </Button>
           </div>

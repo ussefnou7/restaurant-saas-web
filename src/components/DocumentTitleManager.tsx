@@ -23,7 +23,7 @@ export function DocumentTitleManager() {
   }, [])
 
   useEffect(() => {
-    const brandName = t('common.appName') || (locale === 'ar' ? 'ريستورو' : 'Restoro')
+    const brandName = t('common.appName') || 'RestorO'
 
     if (overrideTitle) {
       document.title = formatDocumentTitle(overrideTitle, brandName)

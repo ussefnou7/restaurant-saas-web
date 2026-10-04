@@ -9,10 +9,12 @@ import type { PermissionCode } from './permissions.generated'
  * enforce will not typecheck, and a code the backend stops enforcing breaks the build on the next
  * `npm run sync:permissions`. Do not widen this to `string`.
  *
- * <p>Codes that are seeded but gate no endpoint — `SHIFTS_VIEW_VARIANCE` is the only one today —
- * are deliberately absent. They hide a column rather than a screen, the server sends the value
- * regardless, and treating them as access control here would imply a guarantee that does not exist.
- * They belong in `utils/shiftAccess.ts`, not in this map.
+ * <p>Codes that gate within-screen fields or columns rather than entire screens or screen-level
+ * actions — such as `SHIFTS_VIEW_VARIANCE`, which is enforced by the server in `ShiftQueryService`
+ * to redact variance figures and cash totals — are deliberately absent from this map. `SCREEN_MAP`
+ * governs route navigation and screen action buttons (`onDenied: 'hide' | 'disable' | 'deny-screen'`).
+ * In-screen column and field visibility is managed directly by page components using helpers such
+ * as `useCanViewShiftVariance` in `utils/shiftAccess.ts`.
  */
 
 /**
