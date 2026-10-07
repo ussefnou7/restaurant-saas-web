@@ -29,6 +29,8 @@ export const layoutAr: TranslationDictionary = {
   'layout.nav.leaveTypes': 'أنواع الإجازة',
 
   'layout.sidebar.aria': 'التنقل الرئيسي',
+  'layout.sidebar.collapse': 'طي القائمة الجانبية',
+  'layout.sidebar.expand': 'توسيع القائمة الجانبية',
   'layout.appName': 'RestorO',
   'layout.logout': 'تسجيل الخروج',
 }

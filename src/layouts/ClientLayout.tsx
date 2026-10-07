@@ -1,9 +1,12 @@
+import { useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import type { LucideIcon } from 'lucide-react'
 import {
   Banknote,
   Boxes,
   BriefcaseBusiness,
+  ChevronLeft,
+  ChevronRight,
   Landmark,
   LayoutDashboard,
   LogOut,
@@ -43,6 +46,8 @@ const topNavItems: TopNavItem[] = [
   { id: 'admin', labelKey: 'layout.nav.management', path: '/admin', icon: Shield },
 ]
 
+const SIDEBAR_COLLAPSED_KEY = 'restoro.sidebar.collapsed'
+
 function isNavItemActive(pathname: string, item: TopNavItem): boolean {
   switch (item.id) {
     case 'home':
@@ -81,14 +86,33 @@ function isNavItemActive(pathname: string, item: TopNavItem): boolean {
 }
 
 export function ClientLayout() {
-  const { t } = useTranslation()
+  const { t, direction } = useTranslation()
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const { user } = useAuthSession()
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    try {
+      return window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true'
+    } catch {
+      return false
+    }
+  })
 
   function handleLogout() {
     authService.logout()
     navigate('/login')
+  }
+
+  function handleSidebarToggle() {
+    setIsSidebarCollapsed((current) => {
+      const next = !current
+      try {
+        window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(next))
+      } catch {
+        // The layout still works when storage is unavailable.
+      }
+      return next
+    })
   }
 
   // Same map the route guard reads, so a visible link always opens.
@@ -97,15 +121,42 @@ export function ClientLayout() {
     return canOpenScreen(user, item.id) || SCREEN_MAP[item.id].onDenied !== 'hide'
   })
 
+  const CollapseIcon = direction === 'rtl'
+    ? (isSidebarCollapsed ? ChevronLeft : ChevronRight)
+    : (isSidebarCollapsed ? ChevronRight : ChevronLeft)
+  const toggleLabel = t(
+    isSidebarCollapsed ? 'layout.sidebar.expand' : 'layout.sidebar.collapse',
+  )
+
   return (
     <div className="app-shell">
-      <aside className="sidebar">
+      <aside className={`sidebar${isSidebarCollapsed ? ' sidebar--collapsed' : ''}`}>
         <div className="sidebar-header">
           <NavLink to="/dashboard" className="sidebar-brand-link" aria-label={t('layout.appName')}>
-            <Logo variant="horizontal" size="sm" />
+            <div className="sidebar-brand-logo sidebar-brand-logo--full">
+              <Logo variant="horizontal" size="sm" />
+            </div>
+            <div className="sidebar-brand-logo sidebar-brand-logo--mark">
+              <Logo variant="mark" size={38} />
+            </div>
           </NavLink>
+          <button
+            type="button"
+            className="sidebar-collapse-toggle"
+            onClick={handleSidebarToggle}
+            aria-label={toggleLabel}
+            title={toggleLabel}
+            aria-expanded={!isSidebarCollapsed}
+            aria-controls="primary-navigation"
+          >
+            <CollapseIcon aria-hidden="true" />
+          </button>
         </div>
-        <nav className="sidebar-nav sidebar-nav--flat" aria-label={t('layout.sidebar.aria')}>
+        <nav
+          id="primary-navigation"
+          className="sidebar-nav sidebar-nav--flat"
+          aria-label={t('layout.sidebar.aria')}
+        >
           {visibleNavItems.map((item) => {
             const Icon = item.icon
             const active = isNavItemActive(pathname, item)
@@ -114,18 +165,26 @@ export function ClientLayout() {
                 key={item.id}
                 to={item.path}
                 className={`sidebar-nav-item${active ? ' active' : ''}`}
+                aria-label={t(item.labelKey)}
+                title={isSidebarCollapsed ? t(item.labelKey) : undefined}
               >
                 <Icon className="sidebar-nav-item__icon" aria-hidden="true" />
-                <span>{t(item.labelKey)}</span>
+                <span className="sidebar-nav-item__label">{t(item.labelKey)}</span>
               </NavLink>
             )
           })}
         </nav>
         <div className="sidebar-footer">
           <LanguageSwitcher />
-          <button type="button" className="logout-button sidebar-logout" onClick={handleLogout}>
+          <button
+            type="button"
+            className="logout-button sidebar-logout"
+            onClick={handleLogout}
+            aria-label={t('layout.logout')}
+            title={isSidebarCollapsed ? t('layout.logout') : undefined}
+          >
             <LogOut className="sidebar-nav-item__icon" aria-hidden="true" />
-            <span>{t('layout.logout')}</span>
+            <span className="sidebar-logout__label">{t('layout.logout')}</span>
           </button>
         </div>
       </aside>

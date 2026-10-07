@@ -29,6 +29,8 @@ export const layoutEn: TranslationDictionary = {
   'layout.nav.leaveTypes': 'Leave Types',
 
   'layout.sidebar.aria': 'Main navigation',
+  'layout.sidebar.collapse': 'Collapse sidebar',
+  'layout.sidebar.expand': 'Expand sidebar',
   'layout.appName': 'RestorO',
   'layout.logout': 'Logout',
 }
