@@ -27,7 +27,6 @@ import type {
   WarehouseStockResponse,
 } from '../types/inventoryStock'
 import { api } from './api'
-import { authService } from './authService'
 
 function toSearchParams(params: Record<string, string | number | boolean | undefined | null>): string {
   const search = new URLSearchParams()
@@ -270,20 +269,9 @@ export async function addMaterialToWarehouse(
   warehouseId: string | number,
   data: AddMaterialToWarehouseRequest,
 ): Promise<WarehouseStockResponse> {
-  const authUser = authService.getAuthUser()
-  if (authUser?.tenantId == null || authUser.id == null) {
-    throw new Error('Authenticated tenant and user context are required to add warehouse stock.')
-  }
-
   const response = await api.post<WarehouseStockResponse>(
     `/api/inventory/warehouses/${warehouseId}/stocks`,
     data,
-    {
-      headers: {
-        'X-Tenant-Id': String(authUser.tenantId),
-        'X-User-Id': String(authUser.id),
-      },
-    },
   )
   return response.data
 }

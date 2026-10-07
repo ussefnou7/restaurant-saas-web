@@ -6,7 +6,6 @@ import type {
   WasteLineRequest,
   WasteUpdateLineRequest,
 } from '../types/wasteDocument'
-import { authService } from './authService'
 import { api } from './api'
 
 function toSearchParams(params: Record<string, string | number | boolean | undefined | null>): string {
@@ -17,12 +16,6 @@ function toSearchParams(params: Record<string, string | number | boolean | undef
   }
   const query = search.toString()
   return query ? `?${query}` : ''
-}
-
-function getMutationHeaders(): Record<string, string> {
-  const authUser = authService.getAuthUser()
-  if (authUser?.id == null) return {}
-  return { 'X-User-Id': String(authUser.id) }
 }
 
 export async function getWasteDocuments(
@@ -47,7 +40,6 @@ export async function createWasteDocument(
   const response = await api.post<WasteDocumentResponse>(
     '/api/inventory/waste-documents',
     payload,
-    { headers: getMutationHeaders() },
   )
   return response.data
 }
@@ -59,7 +51,6 @@ export async function updateWasteDocument(
   const response = await api.put<WasteDocumentResponse>(
     `/api/inventory/waste-documents/${id}`,
     payload,
-    { headers: getMutationHeaders() },
   )
   return response.data
 }
@@ -71,7 +62,6 @@ export async function addWasteLine(
   const response = await api.post<WasteDocumentResponse>(
     `/api/inventory/waste-documents/${id}/lines`,
     payload,
-    { headers: getMutationHeaders() },
   )
   return response.data
 }
@@ -84,7 +74,6 @@ export async function updateWasteLine(
   const response = await api.put<WasteDocumentResponse>(
     `/api/inventory/waste-documents/${id}/lines/${lineId}`,
     payload,
-    { headers: getMutationHeaders() },
   )
   return response.data
 }
@@ -95,7 +84,6 @@ export async function deleteWasteLine(
 ): Promise<WasteDocumentResponse> {
   const response = await api.delete<WasteDocumentResponse>(
     `/api/inventory/waste-documents/${id}/lines/${lineId}`,
-    { headers: getMutationHeaders() },
   )
   return response.data
 }
@@ -107,7 +95,6 @@ export async function completeWasteDocument(
   const response = await api.post<WasteDocumentResponse>(
     `/api/inventory/waste-documents/${id}/complete`,
     payload,
-    { headers: getMutationHeaders() },
   )
   return response.data
 }
@@ -119,7 +106,6 @@ export async function postWasteDocument(
   const response = await api.post<WasteDocumentResponse>(
     `/api/inventory/waste-documents/${id}/post`,
     payload,
-    { headers: getMutationHeaders() },
   )
   return response.data
 }
@@ -131,7 +117,6 @@ export async function cancelWasteDocument(
   const response = await api.post<WasteDocumentResponse>(
     `/api/inventory/waste-documents/${id}/cancel`,
     payload,
-    { headers: getMutationHeaders() },
   )
   return response.data
 }
@@ -144,7 +129,6 @@ export async function uncompleteWasteDocument(
   const response = await api.post<WasteDocumentResponse>(
     `/api/inventory/waste-documents/${id}/uncomplete`,
     trimmed ? { reason: trimmed } : {},
-    { headers: getMutationHeaders() },
   )
   return response.data
 }

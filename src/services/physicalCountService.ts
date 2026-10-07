@@ -8,7 +8,6 @@ import type {
   PostFreezeMovementsResponse,
   UpdateCountedQuantitiesRequest,
 } from '../types/inventoryOperations'
-import { authService } from './authService'
 import { api } from './api'
 
 function toSearchParams(params: Record<string, string | number | boolean | undefined | null>): string {
@@ -19,12 +18,6 @@ function toSearchParams(params: Record<string, string | number | boolean | undef
   }
   const query = search.toString()
   return query ? `?${query}` : ''
-}
-
-function getMutationHeaders(): Record<string, string> {
-  const authUser = authService.getAuthUser()
-  if (authUser?.id == null) return {}
-  return { 'X-User-Id': String(authUser.id) }
 }
 
 export async function getPhysicalCounts(
@@ -49,7 +42,6 @@ export async function createPhysicalCount(
   const response = await api.post<PhysicalCountResponse>(
     '/api/inventory/physical-counts',
     payload,
-    { headers: getMutationHeaders() },
   )
   return response.data
 }
@@ -61,7 +53,6 @@ export async function addPhysicalCountMaterials(
   const response = await api.post<PhysicalCountResponse>(
     `/api/inventory/physical-counts/${id}/add-materials`,
     payload,
-    { headers: getMutationHeaders() },
   )
   return response.data
 }
@@ -73,7 +64,6 @@ export async function removePhysicalCountMaterials(
   const response = await api.post<PhysicalCountResponse>(
     `/api/inventory/physical-counts/${id}/remove-materials`,
     payload,
-    { headers: getMutationHeaders() },
   )
   return response.data
 }
@@ -81,8 +71,6 @@ export async function removePhysicalCountMaterials(
 export async function startPhysicalCount(id: number | string): Promise<PhysicalCountResponse> {
   const response = await api.post<PhysicalCountResponse>(
     `/api/inventory/physical-counts/${id}/start`,
-    undefined,
-    { headers: getMutationHeaders() },
   )
   return response.data
 }
@@ -94,7 +82,6 @@ export async function cancelPhysicalCount(
   const response = await api.post<PhysicalCountResponse>(
     `/api/inventory/physical-counts/${id}/cancel`,
     payload,
-    { headers: getMutationHeaders() },
   )
   return response.data
 }
@@ -106,7 +93,6 @@ export async function updateCountedQuantities(
   const response = await api.put<PhysicalCountResponse>(
     `/api/inventory/physical-counts/${id}/counted-quantities`,
     payload,
-    { headers: getMutationHeaders() },
   )
   return response.data
 }
@@ -116,8 +102,6 @@ export async function reconcilePhysicalCount(
 ): Promise<PhysicalCountResponse> {
   const response = await api.post<PhysicalCountResponse>(
     `/api/inventory/physical-counts/${id}/reconcile`,
-    undefined,
-    { headers: getMutationHeaders() },
   )
   return response.data
 }
@@ -136,14 +120,10 @@ export async function revertPhysicalCountToDraft(
 ): Promise<PhysicalCountResponse> {
   const response = await api.post<PhysicalCountResponse>(
     `/api/inventory/physical-counts/${id}/revert-to-draft`,
-    undefined,
-    { headers: getMutationHeaders() },
   )
   return response.data
 }
 
 export async function deletePhysicalCount(id: number | string): Promise<void> {
-  await api.delete(`/api/inventory/physical-counts/${id}`, {
-    headers: getMutationHeaders(),
-  })
+  await api.delete(`/api/inventory/physical-counts/${id}`)
 }
