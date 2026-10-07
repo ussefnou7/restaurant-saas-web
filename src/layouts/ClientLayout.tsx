@@ -139,6 +139,11 @@ export function ClientLayout() {
             <div className="sidebar-brand-logo sidebar-brand-logo--mark">
               <Logo variant="mark" size={38} />
             </div>
+            {user?.tenantName ? (
+              <span className="sidebar-brand-link__tenant-name" title={user.tenantName} dir="auto">
+                {user.tenantName}
+              </span>
+            ) : null}
           </NavLink>
           <button
             type="button"

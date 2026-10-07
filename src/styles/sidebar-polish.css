@@ -175,6 +175,9 @@
 .sidebar-brand-link {
   flex: 1;
   min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
 }
 
 .sidebar-brand-logo {
@@ -185,6 +188,20 @@
 
 .sidebar-brand-logo--mark {
   display: none;
+}
+
+.sidebar-brand-link__tenant-name {
+  display: block;
+  width: 100%;
+  margin-block-start: -16px;
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sidebar-collapse-toggle {
@@ -243,6 +260,10 @@
 
 .sidebar--collapsed .sidebar-brand-logo--mark {
   display: inline-flex;
+}
+
+.sidebar--collapsed .sidebar-brand-link__tenant-name {
+  display: none;
 }
 
 .sidebar--collapsed .sidebar-nav--flat {
@@ -310,6 +331,10 @@
 
   .sidebar--collapsed .sidebar-brand-logo--mark {
     display: none;
+  }
+
+  .sidebar--collapsed .sidebar-brand-link__tenant-name {
+    display: block;
   }
 
   .sidebar--collapsed .sidebar-nav-item {

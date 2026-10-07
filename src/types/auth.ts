@@ -10,6 +10,7 @@ export type RoleCode =
 export interface AuthUser {
   id: number
   tenantId?: number | null
+  tenantName?: string | null
   fullName: string
   username: string
   email: string
