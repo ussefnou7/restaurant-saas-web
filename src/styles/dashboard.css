@@ -77,35 +77,25 @@
 
 /* --- hero ---------------------------------------------------------------------------------
  *
- * Three figures, not six, and not three of equal weight. Net sales takes the wide column because
- * it carries the trend chart and because it is the number the screen is about; orders and average
- * check sit beside it at a smaller size. A row of identically sized tiles asserts that every tile
- * matters equally, which is the thing this layout is correcting.
+ * Four figures and not four of equal weight. Net sales takes a full-width tile of its own because
+ * it carries the chart and because it is the number the screen is about; orders, average check and
+ * the busiest bucket sit under it in a row at a smaller size. A grid of identically sized tiles
+ * asserts that every tile matters equally, which is the thing this layout is correcting.
+ *
+ * The earlier version squeezed the chart into 1.55fr of a split row, which left it around 400px
+ * wide on a laptop — enough for 31 points only if each got three pixels. Full width is what bought
+ * the value axis the chart now has.
  */
 
-.dashboard-hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
-  gap: 16px;
+.dashboard-lead {
   margin-block: 20px 12px;
 }
 
-.dashboard-hero__support {
+.dashboard-metrics {
   display: grid;
-  grid-template-rows: 1fr 1fr;
-  gap: 16px;
-}
-
-/* The chart needs real width before the split is worth keeping. */
-@media (max-width: 860px) {
-  .dashboard-hero {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .dashboard-hero__support {
-    grid-template-rows: none;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  }
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+  margin-block-end: 16px;
 }
 
 .hero-tile {
@@ -141,9 +131,7 @@
   color: var(--color-text-subtle);
 }
 
-/* The chart is pushed to the bottom of the tile so the two support tiles beside it line up. */
 .hero-tile > .trend-chart {
-  margin-block-start: auto;
   padding-block-start: 16px;
 }
 
@@ -224,15 +212,52 @@
   color: var(--color-text);
 }
 
-.attention-strip__count {
-  min-width: 22px;
-  padding: 1px 7px;
+/*
+ * The severity tally, in place of the single count badge this used to be. One number could not
+ * distinguish two critical conditions from five notes, which is the only thing a reader wants to
+ * know before deciding whether to read the list.
+ */
+.attention-strip__tally {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.attention-tally {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px;
   border-radius: 999px;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.attention-tally__count {
+  font-weight: 600;
+}
+
+/*
+ * Each chip wears its own severity's colour rather than one alarm colour for all three. A note
+ * tinted like a critical condition is how a strip teaches an owner to stop reading it.
+ */
+.attention-tally--critical {
   background: var(--color-danger-soft);
   color: var(--color-danger);
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-align: center;
+}
+
+.attention-tally--warning {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.attention-tally--info {
+  background: var(--color-surface-soft);
+  color: var(--color-text-muted);
 }
 
 .attention-strip__clear,
@@ -569,58 +594,85 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* --- branch cards --------------------------------------------------------------------------
+/* --- share and branch bars -----------------------------------------------------------------
  *
- * The same figures the table carried, arranged so the comparison between branches is what you
- * see. Still no rank, no colour and no score: a branch that never counts its stock reports no
- * shrinkage, so any composite would score the branch doing least work the highest.
+ * Three blocks share this shape — order channels, payment methods and branches — because all
+ * three answer the same kind of question: how does this total divide up. Stacked rows on one
+ * shared scale put the parts in a single eyeline, which the card grid and the four-column table
+ * that preceded them both made the reader assemble for himself.
+ *
+ * Fills are one colour throughout. A palette per row would be a second encoding of information
+ * the length already carries, and on the branch rows it would be a ranking — which this page does
+ * not assert, because a branch that never counts its stock reports no shrinkage and any composite
+ * would hand the top spot to whichever branch does least.
  */
 
-.branch-cards {
+.share-bars,
+.branch-bars {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 18px 20px;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.branch-card__name {
-  margin: 0;
+.share-bars__row,
+.branch-bars__row {
+  display: grid;
+  gap: 5px;
+}
+
+.share-bars__head,
+.branch-bars__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.share-bars__label,
+.branch-bars__name {
   font-size: 0.875rem;
   color: var(--color-text);
 }
 
-.branch-card__sales {
-  margin: 2px 0 8px;
-  font-size: 1.125rem;
+.share-bars__share {
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--color-text);
   font-variant-numeric: tabular-nums;
 }
 
-.branch-card__bar {
+.branch-bars__sales {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The track is the whole, so an empty track is a visible remainder rather than nothing. */
+.share-bars__track,
+.branch-bars__track {
   display: block;
-  block-size: 6px;
+  block-size: 8px;
   border-radius: 999px;
   background: var(--color-surface-soft);
   overflow: hidden;
 }
 
-.branch-card__fill {
+.share-bars__fill,
+.branch-bars__fill {
   display: block;
   block-size: 100%;
   border-radius: 999px;
   background: var(--color-primary);
 }
 
-.branch-card__meta {
-  margin: 8px 0 0;
+.share-bars__meta,
+.branch-bars__meta {
   font-size: 0.75rem;
   color: var(--color-text-muted);
-}
-
-.branch-card__average {
-  margin: 2px 0 0;
-  font-size: 0.75rem;
-  color: var(--color-text-subtle);
+  font-variant-numeric: tabular-nums;
 }
 
 /* --- drawers -------------------------------------------------------------------------------
@@ -694,38 +746,133 @@
   border-block-start: 1px solid var(--color-border-soft);
 }
 
-/* --- cost coverage ---------------------------------------------------------------------- */
+/* --- cost coverage -------------------------------------------------------------------------
+ *
+ * One bar in three parts, where this was a four-item description list. The parts are a whole, so
+ * a bar states the relationship the list left to arithmetic — and this is the block that says
+ * whether the rest of the page can be trusted, which is a poor thing to make a reader work out.
+ */
 
-.cost-coverage__breakdown {
+.coverage__headline {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.coverage__track {
+  display: flex;
+  block-size: 10px;
+  margin-block: 12px;
+  border-radius: 999px;
+  background: var(--color-surface-soft);
+  overflow: hidden;
+}
+
+.coverage__segment {
+  display: block;
+  block-size: 100%;
+}
+
+/*
+ * Three colours, and the choice of each is the point of the block.
+ *
+ * Posted is the brand green: the cost is counted and nothing is owed. A stuck document is amber
+ * because it is somebody's job — a document exists, it is waiting, and clearing it is work on a
+ * list. A missing recipe is grey because nothing is stuck and there is nothing to clear; the fix
+ * is in the menu, not in the inventory queue. Colouring the last two alike would file an item
+ * nobody can action next to a to-do.
+ */
+.coverage__segment--posted {
+  background: var(--color-primary);
+}
+
+.coverage__segment--unposted {
+  background: var(--color-warning);
+}
+
+.coverage__segment--noConsumption {
+  background: var(--color-border-strong);
+}
+
+.coverage__none {
+  margin-block: 12px;
+  font-size: 0.8125rem;
+  color: var(--color-text-subtle);
+}
+
+.coverage__key {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 14px;
   margin: 0;
 }
 
-.cost-coverage__breakdown dt {
+.coverage__key dt {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   font-size: 0.8125rem;
   color: var(--color-text-muted);
 }
 
-.cost-coverage__breakdown dd {
-  margin: 2px 0 0;
+.coverage__swatch {
+  display: block;
+  flex-shrink: 0;
+  inline-size: 9px;
+  block-size: 9px;
+  border-radius: 3px;
+}
+
+.coverage__swatch--posted {
+  background: var(--color-primary);
+}
+
+.coverage__swatch--unposted {
+  background: var(--color-warning);
+}
+
+.coverage__swatch--noConsumption {
+  background: var(--color-border-strong);
+}
+
+.coverage__amount {
+  margin: 3px 0 0;
   font-size: 1rem;
   font-weight: 600;
   color: var(--color-text);
   font-variant-numeric: tabular-nums;
 }
 
-.cost-coverage__hint {
-  font-size: 0.75rem !important;
-  font-weight: 400 !important;
-  color: var(--color-text-subtle) !important;
+.coverage__hint {
+  margin: 1px 0 0;
+  font-size: 0.75rem;
+  color: var(--color-text-subtle);
 }
 
-/* --- trend chart ------------------------------------------------------------------------ */
+/* --- trend chart ----------------------------------------------------------------------------
+ *
+ * An area chart with a value axis, replacing bars scaled to their own maximum. Those bars had no
+ * scale at all: a dead morning and a rush drew the identical picture, which is why that version
+ * had to print the peak as text just to say which one you were looking at.
+ *
+ * The plot is a stretched SVG with every label, tick and marker as HTML on top of it. Text inside
+ * a `preserveAspectRatio="none"` viewBox would be squashed and would scale with the container
+ * rather than with the reader's font size, and a circle would come out an ellipse. As HTML they
+ * also mirror under dir="rtl" from logical properties alone.
+ *
+ * The axis gutter is declared once, here, and shared by the scale, the canvas and the tick row.
+ * Three paddings that have to agree to the pixel is three chances for them not to.
+ */
 
 .trend-chart {
+  position: relative;
+  /* Per the width rules: the ceiling sits on the element that fails when stretched, and a time
+     series spread over 1600px is a hairline that reads as flat whatever it is doing. */
+  max-inline-size: 1040px;
   margin: 0;
+  --trend-gutter: 52px;
 }
 
 .trend-chart__caption {
@@ -733,7 +880,8 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 10px;
-  margin-block-end: 8px;
+  margin-block-end: 10px;
+  padding-inline-start: var(--trend-gutter);
 }
 
 .trend-chart__grain {
@@ -744,77 +892,169 @@
 }
 
 /*
- * The scale. Bars are sized against the largest point, so without the peak printed there is no
- * way to tell a quiet day's chart from a busy one — both fill the box.
+ * One line that says either where the peak was or what the pointer is on. It changes on hover
+ * rather than a tooltip appearing: a tooltip over a 31-point series covers the neighbours being
+ * compared against, and this line is already the only place the caption had anything to say.
+ *
+ * Min-height so the chart does not jump by a line when the pointer enters and the longer of the
+ * two sentences replaces the shorter.
  */
-.trend-chart__peak {
-  font-size: 0.6875rem;
+.trend-chart__readout {
+  min-block-size: 1.2em;
+  font-size: 0.75rem;
   color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+.trend-chart__plot {
+  position: relative;
+  padding-inline-start: var(--trend-gutter);
+}
+
+/* Pulled half a line past the canvas at both ends so each label centres on its own gridline. */
+.trend-chart__scale {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: -0.55em;
+  inset-block-end: -0.55em;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  inline-size: calc(var(--trend-gutter) - 10px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.6875rem;
+  line-height: 1.1;
+  color: var(--color-text-subtle);
   font-variant-numeric: tabular-nums;
 }
 
-.trend-chart__bars,
-.trend-chart__axis {
+.trend-chart__canvas {
+  position: relative;
+  block-size: 172px;
+}
+
+.trend-chart__svg {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+/*
+ * The one thing on this chart that cannot mirror on its own. Logical properties handle the HTML
+ * around it, but an SVG path is drawn in its own coordinate space and would keep running
+ * left-to-right while the ticks beneath it ran right-to-left.
+ */
+[dir='rtl'] .trend-chart__svg {
+  transform: scaleX(-1);
+}
+
+.trend-chart__grid {
+  stroke: var(--color-border);
+  stroke-width: 1;
+}
+
+.trend-chart__area {
+  fill: var(--color-accent);
+  fill-opacity: 0.32;
+}
+
+.trend-chart__line {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/*
+ * The final bucket. Every range on this page ends today, so the last stretch of the line is
+ * always still filling — unmarked, a dip into a half-finished hour reads as a collapse in sales.
+ */
+.trend-chart__band {
+  fill: var(--color-surface-soft);
+}
+
+.trend-chart__marker {
+  position: absolute;
+  inline-size: 9px;
+  block-size: 9px;
+  margin-inline-start: -4.5px;
+  margin-block-start: -4.5px;
+  border: 2px solid var(--color-primary);
+  border-radius: 999px;
+  background: var(--color-surface);
+}
+
+/* The peak is filled and the two open markers are not, so one dot reads as the finding. */
+.trend-chart__marker--peak {
+  background: var(--color-primary);
+}
+
+.trend-chart__marker--hovered {
+  border-color: var(--color-primary-hover);
+}
+
+.trend-chart__hits {
+  position: absolute;
+  inset: 0;
   display: flex;
-  align-items: flex-end;
-  gap: 3px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.trend-chart__bars {
-  height: 92px;
-  /* The baseline the bars stand on, so a short bar reads as short rather than as floating. */
-  border-block-end: 1px solid var(--color-border);
-}
-
-/*
- * Bars shrink to fit rather than scrolling. The widest series this page produces is 31 days, and
- * a chart that has to be dragged sideways to be seen is not a shape you can read at a glance.
- */
-.trend-chart__item,
-.trend-chart__tick {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
+.trend-chart__hit {
   flex: 1 1 0;
   min-width: 0;
-  height: 100%;
-}
-
-.trend-chart__bar {
-  width: 100%;
-  max-width: 28px;
-  min-height: 2px;
-  border-radius: 3px 3px 0 0;
-  background: var(--color-primary);
-}
-
-/*
- * The final bucket. Every range on this page ends today, so the last bar is always still
- * filling — undimmed, a half-finished hour reads as a collapse in sales.
- */
-.trend-chart__bar--partial {
-  background: var(--color-primary-soft);
-}
-
-.trend-chart__bar:hover {
-  background: var(--color-primary-hover);
 }
 
 .trend-chart__axis {
-  margin-block-start: 5px;
+  display: flex;
+  margin: 5px 0 0;
+  padding: 0;
+  padding-inline-start: var(--trend-gutter);
+  list-style: none;
 }
 
 /*
  * A tick is allowed to spill into its neighbours' columns, which are empty by construction —
- * only every nth is printed. Clipping each to its own bar's width would hide most of them.
+ * only every nth is printed. Clipping each to its own column would hide most of them.
  */
 .trend-chart__tick {
-  height: auto;
+  display: flex;
+  justify-content: center;
+  flex: 1 1 0;
+  min-width: 0;
   font-size: 0.6875rem;
   color: var(--color-text-subtle);
   white-space: nowrap;
   overflow: visible;
+}
+
+.trend-chart__partial {
+  margin: 8px 0 0;
+  padding-inline-start: var(--trend-gutter);
+  font-size: 0.6875rem;
+  color: var(--color-text-subtle);
+}
+
+/*
+ * The series in words, for a reader who gets nothing from the picture. Positioned off the page
+ * rather than hidden, because display: none would take it out of the accessibility tree too and
+ * this is the chart's only accessible path.
+ */
+.trend-chart__data {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  list-style: none;
 }

@@ -40,18 +40,25 @@ export const dashboardAr: TranslationDictionary = {
   'dashboard.kpis.stockValue': 'قيمة المخزون',
   'dashboard.kpis.stockValue.hint': 'الآن، وليس عن الفترة',
 
-  'dashboard.breakdown.title': 'تفصيل المبيعات',
-  'dashboard.breakdown.summary': 'قنوات البيع وطرق الدفع',
+  'dashboard.peak.HOUR': 'أعلى ساعة',
+  'dashboard.peak.DAY': 'أعلى يوم',
+  'dashboard.peak.MONTH': 'أعلى شهر',
+  'dashboard.peak.meta': '{{value}} على {{orders}} أوردر',
+  'dashboard.peak.none': 'لا مبيعات في هذه الفترة',
+
   'dashboard.health.title': 'سلامة البيانات',
-  'dashboard.health.summary':
-    '{{percent}}% من المبيعات تكلفتها مُرحّلة — ومعها مسار الترحيل والإلغاءات',
-  'dashboard.health.summary.unknown': 'ترحيل التكلفة ومسار الترحيل والإلغاءات لهذه الفترة',
+  'dashboard.health.summary': '{{count}} مستند ترحيل لم يكتمل — ومعها الإلغاءات حسب المرحلة',
+  'dashboard.health.summary.unknown': 'مسار الترحيل والإلغاءات لهذه الفترة',
 
   'dashboard.costCoverage.title': 'تغطية التكلفة',
   'dashboard.costCoverage.subtitle':
     'أقل من 100% يعني أن بعض المبيعات بلا تكلفة مسجّلة، وبالتالي أي هامش ربح لهذه الفترة أعلى من الحقيقة.',
+  'dashboard.costCoverage.headline': '{{percent}}% من المبيعات تكلفتها مُرحّلة',
+  'dashboard.costCoverage.headline.unknown': 'لا توجد مبيعات تُرحَّل لها تكلفة',
+  'dashboard.costCoverage.noSales': 'لم يُبَع شيء في هذه الفترة، فلا توجد تكلفة تُغطّى.',
   'dashboard.costCoverage.totalSales': 'مبيعات الفترة',
   'dashboard.costCoverage.posted': 'تكلفة مُرحّلة',
+  'dashboard.costCoverage.posted.hint': 'محسوبة في الأرقام أعلاه',
   'dashboard.costCoverage.unposted': 'متوقفة على مستند معلّق',
   'dashboard.costCoverage.unposted.hint': 'محتاج حد يخلّصه',
   'dashboard.costCoverage.noConsumption': 'بدون وصفة، فلم تُجدول لها تكلفة من الأصل',
@@ -64,6 +71,9 @@ export const dashboardAr: TranslationDictionary = {
   'dashboard.trend.peak': 'الأعلى {{value}}',
   'dashboard.trend.point': '{{label}}: {{sales}} على {{orders}} أوردر',
   'dashboard.trend.point.partial': '{{label}}: {{sales}} على {{orders}} أوردر — لسه جارية',
+  'dashboard.trend.partial.HOUR': 'الساعة المظللة لسه جارية',
+  'dashboard.trend.partial.DAY': 'اليوم المظلل لسه جاري',
+  'dashboard.trend.partial.MONTH': 'الشهر المظلل لسه جاري',
 
   'dashboard.branches.title': 'حسب الفرع',
   'dashboard.branches.meta': '{{share}}% من المبيعات · {{orders}} أوردر',
@@ -74,6 +84,7 @@ export const dashboardAr: TranslationDictionary = {
   'dashboard.paymentMethods.title': 'طرق الدفع',
   'dashboard.cancellations.title': 'الإلغاءات',
   'dashboard.cancellations.subtitle': 'حسب المرحلة، لا حسب الساعة — وقت الإلغاء غير مسجّل بدقة.',
+  'dashboard.mix.meta': '{{total}} على {{orders}} أوردر',
   'dashboard.mix.column.dimension': 'النوع',
   'dashboard.mix.column.orders': 'الأوردرات',
   'dashboard.mix.column.total': 'الإجمالي',

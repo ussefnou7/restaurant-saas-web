@@ -32,6 +32,9 @@ const SEVERITY_ICON: Record<AlertSeverity, typeof OctagonAlert> = {
   INFO: Info,
 }
 
+/** Declaration order is display order, per the wire contract. Worst first, so it reads first. */
+const SEVERITY_ORDER: AlertSeverity[] = ['CRITICAL', 'WARNING', 'INFO']
+
 interface AttentionStripProps {
   alerts: DashboardAlertsResponse | null
 }
@@ -59,8 +62,37 @@ export function AttentionStrip({ alerts }: AttentionStripProps) {
     <section className="attention-strip">
       <header className="attention-strip__header">
         <h2 className="attention-strip__title">{t('dashboard.alerts.title')}</h2>
+
+        {/*
+          The tally, in place of the single count badge that used to sit here. A bare "5" answers
+          the wrong question: whether to read the list at all depends on what is in it, and two
+          critical conditions and five notes were the same badge. Split by severity the strip
+          answers "is anything actually wrong" before a word of it has been read.
+
+          Counted in groups rather than rows, which is what the list below shows — a group that
+          holds eleven out-of-stock items is one thing to go and deal with, not eleven.
+        */}
         {hasGroups ? (
-          <span className="attention-strip__count">{alerts.groups.length}</span>
+          <ul className="attention-strip__tally">
+            {SEVERITY_ORDER.map((severity) => {
+              const count = alerts.groups.filter((group) => group.severity === severity).length
+              if (count === 0) return null
+              const Icon = SEVERITY_ICON[severity]
+
+              return (
+                <li
+                  className={`attention-tally attention-tally--${severity.toLowerCase()}`}
+                  key={severity}
+                >
+                  <Icon size={14} aria-hidden="true" />
+                  <span className="attention-tally__count">{count}</span>
+                  <span className="attention-tally__label">
+                    {t(`dashboard.alerts.severity.${severity}`)}
+                  </span>
+                </li>
+              )
+            })}
+          </ul>
         ) : null}
       </header>
 

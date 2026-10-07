@@ -5,12 +5,28 @@ import { ar } from '../src/i18n/locales/ar/index.ts'
 import {
   ageKeyAndValue,
   alertHref,
+  moneyText,
+  niceAxisMax,
   parseMoney,
+  peakPoint,
+  percentText,
   rangeForMode,
   scopeLabelKey,
   translatableParams,
 } from '../src/pages/dashboard/dashboardDisplay.ts'
-import type { AlertCode, DashboardAlertRow } from '../src/types/dashboard.ts'
+import type { AlertCode, DashboardAlertRow, SalesTrend } from '../src/types/dashboard.ts'
+
+function trend(...netSales: string[]): SalesTrend {
+  return {
+    bucket: 'HOUR',
+    points: netSales.map((value, index) => ({
+      label: String(9 + index),
+      orderCount: 1,
+      netSales: value,
+      totalAmount: value,
+    })),
+  }
+}
 
 function row(overrides: Partial<DashboardAlertRow> = {}): DashboardAlertRow {
   return {
@@ -131,6 +147,43 @@ test('each mode means a calendar period, never a rolling window', () => {
   assert.deepEqual(rangeForMode('year', today), { from: '2026-01-01', to: '2026-03-17' })
 })
 
+test('the busiest bucket ignores the one that is still filling', () => {
+  // Every range this page offers ends today, so the final bucket is always partial. Crowning it
+  // "busiest" would be wrong while it fills and wrong in the other direction once it has.
+  assert.equal(peakPoint(trend('100', '400', '900'))?.label, '10')
+  // With a single point there is nothing to exclude and nothing to compare it against.
+  assert.equal(peakPoint(trend('100'))?.label, '9')
+})
+
+test('a period with no sales has no busiest bucket rather than an arbitrary one', () => {
+  // The alternative is crowning the first hour of a dead day, which invents a finding out of a
+  // flat line. Null here is what makes the tile say "no sales" instead of naming an hour.
+  assert.equal(peakPoint(trend('0', '0', '0')), null)
+  assert.equal(peakPoint(trend()), null)
+  // A null netSales is not a zero one, but neither can win a contest of magnitudes.
+  assert.equal(peakPoint(trend('0', 'not-a-number', '0')), null)
+})
+
+test('the axis ceiling rounds up to a figure a reader recognises', () => {
+  assert.equal(niceAxisMax(48260), 50000)
+  assert.equal(niceAxisMax(7840), 10000)
+  assert.equal(niceAxisMax(1), 1)
+  // Zero in, zero out. The caller must not divide by this, and a flat empty series has no axis.
+  assert.equal(niceAxisMax(0), 0)
+  assert.equal(niceAxisMax(-5), 0)
+})
+
+test('an absent figure renders as a dash in every view that prints money', () => {
+  // Centralised because it is one character and therefore the easiest thing on the page to
+  // replace with a 0 by accident. Zero says "measured and empty"; the dash says "not measured".
+  assert.equal(moneyText(null), '—')
+  assert.equal(moneyText(undefined), '—')
+  assert.equal(moneyText('0.000000'), '0.00')
+  assert.equal(percentText(null), '—')
+  assert.equal(percentText(null, 'n/a'), 'n/a')
+  assert.equal(percentText('42.355000'), '42.4%')
+})
+
 test('every dashboard translation key exists in both locales', () => {
   const alertCodes: AlertCode[] = [
     'UNPOSTED_CONSUMPTION',
@@ -186,8 +239,6 @@ test('every dashboard translation key exists in both locales', () => {
     'dashboard.branches.meta',
     'dashboard.branches.meta.noShare',
     'dashboard.branches.meta.average',
-    'dashboard.breakdown.title',
-    'dashboard.breakdown.summary',
     'dashboard.health.title',
     'dashboard.health.summary',
     'dashboard.health.summary.unknown',
@@ -196,6 +247,24 @@ test('every dashboard translation key exists in both locales', () => {
     'dashboard.trend.bucket.HOUR',
     'dashboard.trend.bucket.DAY',
     'dashboard.trend.bucket.MONTH',
+    'dashboard.trend.partial.HOUR',
+    'dashboard.trend.partial.DAY',
+    'dashboard.trend.partial.MONTH',
+    'dashboard.peak.HOUR',
+    'dashboard.peak.DAY',
+    'dashboard.peak.MONTH',
+    'dashboard.peak.meta',
+    'dashboard.peak.none',
+    'dashboard.costCoverage.headline',
+    'dashboard.costCoverage.headline.unknown',
+    'dashboard.costCoverage.noSales',
+    'dashboard.costCoverage.posted',
+    'dashboard.costCoverage.posted.hint',
+    'dashboard.costCoverage.unposted',
+    'dashboard.costCoverage.unposted.hint',
+    'dashboard.costCoverage.noConsumption',
+    'dashboard.costCoverage.noConsumption.hint',
+    'dashboard.mix.meta',
     'dashboard.pipeline.status.PARTIAL',
     'dashboard.pipeline.status.CONFLICT',
     'dashboard.orderType.DELIVERY',

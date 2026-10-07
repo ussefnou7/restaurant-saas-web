@@ -46,23 +46,34 @@ export const dashboardEn: TranslationDictionary = {
   // Said explicitly because it is the one figure that does not follow the selected range.
   'dashboard.kpis.stockValue.hint': 'Right now, not for the period',
 
-  // --- drawers ----------------------------------------------------------------------------
-  // Both lids carry their own one-line summary. A drawer labelled only "data health" gives an
-  // owner no reason to open it and no reason to leave it shut.
-  'dashboard.breakdown.title': 'Sales breakdown',
-  'dashboard.breakdown.summary': 'Order channels and payment methods',
+  // --- busiest bucket ---------------------------------------------------------------------
+  // Read off the trend points the response already carries, so it costs no query and cannot
+  // disagree with the chart. Not a comparison: it says nothing about any other period.
+  'dashboard.peak.HOUR': 'Busiest hour',
+  'dashboard.peak.DAY': 'Busiest day',
+  'dashboard.peak.MONTH': 'Busiest month',
+  'dashboard.peak.meta': '{{value}} across {{orders}} orders',
+  // A range can have sales and still have no busiest bucket — when every bucket is empty.
+  'dashboard.peak.none': 'No sales in this period',
+
+  // --- drawer -----------------------------------------------------------------------------
+  // The lid carries its own figure. A drawer labelled only "data health" gives an owner no
+  // reason to open it and no reason to leave it shut.
   'dashboard.health.title': 'Data health',
   'dashboard.health.summary':
-    '{{percent}}% of sales have their cost posted — plus the posting pipeline and cancellations',
-  'dashboard.health.summary.unknown':
-    'Cost posting, the posting pipeline and cancellations for this period',
+    '{{count}} posting documents have not finished — plus cancellations by stage',
+  'dashboard.health.summary.unknown': 'The posting pipeline and cancellations for this period',
 
   // --- cost coverage --------------------------------------------------------------------
   'dashboard.costCoverage.title': 'Cost coverage',
   'dashboard.costCoverage.subtitle':
     'Below 100% means some sales have no cost recorded, so any margin for this period is overstated.',
+  'dashboard.costCoverage.headline': '{{percent}}% of sales have their cost posted',
+  'dashboard.costCoverage.headline.unknown': 'There were no sales to post a cost against',
+  'dashboard.costCoverage.noSales': 'Nothing was sold in this period, so there is nothing to cover.',
   'dashboard.costCoverage.totalSales': 'Sales in period',
   'dashboard.costCoverage.posted': 'Cost posted',
+  'dashboard.costCoverage.posted.hint': 'Counted in the figures above',
   'dashboard.costCoverage.unposted': 'Waiting on a stuck document',
   'dashboard.costCoverage.unposted.hint': 'Someone needs to clear it',
   'dashboard.costCoverage.noConsumption': 'No recipe, so no cost was ever scheduled',
@@ -73,13 +84,18 @@ export const dashboardEn: TranslationDictionary = {
   'dashboard.trend.bucket.DAY': 'By day',
   'dashboard.trend.bucket.MONTH': 'By month',
   'dashboard.trend.axis.hour': '{{hour}}:00',
-  // The bars are scaled to their own maximum, so without this the chart has no scale at all.
+  // The chart's resting caption. The gridlines carry the scale now, so this is free to name
+  // where the peak fell rather than only how big it was.
   'dashboard.trend.peak': 'Peak {{value}}',
   'dashboard.trend.point': '{{label}}: {{sales}} across {{orders}} orders',
-  // Every range this page offers ends today, so the last bar is always still filling. Without
-  // saying so, a short final bar reads as a collapse rather than as an hour half over.
+  // Every range this page offers ends today, so the last bucket is always still filling. Without
+  // saying so, a dip into a half-finished hour reads as a collapse rather than as an hour half
+  // over — which is why the band is also labelled in words and not only shaded.
   'dashboard.trend.point.partial':
     '{{label}}: {{sales}} across {{orders}} orders — still in progress',
+  'dashboard.trend.partial.HOUR': 'The shaded hour is still in progress',
+  'dashboard.trend.partial.DAY': 'The shaded day is still in progress',
+  'dashboard.trend.partial.MONTH': 'The shaded month is still in progress',
 
   // --- branches -------------------------------------------------------------------------
   'dashboard.branches.title': 'By branch',
@@ -97,6 +113,9 @@ export const dashboardEn: TranslationDictionary = {
   'dashboard.mix.column.orders': 'Orders',
   'dashboard.mix.column.total': 'Total',
   'dashboard.mix.column.share': 'Share',
+  // Under a share bar: the money and the order count the four-column table used to carry, so
+  // promoting the mix out of the drawer dropped none of it.
+  'dashboard.mix.meta': '{{total}} across {{orders}} orders',
 
   'dashboard.orderType.DINE_IN': 'Dine in',
   'dashboard.orderType.TAKEAWAY': 'Takeaway',

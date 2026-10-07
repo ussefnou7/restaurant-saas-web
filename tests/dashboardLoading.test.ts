@@ -47,7 +47,10 @@ function mount() {
       getDashboardSummary: () => { const request = deferred(); summaries.push(request); return request.promise },
       getDashboardAlerts: () => { const request = deferred(); alerts.push(request); return request.promise },
     },
-    './dashboardDisplay': { parseMoney: (value: any) => value == null ? null : Number(value) },
+    './dashboardDisplay': {
+      moneyText: (value: any) => value == null ? '—' : String(value),
+      percentText: (value: any) => value == null ? '—' : `${value}%`,
+    },
   }
   const source = fs.readFileSync(new URL('../src/pages/dashboard/DashboardPage.tsx', import.meta.url), 'utf8')
   const compiled = ts.transpileModule(source, {

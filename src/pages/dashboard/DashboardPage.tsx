@@ -2,10 +2,9 @@ import { useEffect, useState } from 'react'
 import { RefreshCw } from 'lucide-react'
 import { useTranslation } from '../../i18n/useTranslation'
 import { LoadingState } from '../../components/ui/LoadingState'
-import { formatDateTime, formatMoney, formatNumber } from '../../utils/format'
+import { formatDateTime, formatNumber } from '../../utils/format'
 import { getDashboardAlerts, getDashboardSummary } from '../../services/dashboardService'
 import type {
-  BranchKpiRow,
   DashboardAlertsResponse,
   DashboardBlock,
   DashboardMode,
@@ -14,11 +13,15 @@ import type {
   SalesTrend,
 } from '../../types/dashboard'
 import { AttentionStrip } from './AttentionStrip'
+import { BranchBars } from './BranchBars'
+import { CoverageBar } from './CoverageBar'
 import { DashboardDrawer } from './DashboardDrawer'
 import { DashboardSection } from './DashboardSection'
 import { HeroTile } from './HeroTile'
+import { PeakTile } from './PeakTile'
 import { SalesTrendChart } from './SalesTrendChart'
-import { parseMoney } from './dashboardDisplay'
+import { ShareBars } from './ShareBars'
+import { moneyText, percentText } from './dashboardDisplay'
 
 const MODES: DashboardMode[] = ['today', 'month', 'year']
 
@@ -26,12 +29,26 @@ const MODES: DashboardMode[] = ['today', 'month', 'year']
  * The owner dashboard.
  *
  * The page is ordered by what an owner does about it, not by what the API returns. Alerts first,
- * because they are the only part that asks for an action. Then the three sales figures the whole
- * screen is about, with the trend inside the one they describe. Everything that reports on the
- * *bookkeeping* rather than the business — cost coverage, the posting pipeline, cancellations —
- * sits in a shut drawer at the bottom with its headline figure on the lid. That work is real and
- * someone has to do it; it is just not what the owner opened this screen to find out, and giving
- * it the top of the page made the top of the page worth skipping.
+ * because they are the only part that asks for an action. Then the sales figures the whole screen
+ * is about, with the trend inside the one they describe.
+ *
+ * ## What moved out of the drawers, and why
+ *
+ * The first version put everything that reports on the *bookkeeping* rather than the business into
+ * a shut drawer at the bottom. That was right about cancellations and the posting pipeline, which
+ * are somebody's queue of work, and wrong about two things:
+ *
+ * - **Cost coverage** is the figure that says whether every other number on this page can be
+ *   trusted. Below 100%, some sales carry no cost, so any margin an owner works out from this
+ *   screen is overstated — and behind a lid he could work one out without ever being told. It is
+ *   now a bar immediately under the headline figures.
+ * - **Order channels and payment methods** are the two breakdowns an owner reads daily. As
+ *   four-column tables inside a drawer they were three clicks and a scan away from a comparison
+ *   that a bar makes instantly, which is why they are now bars on the page.
+ *
+ * What stayed in the drawer is the pipeline and cancellations, with the count of documents still
+ * waiting to post lifted onto the lid — a shut drawer labelled only "data health" gives no reason
+ * to open it and no reason to leave it shut.
  */
 export function DashboardPage() {
   const { t, locale } = useTranslation()
@@ -90,11 +107,22 @@ export function DashboardPage() {
   }
 
   const kpis = summary?.kpis.status === 'OK' ? summary.kpis.data : null
-  // Optional all the way down: the drawer's lid is read before any block is known to exist, so
-  // a response missing the block entirely must leave the lid unlabelled rather than throw.
-  const coveragePercent = parseMoney(
-    summary?.costCoverage?.status === 'OK' ? summary.costCoverage.data?.coveragePercent : null,
-  )
+
+  /*
+   * The figure on the drawer's lid: how many posting documents have not finished.
+   *
+   * Optional all the way down, because the lid is read before any block is known to exist and a
+   * response missing the block entirely must leave the lid unlabelled rather than throw. Zero is
+   * a good lid — "nothing is waiting" is worth saying — so only an absent block falls back to the
+   * unknown wording.
+   */
+  const pipeline =
+    summary?.consumptionPipeline?.status === 'OK' ? summary.consumptionPipeline.data : null
+  const waitingDocs = pipeline
+    ? pipeline
+        .filter((row) => row.status !== 'POSTED')
+        .reduce((count, row) => count + row.docCount, 0)
+    : null
 
   return (
     <div className="page dashboard-page">
@@ -141,131 +169,85 @@ export function DashboardPage() {
         <LoadingState message={t('dashboard.loading')} />
       ) : (
         <>
-          {/* Three figures, not six. The trend lives inside net sales because it is a picture of
-              net sales — as its own section it was a chart of nothing in particular. */}
-          <div className="dashboard-hero">
+          {/* Net sales takes the full width because it carries the chart, which is a picture of
+              net sales and of nothing else — as its own section it was a chart of no figure in
+              particular. */}
+          <div className="dashboard-lead">
             <HeroTile
               size="lead"
               title={t('dashboard.kpis.netSales')}
-              value={money(kpis?.netSales)}
+              value={moneyText(kpis?.netSales)}
               hint={t('dashboard.kpis.netSales.hint')}
             >
               <TrendSlot block={summary?.trend} />
             </HeroTile>
-
-            <div className="dashboard-hero__support">
-              <HeroTile
-                title={t('dashboard.kpis.orders')}
-                value={kpis?.orderCount !== null && kpis?.orderCount !== undefined
-                  ? formatNumber(kpis.orderCount)
-                  : t('dashboard.unknown')}
-              />
-              <HeroTile
-                title={t('dashboard.kpis.averageCheck')}
-                value={money(kpis?.averageOrderValue)}
-                hint={t('dashboard.kpis.averageCheck.hint')}
-              />
-            </div>
           </div>
+
+          {/* Three supporting figures, all three derived from the same sales the chart draws, so
+              none of them can disagree with it. */}
+          <div className="dashboard-metrics">
+            <HeroTile
+              title={t('dashboard.kpis.orders')}
+              value={kpis?.orderCount !== null && kpis?.orderCount !== undefined
+                ? formatNumber(kpis.orderCount)
+                : t('dashboard.unknown')}
+            />
+            <HeroTile
+              title={t('dashboard.kpis.averageCheck')}
+              value={moneyText(kpis?.averageOrderValue)}
+              hint={t('dashboard.kpis.averageCheck.hint')}
+            />
+            <PeakTile block={summary?.trend} bucket={summary?.bucket ?? 'DAY'} />
+          </div>
+
+          <DashboardSection
+            titleKey="dashboard.costCoverage.title"
+            subtitleKey="dashboard.costCoverage.subtitle"
+            block={summary?.costCoverage}
+            isEmpty={() => false}
+          >
+            {(data) => <CoverageBar data={data} />}
+          </DashboardSection>
+
+          <div className="dashboard-page__pair">
+            <DashboardSection titleKey="dashboard.orderTypes.title" block={summary?.orderTypes}>
+              {(rows) => <ShareBars rows={rows} labelPrefix="dashboard.orderType" />}
+            </DashboardSection>
+
+            <DashboardSection
+              titleKey="dashboard.paymentMethods.title"
+              block={summary?.paymentMethods}
+            >
+              {(rows) => <ShareBars rows={rows} labelPrefix="dashboard.paymentMethod" />}
+            </DashboardSection>
+          </div>
+
+          <DashboardSection titleKey="dashboard.branches.title" block={summary?.branches}>
+            {(branches) => <BranchBars branches={branches} />}
+          </DashboardSection>
 
           {/* Inventory money, kept but demoted: both are real figures and neither is a sales
               figure, so they read at a smaller size with their period spelled out. */}
           <div className="dashboard-secondary">
             <SecondaryFigure
               label={t('dashboard.kpis.wasteValue')}
-              value={money(kpis?.wasteValue)}
+              value={moneyText(kpis?.wasteValue)}
               hint={t('dashboard.kpis.wasteValue.hint')}
             />
             <SecondaryFigure
               label={t('dashboard.kpis.stockValue')}
-              value={money(kpis?.stockValue)}
+              value={moneyText(kpis?.stockValue)}
               hint={t('dashboard.kpis.stockValue.hint')}
             />
           </div>
 
-          {summary?.generatedAt ? (
-            <p className="dashboard-page__timestamp">
-              {t('dashboard.generatedAt', { time: formatDateTime(summary.generatedAt, locale) })}
-            </p>
-          ) : null}
-
-          <DashboardSection titleKey="dashboard.branches.title" block={summary?.branches}>
-            {(branches) => <BranchCards branches={branches} />}
-          </DashboardSection>
-
-          <DashboardDrawer
-            titleKey="dashboard.breakdown.title"
-            summaryKey="dashboard.breakdown.summary"
-          >
-            <div className="dashboard-page__pair">
-              <DashboardSection
-                variant="flush"
-                titleKey="dashboard.orderTypes.title"
-                block={summary?.orderTypes}
-              >
-                {(rows) => <MixTable rows={rows} labelPrefix="dashboard.orderType" />}
-              </DashboardSection>
-
-              <DashboardSection
-                variant="flush"
-                titleKey="dashboard.paymentMethods.title"
-                block={summary?.paymentMethods}
-              >
-                {(rows) => <MixTable rows={rows} labelPrefix="dashboard.paymentMethod" />}
-              </DashboardSection>
-            </div>
-          </DashboardDrawer>
-
           <DashboardDrawer
             titleKey="dashboard.health.title"
-            // The coverage figure is lifted onto the lid: a shut drawer labelled only "data
-            // health" gives no reason to open it and no reason to leave it shut.
             summaryKey={
-              coveragePercent === null
-                ? 'dashboard.health.summary.unknown'
-                : 'dashboard.health.summary'
+              waitingDocs === null ? 'dashboard.health.summary.unknown' : 'dashboard.health.summary'
             }
-            summaryValues={
-              coveragePercent === null ? undefined : { percent: coveragePercent.toFixed(1) }
-            }
+            summaryValues={waitingDocs === null ? undefined : { count: waitingDocs }}
           >
-            <DashboardSection
-              variant="flush"
-              titleKey="dashboard.costCoverage.title"
-              subtitleKey="dashboard.costCoverage.subtitle"
-              block={summary?.costCoverage}
-              isEmpty={() => false}
-            >
-              {(data) => (
-                <dl className="cost-coverage__breakdown">
-                  <div>
-                    <dt>{t('dashboard.costCoverage.totalSales')}</dt>
-                    <dd>{money(data.totalSales)}</dd>
-                  </div>
-                  <div>
-                    <dt>{t('dashboard.costCoverage.posted')}</dt>
-                    <dd>{money(data.postedSales)}</dd>
-                  </div>
-                  {/* The two gaps are shown apart because they send the owner to different
-                      screens: one is a stuck document, the other a missing recipe. */}
-                  <div>
-                    <dt>{t('dashboard.costCoverage.unposted')}</dt>
-                    <dd>{money(data.unpostedSales)}</dd>
-                    <dd className="cost-coverage__hint">
-                      {t('dashboard.costCoverage.unposted.hint')}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>{t('dashboard.costCoverage.noConsumption')}</dt>
-                    <dd>{money(data.noConsumptionSales)}</dd>
-                    <dd className="cost-coverage__hint">
-                      {t('dashboard.costCoverage.noConsumption.hint')}
-                    </dd>
-                  </div>
-                </dl>
-              )}
-            </DashboardSection>
-
             <DashboardSection
               variant="flush"
               titleKey="dashboard.pipeline.title"
@@ -305,6 +287,12 @@ export function DashboardPage() {
               {(rows) => <MixTable rows={rows} labelPrefix="dashboard.cancellationStage" />}
             </DashboardSection>
           </DashboardDrawer>
+
+          {summary?.generatedAt ? (
+            <p className="dashboard-page__timestamp">
+              {t('dashboard.generatedAt', { time: formatDateTime(summary.generatedAt, locale) })}
+            </p>
+          ) : null}
         </>
       )}
     </div>
@@ -353,64 +341,19 @@ function SecondaryFigure({ label, value, hint }: SecondaryFigureProps) {
   )
 }
 
-/**
- * The per-branch breakdown as cards with a share bar.
- *
- * The same five figures the table carried, arranged so the comparison is the thing you see. Note
- * what is still absent: no rank, no colour and no score. A branch that never counts its stock
- * reports no shrinkage, so any composite score here would reward the branch doing least work.
- */
-function BranchCards({ branches }: { branches: BranchKpiRow[] }) {
-  const { t, locale } = useTranslation()
-
-  return (
-    <div className="branch-cards">
-      {branches.map((branch) => {
-        const share = parseMoney(branch.netSalesSharePercent)
-        const name =
-          (locale === 'ar' ? branch.branchNameAr : branch.branchName) ??
-          branch.branchName ??
-          t('dashboard.unknown')
-
-        return (
-          <article className="branch-card" key={branch.branchId}>
-            <p className="branch-card__name">{name}</p>
-            <p className="branch-card__sales">{money(branch.netSales)}</p>
-
-            {/* No bar at all when the share is unknown. A bar scaled to the leading branch
-                instead would look like a share and mean something else. */}
-            {share !== null ? (
-              <span className="branch-card__bar" aria-hidden="true">
-                <span className="branch-card__fill" style={{ inlineSize: `${share}%` }} />
-              </span>
-            ) : null}
-
-            <p className="branch-card__meta">
-              {share !== null
-                ? t('dashboard.branches.meta', {
-                    share: share.toFixed(1),
-                    orders: formatNumber(branch.orderCount),
-                  })
-                : t('dashboard.branches.meta.noShare', {
-                    orders: formatNumber(branch.orderCount),
-                  })}
-            </p>
-            <p className="branch-card__average">
-              {t('dashboard.branches.meta.average', { value: money(branch.averageOrderValue) })}
-            </p>
-          </article>
-        )
-      })}
-    </div>
-  )
-}
-
 interface MixTableProps {
   rows: MixRow[]
   /** Translation-key prefix for the dimension values — the backend ships raw enum names. */
   labelPrefix: string
 }
 
+/**
+ * A mix as a table, which cancellations are the remaining case for.
+ *
+ * The channel and payment mixes became {@link ShareBars} because a share is compared by eye.
+ * Cancellations have no share — a share of itself would mean nothing — so there is no bar to draw
+ * and the four columns are the clearest thing left.
+ */
 function MixTable({ rows, labelPrefix }: MixTableProps) {
   const { t } = useTranslation()
 
@@ -430,24 +373,13 @@ function MixTable({ rows, labelPrefix }: MixTableProps) {
             <tr key={row.dimension}>
               <td>{t(`${labelPrefix}.${row.dimension}`)}</td>
               <td>{formatNumber(row.orderCount)}</td>
-              <td>{money(row.totalAmount)}</td>
+              <td>{moneyText(row.totalAmount)}</td>
               {/* Null share renders as a dash, not 0% — cancellations have no meaningful share. */}
-              <td>{percent(row.sharePercent, '—')}</td>
+              <td>{percentText(row.sharePercent)}</td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
   )
-}
-
-/** A dash for an absent figure. Absent and zero are different facts on this screen. */
-function money(value: string | null | undefined): string {
-  const parsed = parseMoney(value)
-  return parsed === null ? '—' : formatMoney(parsed)
-}
-
-function percent(value: string | null | undefined, fallback: string): string {
-  const parsed = parseMoney(value)
-  return parsed === null ? fallback : `${parsed.toFixed(1)}%`
 }

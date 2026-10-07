@@ -1,9 +1,16 @@
+import { formatMoney } from '../../utils/format'
 import type {
   AlertLinkTarget,
   AlertParams,
   DashboardAlertRow,
   DashboardMode,
+  SalesTrend,
+  TrendBucket,
+  TrendPoint,
 } from '../../types/dashboard'
+
+/** `t` from `useTranslation`, taken as a parameter so label rules live here and not in a view. */
+type Translate = (key: string, values?: Record<string, string | number>) => string
 
 /**
  * Presentation and range helpers for the dashboard.
@@ -55,6 +62,109 @@ export function parseMoney(value: string | null | undefined): number | null {
   if (value === null || value === undefined) return null
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : null
+}
+
+/**
+ * A money figure for display, or a dash where there is no figure.
+ *
+ * The dash is the whole point and it is centralised here because it is one character and therefore
+ * the easiest thing on the page to replace with a `0` by accident. Absent and zero are different
+ * facts on this screen: `0` says the condition was measured and found empty, `—` says nobody
+ * measured. Four views render money and all four go through this.
+ */
+export function moneyText(value: string | null | undefined): string {
+  const parsed = parseMoney(value)
+  return parsed === null ? '—' : formatMoney(parsed)
+}
+
+/** The same rule for a percentage. `fallback` exists because a null share is not always a gap. */
+export function percentText(value: string | null | undefined, fallback = '—'): string {
+  const parsed = parseMoney(value)
+  return parsed === null ? fallback : `${parsed.toFixed(1)}%`
+}
+
+/**
+ * The label a trend bucket prints, in the reader's language.
+ *
+ * The ISO parts are read by hand rather than through `new Date(iso)`, which parses a bare date as
+ * UTC midnight and therefore prints the previous day in any zone behind UTC. A bucket label is a
+ * calendar date, not an instant, so it is built in local time from its own components.
+ *
+ * Lives here rather than in the chart because two views now print the same label — the chart's
+ * axis and the busiest-bucket tile — and a bucket named one way under a bar and another way in a
+ * tile is a bug that only shows up when both are on screen, which is always.
+ */
+export function trendLabel(
+  raw: string,
+  bucket: TrendBucket,
+  locale: string,
+  t: Translate,
+): string {
+  if (bucket === 'HOUR') return t('dashboard.trend.axis.hour', { hour: raw })
+
+  const [year, month, day] = raw.split('-').map(Number)
+  if (!year || !month || !day) return raw
+
+  const date = new Date(year, month - 1, day)
+  const options: Intl.DateTimeFormatOptions =
+    bucket === 'MONTH' ? { month: 'short' } : { day: 'numeric' }
+  return new Intl.DateTimeFormat(locale, options).format(date)
+}
+
+/**
+ * The busiest bucket in a series, or null when there is no such thing.
+ *
+ * The final bucket is excluded from the contest. Every range this page offers ends today, so the
+ * last bucket is always still filling — crowning a half-finished hour "busiest" would be wrong,
+ * and crowning it *because* it is incomplete would be wrong in the opposite direction once it
+ * fills. With a single point there is nothing to exclude and nothing to compare, so it stands.
+ *
+ * Null when every candidate is zero: the busiest hour of a day with no sales is not an hour, and
+ * printing the first one would invent a finding out of a flat line.
+ */
+export function peakPoint(trend: SalesTrend): TrendPoint | null {
+  const candidates = trend.points.length > 1 ? trend.points.slice(0, -1) : trend.points
+
+  let best: TrendPoint | null = null
+  let bestValue = 0
+  for (const point of candidates) {
+    const value = parseMoney(point.netSales) ?? 0
+    if (value > bestValue) {
+      bestValue = value
+      best = point
+    }
+  }
+  return best
+}
+
+/**
+ * The y-axis ceiling for a series whose largest point is `peak`.
+ *
+ * Rounds up to a 1/2/2.5/5 × 10^n step so the printed gridline values are numbers an owner reads
+ * rather than the series maximum to six figures. Zero in, zero out — a flat empty series has no
+ * axis to draw and the caller must not divide by this.
+ */
+export function niceAxisMax(peak: number): number {
+  if (!(peak > 0)) return 0
+
+  const magnitude = 10 ** Math.floor(Math.log10(peak))
+  const scaled = peak / magnitude
+  const step = scaled <= 1 ? 1 : scaled <= 2 ? 2 : scaled <= 2.5 ? 2.5 : scaled <= 5 ? 5 : 10
+  return step * magnitude
+}
+
+/**
+ * Money shortened to fit an axis tick.
+ *
+ * `formatMoney` prints two decimals, which is right in a figure and four wasted characters under
+ * a gridline. Compact notation is localised by `Intl`, so an Arabic axis reads ٨٠٠ ألف rather
+ * than a transliterated "800k".
+ */
+export function compactMoney(value: number, locale: string): string {
+  return new Intl.NumberFormat(locale, {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(value)
 }
 
 /**
