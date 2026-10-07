@@ -1,6 +1,8 @@
 import type { TranslationDictionary } from '../../types'
 
 export const errorsEn: TranslationDictionary = {
+  'errors.TENANT_SETTINGS_NOT_FOUND': 'Settings for this restaurant are missing. Contact your administrator.',
+  'errors.TENANT_ORDER_TYPE_REQUIRED': 'Enable at least one order type: dine-in, takeaway or delivery.',
   'errors.LEAVE_REQUEST_OVERLAP': 'These dates overlap an approved leave request for this employee.',
   'errors.SALARY_ADJUSTMENT_DATE_IN_FUTURE': 'The adjustment date cannot be later than {{today}}.',
   'errors.SALARY_ADJUSTMENT_BEFORE_HIRE': 'The adjustment date cannot be before the hire date ({{hireDate}}).',
@@ -146,7 +148,10 @@ export const errorsEn: TranslationDictionary = {
     'Quantity disposed cannot exceed the selected line remaining quantity.',
 
   // Devices module
-  'errors.INVALID_DEVICE_SECRET': 'Invalid device secret',
+  'errors.INVALID_DEVICE_PAIRING_CODE': 'The device pairing code is invalid or has already been used.',
+  'errors.DEVICE_PAIRING_CODE_EXPIRED': 'The device pairing code has expired. Generate a new code.',
+  'errors.DEVICE_PAIRING_TEMPORARILY_LOCKED':
+    'Too many failed pairing attempts. Wait a minute and try again.',
   'errors.DEVICE_INACTIVE': 'This device is inactive ({{entityType}} #{{entityId}})',
   'errors.DEVICE_NOT_FOUND': 'The requested device was not found ({{entityType}} #{{entityId}})',
   'errors.BRANCH_NOT_FOUND': 'The selected branch was not found ({{entityType}} #{{entityId}})',

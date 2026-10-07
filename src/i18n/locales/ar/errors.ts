@@ -1,6 +1,8 @@
 import type { TranslationDictionary } from '../../types'
 
 export const errorsAr: TranslationDictionary = {
+  'errors.TENANT_SETTINGS_NOT_FOUND': 'إعدادات هذا المطعم غير موجودة. تواصل مع مسؤول النظام.',
+  'errors.TENANT_ORDER_TYPE_REQUIRED': 'فعّل نوع طلب واحدًا على الأقل: صالة أو تيك أواي أو دليفري.',
   'errors.LEAVE_REQUEST_OVERLAP': 'تتداخل هذه التواريخ مع طلب إجازة معتمد لهذا الموظف.',
   'errors.SALARY_ADJUSTMENT_DATE_IN_FUTURE': 'لا يمكن أن يكون تاريخ التعديل بعد {{today}}.',
   'errors.SALARY_ADJUSTMENT_BEFORE_HIRE': 'لا يمكن أن يكون تاريخ التعديل قبل تاريخ التعيين ({{hireDate}}).',
@@ -141,7 +143,10 @@ export const errorsAr: TranslationDictionary = {
     'الكمية المتخلص منها لا يمكن أن تتجاوز المتبقي في البند المختار.',
 
   // Devices module
-  'errors.INVALID_DEVICE_SECRET': 'مفتاح الجهاز غير صحيح',
+  'errors.INVALID_DEVICE_PAIRING_CODE': 'رمز اقتران الجهاز غير صحيح أو تم استخدامه من قبل.',
+  'errors.DEVICE_PAIRING_CODE_EXPIRED': 'انتهت صلاحية رمز اقتران الجهاز. أنشئ رمزًا جديدًا.',
+  'errors.DEVICE_PAIRING_TEMPORARILY_LOCKED':
+    'توجد محاولات اقتران فاشلة كثيرة. انتظر دقيقة ثم حاول مرة أخرى.',
   'errors.DEVICE_INACTIVE': 'هذا الجهاز غير نشط ({{entityType}} رقم {{entityId}})',
   'errors.DEVICE_NOT_FOUND': 'الجهاز المطلوب غير موجود ({{entityType}} رقم {{entityId}})',
   'errors.BRANCH_NOT_FOUND': 'الفرع المحدد غير موجود ({{entityType}} رقم {{entityId}})',
