@@ -6,6 +6,7 @@ import { branchDetailsAr } from './branchDetails'
 import { branchesAr } from './branches'
 import { commonAr } from './common'
 import { customersAr } from './customers'
+import { dashboardAr } from './dashboard'
 import { devicesAr } from './devices'
 import { employeesAr } from './employees'
 import { errorsAr } from './errors'
@@ -33,6 +34,7 @@ import { usersAr } from './users'
 export const ar = mergeMessages(
   commonAr,
   customersAr,
+  dashboardAr,
   assetsAr,
   devicesAr,
   layoutAr,

@@ -20,7 +20,6 @@ import { MenuProductsSection } from '../pages/menu/MenuProductsSection'
 import { DashboardPage } from '../pages/dashboard/DashboardPage'
 import { DevicesPage } from '../pages/devices/DevicesPage'
 import { AdminHubPage } from '../pages/hubs/AdminHubPage'
-import { HomeHubPage } from '../pages/hubs/HomeHubPage'
 import { HrHubPage } from '../pages/hubs/HrHubPage'
 import { InventoryHubPage } from '../pages/hubs/InventoryHubPage'
 import { PurchaseHubPage } from '../pages/hubs/PurchaseHubPage'
@@ -120,10 +119,10 @@ export const router = createBrowserRouter([
           },
           {
             path: 'dashboard',
-            handle: { titleKey: 'hubs.home.title' },
+            handle: { titleKey: 'layout.nav.dashboard' },
             children: [
-              { index: true, element: <HomeHubPage /> },
-              { path: 'overview', element: <DashboardPage />, handle: { titleKey: 'layout.nav.dashboard' } },
+              { index: true, element: <DashboardPage /> },
+              { path: 'overview', element: <Navigate to="/dashboard" replace /> },
             ],
           },
           {

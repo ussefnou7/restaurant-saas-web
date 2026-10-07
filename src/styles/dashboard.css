@@ -1,0 +1,820 @@
+/*
+ * Owner dashboard.
+ *
+ * BEM, logical properties throughout (start/end, never left/right) so the page mirrors under
+ * dir="rtl" without a second set of rules, and colours only from --color-* tokens — no hex, and
+ * no fallback inside var() either, since var(--color-surface, #fff) is still a hardcoded hex and
+ * it defeats the check written to catch an unresolved token.
+ *
+ * Per the width rules: the page wrapper carries no max-width, and the ceiling sits on the content
+ * elements that actually fail when stretched.
+ */
+
+.dashboard-page__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.dashboard-page__controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* --- mode tabs --------------------------------------------------------------------------- */
+
+.dashboard-modes {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  background: var(--color-surface-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.dashboard-modes__tab {
+  padding: 7px 16px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.dashboard-modes__tab:hover {
+  color: var(--color-text);
+}
+
+.dashboard-modes__tab--active {
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: 0 1px 2px var(--color-focus-ring);
+}
+
+.dashboard-page__refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.dashboard-page__refresh:hover {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-soft);
+}
+
+/* --- hero ---------------------------------------------------------------------------------
+ *
+ * Three figures, not six, and not three of equal weight. Net sales takes the wide column because
+ * it carries the trend chart and because it is the number the screen is about; orders and average
+ * check sit beside it at a smaller size. A row of identically sized tiles asserts that every tile
+ * matters equally, which is the thing this layout is correcting.
+ */
+
+.dashboard-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  gap: 16px;
+  margin-block: 20px 12px;
+}
+
+.dashboard-hero__support {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 16px;
+}
+
+/* The chart needs real width before the split is worth keeping. */
+@media (max-width: 860px) {
+  .dashboard-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dashboard-hero__support {
+    grid-template-rows: none;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+}
+
+.hero-tile {
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+}
+
+.hero-tile__label {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.hero-tile__value {
+  margin: 4px 0 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-tile--lead .hero-tile__value {
+  font-size: 1.875rem;
+}
+
+.hero-tile__hint {
+  margin: 2px 0 0;
+  font-size: 0.75rem;
+  color: var(--color-text-subtle);
+}
+
+/* The chart is pushed to the bottom of the tile so the two support tiles beside it line up. */
+.hero-tile > .trend-chart {
+  margin-block-start: auto;
+  padding-block-start: 16px;
+}
+
+/* Why there is no chart — withheld, uncomputable and empty stay three different sentences. */
+.hero-tile__notice {
+  margin: auto 0 0;
+  padding-block-start: 16px;
+  font-size: 0.8125rem;
+  color: var(--color-text-subtle);
+}
+
+/* --- secondary figures ---------------------------------------------------------------------
+ *
+ * Waste and stock value are real money but neither is a sales figure, so they read below the hero
+ * at a smaller size with their period spelled out — stock value is a snapshot and waste is not.
+ */
+
+.dashboard-secondary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-block-end: 12px;
+}
+
+.dashboard-secondary__item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 12px 16px;
+  background: var(--color-surface-soft);
+  border-radius: 10px;
+}
+
+.dashboard-secondary__label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.dashboard-secondary__value {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.dashboard-secondary__hint {
+  font-size: 0.6875rem;
+  color: var(--color-text-subtle);
+}
+
+.dashboard-page__timestamp {
+  margin: 0 0 20px;
+  color: var(--color-text-subtle);
+  font-size: 0.8125rem;
+}
+
+/* --- attention strip --------------------------------------------------------------------- */
+
+.attention-strip {
+  margin-block-end: 24px;
+  padding: 16px 18px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+}
+
+.attention-strip__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-block-end: 12px;
+}
+
+.attention-strip__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.attention-strip__count {
+  min-width: 22px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.attention-strip__clear,
+.dashboard-section__notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--color-surface-soft);
+  color: var(--color-text-muted);
+}
+
+.attention-strip__clear {
+  background: var(--color-success-soft);
+  color: var(--color-success-text);
+}
+
+.attention-strip__clear-title,
+.dashboard-section__notice-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.attention-strip__clear-body,
+.dashboard-section__notice-body {
+  margin: 2px 0 0;
+  font-size: 0.8125rem;
+}
+
+/*
+ * The withheld notice. Styled as a warning rather than muted help text on purpose: it is the
+ * qualifier that stops an all-clear strip from being read as an all-clear, so it must not look
+ * like a footnote.
+ */
+.attention-strip__withheld {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+  font-size: 0.8125rem;
+}
+
+.attention-strip__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* --- one alert group -------------------------------------------------------------------- */
+
+.alert-group {
+  border: 1px solid var(--color-border-soft);
+  border-radius: 10px;
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+/*
+ * Severity shows as a bar on the inline start edge, which mirrors with direction for free.
+ * border-inline-start rather than border-left: under RTL the accent has to sit on the right.
+ */
+.alert-group--critical {
+  border-inline-start: 3px solid var(--color-danger);
+}
+
+.alert-group--warning {
+  border-inline-start: 3px solid var(--color-warning);
+}
+
+.alert-group--info {
+  border-inline-start: 3px solid var(--color-text-subtle);
+}
+
+.alert-group__main {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+}
+
+.alert-group__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  margin-block-start: 1px;
+}
+
+.alert-group--critical .alert-group__icon {
+  color: var(--color-danger);
+}
+
+.alert-group--warning .alert-group__icon {
+  color: var(--color-warning);
+}
+
+.alert-group--info .alert-group__icon {
+  color: var(--color-text-subtle);
+}
+
+.alert-group__text {
+  flex: 1 1 auto;
+  /* Lets the text column shrink below min-content so a long sentence wraps instead of
+     pushing the figures off the row. This is what minmax(0, 1fr) is for, and it is not a
+     ceiling — see the width notes in CONVENTIONS. */
+  min-width: 0;
+}
+
+.alert-group__title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.alert-group__severity {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--color-surface-soft);
+  color: var(--color-text-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.alert-group__body {
+  margin: 4px 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+/* The understatement caveat on cancelled-after-cooking. Italic so it reads as an aside. */
+.alert-group__caveat {
+  margin: 6px 0 0;
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--color-warning);
+}
+
+.alert-group__figures {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  gap: 2px;
+  text-align: end;
+}
+
+.alert-group__value {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.alert-group__estimate {
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--color-surface-soft);
+  color: var(--color-text-subtle);
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+
+.alert-group__age {
+  font-size: 0.75rem;
+  color: var(--color-text-subtle);
+}
+
+.alert-group__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 5px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.alert-group__toggle:hover {
+  background: var(--color-surface-soft);
+  color: var(--color-text);
+}
+
+/* The label is for pointer users; the chevron carries it on a narrow screen. */
+@media (max-width: 720px) {
+  .alert-group__toggle-label {
+    display: none;
+  }
+}
+
+.alert-group__rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-block-start: 1px solid var(--color-border-soft);
+  background: var(--color-surface-soft);
+}
+
+.alert-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 14px;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.alert-row + .alert-row {
+  border-block-start: 1px solid var(--color-border-soft);
+}
+
+.alert-row__scope {
+  color: var(--color-text);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.alert-row__count,
+.alert-row__value {
+  font-variant-numeric: tabular-nums;
+}
+
+.alert-row__age {
+  color: var(--color-text-subtle);
+}
+
+.alert-row__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-primary);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.alert-row__link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 720px) {
+  .alert-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 4px;
+  }
+}
+
+/* --- sections --------------------------------------------------------------------------- */
+
+.dashboard-section--card {
+  margin-block-end: 16px;
+  padding: 18px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+}
+
+/*
+ * Inside a drawer the chrome is already there, so a second card around each block would nest two
+ * borders for no gain. Only the spacing survives.
+ */
+.dashboard-section--flush + .dashboard-section--flush {
+  margin-block-start: 22px;
+}
+
+.dashboard-section__header {
+  margin-block-end: 14px;
+}
+
+.dashboard-section__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.dashboard-section__subtitle {
+  margin: 4px 0 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.dashboard-section__notice--hidden {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.dashboard-section__empty {
+  margin: 0;
+  color: var(--color-text-subtle);
+  font-size: 0.875rem;
+}
+
+/*
+ * Two sections side by side where both are narrow tables. auto-fit with a 1fr max so they fill
+ * the row rather than leaving dead space at the inline end, and a 320px floor so they stack
+ * before either becomes unreadable.
+ */
+.dashboard-page__pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 22px 20px;
+}
+
+/* Side by side they are siblings in a grid, so the stacking rule would double the gap. */
+.dashboard-page__pair .dashboard-section--flush + .dashboard-section--flush {
+  margin-block-start: 0;
+}
+
+.dashboard-table {
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- branch cards --------------------------------------------------------------------------
+ *
+ * The same figures the table carried, arranged so the comparison between branches is what you
+ * see. Still no rank, no colour and no score: a branch that never counts its stock reports no
+ * shrinkage, so any composite would score the branch doing least work the highest.
+ */
+
+.branch-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 18px 20px;
+}
+
+.branch-card__name {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-text);
+}
+
+.branch-card__sales {
+  margin: 2px 0 8px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.branch-card__bar {
+  display: block;
+  block-size: 6px;
+  border-radius: 999px;
+  background: var(--color-surface-soft);
+  overflow: hidden;
+}
+
+.branch-card__fill {
+  display: block;
+  block-size: 100%;
+  border-radius: 999px;
+  background: var(--color-primary);
+}
+
+.branch-card__meta {
+  margin: 8px 0 0;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.branch-card__average {
+  margin: 2px 0 0;
+  font-size: 0.75rem;
+  color: var(--color-text-subtle);
+}
+
+/* --- drawers -------------------------------------------------------------------------------
+ *
+ * Built on <details>, so the open state is the browser's and the disclosure semantics come free.
+ * The marker is removed on both the standard and the WebKit pseudo-element, because only one of
+ * the two is honoured depending on the engine and leaving either in gives a stray triangle.
+ */
+
+.dashboard-drawer {
+  margin-block-end: 12px;
+  background: var(--color-surface-soft);
+  border: 1px solid var(--color-border-soft);
+  border-radius: 14px;
+}
+
+.dashboard-drawer__summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.dashboard-drawer__summary::-webkit-details-marker {
+  display: none;
+}
+
+.dashboard-drawer__summary:hover .dashboard-drawer__title {
+  color: var(--color-primary);
+}
+
+.dashboard-drawer__summary:focus-visible {
+  outline: 2px solid var(--color-focus-border);
+  outline-offset: -2px;
+  border-radius: 14px;
+}
+
+.dashboard-drawer__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.dashboard-drawer__title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.dashboard-drawer__hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.dashboard-drawer__chevron {
+  flex-shrink: 0;
+  color: var(--color-text-subtle);
+}
+
+/* Rotation, not a second icon, so the control cannot end up showing the wrong one. */
+.dashboard-drawer[open] .dashboard-drawer__chevron {
+  transform: rotate(180deg);
+}
+
+.dashboard-drawer__body {
+  padding: 16px 18px 18px;
+  border-block-start: 1px solid var(--color-border-soft);
+}
+
+/* --- cost coverage ---------------------------------------------------------------------- */
+
+.cost-coverage__breakdown {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin: 0;
+}
+
+.cost-coverage__breakdown dt {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.cost-coverage__breakdown dd {
+  margin: 2px 0 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.cost-coverage__hint {
+  font-size: 0.75rem !important;
+  font-weight: 400 !important;
+  color: var(--color-text-subtle) !important;
+}
+
+/* --- trend chart ------------------------------------------------------------------------ */
+
+.trend-chart {
+  margin: 0;
+}
+
+.trend-chart__caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-block-end: 8px;
+}
+
+.trend-chart__grain {
+  font-size: 0.6875rem;
+  color: var(--color-text-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/*
+ * The scale. Bars are sized against the largest point, so without the peak printed there is no
+ * way to tell a quiet day's chart from a busy one — both fill the box.
+ */
+.trend-chart__peak {
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.trend-chart__bars,
+.trend-chart__axis {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trend-chart__bars {
+  height: 92px;
+  /* The baseline the bars stand on, so a short bar reads as short rather than as floating. */
+  border-block-end: 1px solid var(--color-border);
+}
+
+/*
+ * Bars shrink to fit rather than scrolling. The widest series this page produces is 31 days, and
+ * a chart that has to be dragged sideways to be seen is not a shape you can read at a glance.
+ */
+.trend-chart__item,
+.trend-chart__tick {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+}
+
+.trend-chart__bar {
+  width: 100%;
+  max-width: 28px;
+  min-height: 2px;
+  border-radius: 3px 3px 0 0;
+  background: var(--color-primary);
+}
+
+/*
+ * The final bucket. Every range on this page ends today, so the last bar is always still
+ * filling — undimmed, a half-finished hour reads as a collapse in sales.
+ */
+.trend-chart__bar--partial {
+  background: var(--color-primary-soft);
+}
+
+.trend-chart__bar:hover {
+  background: var(--color-primary-hover);
+}
+
+.trend-chart__axis {
+  margin-block-start: 5px;
+}
+
+/*
+ * A tick is allowed to spill into its neighbours' columns, which are empty by construction —
+ * only every nth is printed. Clipping each to its own bar's width would hide most of them.
+ */
+.trend-chart__tick {
+  height: auto;
+  font-size: 0.6875rem;
+  color: var(--color-text-subtle);
+  white-space: nowrap;
+  overflow: visible;
+}

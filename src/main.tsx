@@ -23,6 +23,7 @@ import './styles/reports.css'
 import './styles/expenses.css'
 import './styles/shifts.css'
 import './styles/media.css'
+import './styles/dashboard.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
