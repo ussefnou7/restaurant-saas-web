@@ -1,10 +1,7 @@
-import { Copy, TriangleAlert } from 'lucide-react'
-import { QRCodeSVG } from 'qrcode.react'
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { FieldGrid, FormField, FormInput, FormSelect } from '../../components/fields'
 import { Button } from '../../components/ui/Button'
 import { Modal } from '../../components/ui/Modal'
-import { useNotify } from '../../components/ui/NotificationContext'
 import { useTranslation } from '../../i18n/useTranslation'
 import * as branchService from '../../services/branchService'
 import * as deviceService from '../../services/deviceService'
@@ -12,6 +9,7 @@ import type { BranchResponse } from '../../types/branch'
 import type { DeviceCreateResponse } from '../../types/device'
 import { buildBranchOptions, getLocalizedBranchName } from '../../utils/branchDisplay'
 import { translateApiError } from '../../utils/errors'
+import { DevicePairingCodeReveal } from './DevicePairingCodeReveal'
 
 interface DeviceCreateModalProps {
   open: boolean
@@ -23,8 +21,6 @@ const emptyForm = { name: '', branchId: '' }
 
 export function DeviceCreateModal({ open, onClose, onDone }: DeviceCreateModalProps) {
   const { t, locale } = useTranslation()
-  const notify = useNotify()
-  const secretInputRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState(emptyForm)
   const [branches, setBranches] = useState<BranchResponse[]>([])
   const [loadingBranches, setLoadingBranches] = useState(false)
@@ -101,21 +97,9 @@ export function DeviceCreateModal({ open, onClose, onDone }: DeviceCreateModalPr
     }
   }
 
-  async function copySecret() {
-    if (!createdDevice) return
-    try {
-      await navigator.clipboard.writeText(createdDevice.secretKey)
-      notify.success(t('devices.secret.copied'))
-    } catch {
-      secretInputRef.current?.focus()
-      secretInputRef.current?.select()
-      notify.error(t('devices.secret.copyFailed'))
-    }
-  }
-
   const footer = createdDevice ? (
     <Button variant="primary" onClick={handleClose}>
-      {t('devices.secret.done')}
+      {t('devices.pairing.done')}
     </Button>
   ) : (
     <>
@@ -133,43 +117,15 @@ export function DeviceCreateModal({ open, onClose, onDone }: DeviceCreateModalPr
       open={open}
       size="medium"
       className="device-create-modal"
-      title={createdDevice ? t('devices.secret.title') : t('devices.create.title')}
+      title={createdDevice ? t('devices.pairing.title') : t('devices.create.title')}
       onClose={handleClose}
       footer={footer}
     >
       {createdDevice ? (
-        <div className="device-create-modal__secret-reveal">
-          <div className="device-create-modal__warning" role="alert">
-            <TriangleAlert aria-hidden="true" />
-            <p>{t('devices.secret.warning')}</p>
-          </div>
-          <div className="device-create-modal__secret-row">
-            <input
-              ref={secretInputRef}
-              className="device-create-modal__secret-field"
-              value={createdDevice.secretKey}
-              readOnly
-              dir="ltr"
-              aria-label={t('devices.secret.title')}
-              onFocus={(event) => event.currentTarget.select()}
-            />
-            <Button
-              variant="secondary"
-              className="device-create-modal__copy-btn"
-              onClick={() => void copySecret()}
-            >
-              <Copy size={18} aria-hidden="true" />
-              {t('devices.secret.copy')}
-            </Button>
-          </div>
-          <div className="device-create-modal__qr">
-            <QRCodeSVG value={createdDevice.secretKey} size={160} marginSize={2} />
-            <div className="device-create-modal__qr-text">
-              <p className="device-create-modal__qr-title">{t('devices.secret.qrTitle')}</p>
-              <p className="device-create-modal__qr-note">{t('devices.secret.qrNote')}</p>
-            </div>
-          </div>
-        </div>
+        <DevicePairingCodeReveal
+          pairingCode={createdDevice.pairingCode}
+          expiresAt={createdDevice.pairingCodeExpiresAt}
+        />
       ) : (
         <form id="device-create-form" className="form form-card" onSubmit={handleSubmit}>
           {error ? <div className="alert-error">{error}</div> : null}

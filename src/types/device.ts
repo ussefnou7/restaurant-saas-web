@@ -13,5 +13,12 @@ export interface DeviceCreateRequest {
 }
 
 export interface DeviceCreateResponse extends Device {
-  secretKey: string
+  pairingCode: string
+  pairingCodeExpiresAt: string
+}
+
+export interface DevicePairingCodeResponse {
+  deviceId: number
+  pairingCode: string
+  expiresAt: string
 }

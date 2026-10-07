@@ -1,4 +1,9 @@
-import type { Device, DeviceCreateRequest, DeviceCreateResponse } from '../types/device'
+import type {
+  Device,
+  DeviceCreateRequest,
+  DeviceCreateResponse,
+  DevicePairingCodeResponse,
+} from '../types/device'
 import { api } from './api'
 
 export async function getDevices(): Promise<Device[]> {
@@ -17,4 +22,15 @@ export async function deactivateDevice(id: number | string): Promise<void> {
   await api.patch(`/api/devices/${id}/deactivate`, undefined, {
     notifyOnError: false,
   })
+}
+
+export async function regeneratePairingCode(
+  id: number | string,
+): Promise<DevicePairingCodeResponse> {
+  const response = await api.post<DevicePairingCodeResponse>(
+    `/api/devices/${id}/pairing-code`,
+    undefined,
+    { notifyOnError: false },
+  )
+  return response.data
 }

@@ -1,4 +1,4 @@
-import { Power } from 'lucide-react'
+import { KeyRound, Power } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { Badge } from '../../components/ui/Badge'
 import { Button } from '../../components/ui/Button'
@@ -13,6 +13,7 @@ import {
 } from '../../components/ui/ListPage'
 import { useNotify } from '../../components/ui/NotificationContext'
 import { PageHeader } from '../../components/ui/PageHeader'
+import { Modal } from '../../components/ui/Modal'
 import {
   DataTable,
   TableBody,
@@ -26,11 +27,12 @@ import { useTranslation } from '../../i18n/useTranslation'
 import * as branchService from '../../services/branchService'
 import * as deviceService from '../../services/deviceService'
 import type { BranchResponse } from '../../types/branch'
-import type { Device } from '../../types/device'
+import type { Device, DevicePairingCodeResponse } from '../../types/device'
 import { getLocalizedBranchName } from '../../utils/branchDisplay'
 import { useCanManageDevices } from '../../utils/deviceAccess'
 import { getApiErrorCode, translateApiError } from '../../utils/errors'
 import { DeviceCreateModal } from './DeviceCreateModal'
+import { DevicePairingCodeReveal } from './DevicePairingCodeReveal'
 
 export function DevicesPage() {
   const { t, locale } = useTranslation()
@@ -43,6 +45,8 @@ export function DevicesPage() {
   const [createOpen, setCreateOpen] = useState(false)
   const [deactivating, setDeactivating] = useState<Device | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
+  const [pairingCode, setPairingCode] = useState<DevicePairingCodeResponse | null>(null)
+  const [regeneratingId, setRegeneratingId] = useState<number | null>(null)
 
   const loadDevices = useCallback(async () => {
     setLoading(true)
@@ -92,6 +96,19 @@ export function DevicesPage() {
       }
     } finally {
       setActionLoading(false)
+    }
+  }
+
+  async function handleRegeneratePairingCode(device: Device) {
+    setRegeneratingId(device.id)
+    try {
+      const response = await deviceService.regeneratePairingCode(device.id)
+      setPairingCode(response)
+      notify.success(t('devices.toast.pairingCodeRegenerated'))
+    } catch (err) {
+      notify.error(translateApiError(err, t).message)
+    } finally {
+      setRegeneratingId(null)
     }
   }
 
@@ -182,15 +199,28 @@ export function DevicesPage() {
                     <Td column="date">{formatLastLogin(device.lastLoginAt)}</Td>
                     <Td column="actions">
                       {device.active ? (
-                        <Button
-                          variant="danger"
-                          size="action"
-                          className="devices-page__deactivate-btn"
-                          onClick={() => setDeactivating(device)}
-                        >
-                          <Power size={16} aria-hidden="true" />
-                          {t('devices.actions.deactivate')}
-                        </Button>
+                        <div className="devices-page__actions">
+                          <Button
+                            variant="secondary"
+                            size="action"
+                            onClick={() => void handleRegeneratePairingCode(device)}
+                            disabled={regeneratingId === device.id}
+                          >
+                            <KeyRound size={16} aria-hidden="true" />
+                            {regeneratingId === device.id
+                              ? t('devices.actions.regenerating')
+                              : t('devices.actions.regeneratePairingCode')}
+                          </Button>
+                          <Button
+                            variant="danger"
+                            size="action"
+                            className="devices-page__deactivate-btn"
+                            onClick={() => setDeactivating(device)}
+                          >
+                            <Power size={16} aria-hidden="true" />
+                            {t('devices.actions.deactivate')}
+                          </Button>
+                        </div>
                       ) : null}
                     </Td>
                   </TableRow>
@@ -223,6 +253,26 @@ export function DevicesPage() {
         onClose={() => setDeactivating(null)}
         onConfirm={() => void handleDeactivate()}
       />
+
+      <Modal
+        open={pairingCode !== null}
+        size="medium"
+        className="device-create-modal"
+        title={t('devices.pairing.title')}
+        onClose={() => setPairingCode(null)}
+        footer={
+          <Button variant="primary" onClick={() => setPairingCode(null)}>
+            {t('devices.pairing.done')}
+          </Button>
+        }
+      >
+        {pairingCode ? (
+          <DevicePairingCodeReveal
+            pairingCode={pairingCode.pairingCode}
+            expiresAt={pairingCode.expiresAt}
+          />
+        ) : null}
+      </Modal>
     </ListPage>
   )
 }

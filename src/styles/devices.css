@@ -1,5 +1,11 @@
 .devices-page__table .data-table__td--actions {
-  min-width: 9rem;
+  min-width: 20rem;
+}
+
+.devices-page__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
 }
 
 .devices-page__deactivate-btn {
@@ -50,8 +56,9 @@
   background: var(--color-surface-soft);
   color: var(--color-text);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: var(--font-size-base);
-  text-align: start;
+  font-size: var(--font-size-xl);
+  letter-spacing: 0.18em;
+  text-align: center;
 }
 
 .device-create-modal__secret-field:focus {
