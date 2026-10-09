@@ -1,6 +1,6 @@
 import type { ImgHTMLAttributes } from 'react'
-import logoFull from '../../assets/logo.png'
-import logoIcon from '../../assets/restoro-icon.png'
+import logoFull from '../../assets/bord-logo.svg'
+import logoIcon from '../../assets/bord-icon.svg'
 import '../../styles/logo.css'
 
 export type LogoVariant = 'horizontal' | 'mark' | 'stacked'
@@ -32,7 +32,7 @@ export function Logo({
   variant = 'horizontal',
   size = 'md',
   className = '',
-  ariaLabel = 'RestorO',
+  ariaLabel = 'Bord',
   alt,
   style,
   ...props
