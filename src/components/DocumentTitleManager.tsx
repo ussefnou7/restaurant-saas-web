@@ -23,7 +23,7 @@ export function DocumentTitleManager() {
   }, [])
 
   useEffect(() => {
-    const brandName = t('common.appName') || 'RestorO'
+    const brandName = t('common.appName') || 'Bord'
 
     if (overrideTitle) {
       document.title = formatDocumentTitle(overrideTitle, brandName)

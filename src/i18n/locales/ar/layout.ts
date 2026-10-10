@@ -31,6 +31,6 @@ export const layoutAr: TranslationDictionary = {
   'layout.sidebar.aria': 'التنقل الرئيسي',
   'layout.sidebar.collapse': 'طي القائمة الجانبية',
   'layout.sidebar.expand': 'توسيع القائمة الجانبية',
-  'layout.appName': 'RestorO',
+  'layout.appName': 'Bord',
   'layout.logout': 'تسجيل الخروج',
 }

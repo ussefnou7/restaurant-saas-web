@@ -24,11 +24,11 @@ export function getDocumentTitleOverride() {
 
 /**
  * Formats a title with the brand prefix:
- * e.g., "RestorO | Employees" or "RestorO | الموظفين"
+ * e.g., "Bord | Employees" or "Bord | الموظفين"
  */
 export function formatDocumentTitle(
   pageTitle: string | null | undefined,
-  brandName: string = 'RestorO',
+  brandName: string = 'Bord',
 ): string {
   const trimmed = pageTitle?.trim()
   if (!trimmed || trimmed === brandName) {
@@ -66,6 +66,6 @@ export function useDocumentTitle(title?: string | null) {
 
   return {
     overrideTitle: override,
-    brandName: t('common.appName') || 'RestorO',
+    brandName: t('common.appName') || 'Bord',
   }
 }
