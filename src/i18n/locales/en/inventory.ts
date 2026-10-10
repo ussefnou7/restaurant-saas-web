@@ -1,6 +1,17 @@
 import type { TranslationDictionary } from '../../types'
 
 export const inventoryEn: TranslationDictionary = {
+  'inventory.waste.fields.invoice': 'Purchase invoice',
+  'inventory.waste.consumption.PARTIAL': 'Waste was not posted because a consumption document still has stock shortages.',
+  'inventory.waste.consumption.IN_PROGRESS': 'Consumption is still being processed. Wait for it to finish before retrying waste.',
+  'inventory.waste.consumption.CONFLICT': 'Consumption could not finish. Review its processing errors before retrying waste.',
+  'inventory.waste.consumption.open': 'Open consumption document {{id}}',
+  'inventory.waste.invoice.none': 'No invoice',
+  'inventory.waste.invoice.permissionRequired': 'Purchase viewing permission is required to select an invoice and its lines.',
+  'inventory.waste.invoice.loadError': 'Could not load the purchase invoice choices. Refresh and try again.',
+  'inventory.waste.lines.invoiceLine': 'Purchase line / expiry',
+  'inventory.waste.lines.invoiceLineOption': 'Line {{id}} — {{expiry}}',
+  'inventory.waste.lines.noExpiry': 'No expiry date',
   'inventory.title': 'Inventory',
   'inventory.materials.new': 'New Material',
   'inventory.materials.edit': 'Edit Material',

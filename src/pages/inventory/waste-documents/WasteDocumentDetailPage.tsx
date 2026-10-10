@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   ArrowLeft,
   ArrowRight,
@@ -29,8 +29,13 @@ import type { WasteDocumentLineFormState } from '../../../schemas/wasteDocumentL
 import { useDocumentLines, type LineOpResult } from '../../../hooks/useDocumentLines'
 import { useUomLookup } from '../../../hooks/useUomLookup'
 import { useTranslation } from '../../../i18n/useTranslation'
+import { hasPermission } from '../../../access/can'
+import { useAuthSession } from '../../../access/useAuthSession'
 import * as inventoryService from '../../../services/inventoryService'
 import * as wasteDocumentService from '../../../services/wasteDocumentService'
+import * as purchaseInvoiceService from '../../../services/purchaseInvoiceService'
+import type { PurchaseInvoiceResponse, PurchaseInvoiceLineResponse } from '../../../types/purchaseInvoice'
+import type { WasteDocumentLineLookups } from '../../../schemas/wasteDocumentLineSchema'
 import type { MaterialResponse, UomResponse, WarehouseResponse } from '../../../types/inventory'
 import {
   WASTE_REASON_CODES,
@@ -41,7 +46,7 @@ import {
   type WasteReasonCode,
   type WasteUpdateLineRequest,
 } from '../../../types/wasteDocument'
-import { translateApiError } from '../../../utils/errors'
+import { getApiErrorDetails, translateApiError } from '../../../utils/errors'
 import { formatDate, todayLocalDate } from '../../../utils/format'
 import { useCanManageInventoryStock, useCanUncompleteWasteDocuments, useCanViewInventoryStock } from '../../../utils/inventoryAccess'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
@@ -51,6 +56,7 @@ import { WasteDocumentStatusPill } from './WasteDocumentStatusPill'
 import { WasteDocumentStockWarnings } from './WasteDocumentStockWarnings'
 
 type HeaderFormState = {
+  invoiceId: string
   warehouseId: string
   wasteDate: string
   reasonCode: WasteReasonCode
@@ -58,6 +64,7 @@ type HeaderFormState = {
 }
 
 type FieldErrors = {
+  invoiceId?: string
   warehouseId?: string
   wasteDate?: string
 }
@@ -71,6 +78,7 @@ function toDateInputValue(value?: string | null): string {
 
 function emptyHeader(): HeaderFormState {
   return {
+    invoiceId: '',
     warehouseId: '',
     wasteDate: todayLocalDate(),
     reasonCode: 'SPOILED',
@@ -89,6 +97,7 @@ function createEmptyLineForm(): WasteDocumentLineFormState {
 
 function mapDocumentToHeader(doc: WasteDocumentResponse): HeaderFormState {
   return {
+    invoiceId: doc.invoiceId == null ? '' : String(doc.invoiceId),
     warehouseId: String(doc.warehouseId),
     wasteDate: toDateInputValue(doc.wasteDate),
     reasonCode: doc.reasonCode,
@@ -98,6 +107,7 @@ function mapDocumentToHeader(doc: WasteDocumentResponse): HeaderFormState {
 
 function mapLineToForm(line: WasteLineResponse): WasteDocumentLineFormState {
   return {
+    invoiceLineId: line.invoiceLineId == null ? '' : String(line.invoiceLineId),
     id: line.id,
     materialId: String(line.materialId),
     quantity: String(line.quantity),
@@ -134,6 +144,8 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
   const navigate = useNavigate()
   const notify = useNotify()
   const canView = useCanViewInventoryStock()
+  const { user } = useAuthSession()
+  const canViewPurchases = hasPermission(user, 'INVENTORY_PURCHASE_VIEW')
   const canManage = useCanManageInventoryStock()
   const canUncomplete = useCanUncompleteWasteDocuments()
 
@@ -144,6 +156,11 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
   const [header, setHeader] = useState<HeaderFormState>(emptyHeader())
   const [warehouses, setWarehouses] = useState<WarehouseResponse[]>([])
   const [materials, setMaterials] = useState<MaterialResponse[]>([])
+  const [invoices, setInvoices] = useState<PurchaseInvoiceResponse[]>([])
+  const [invoiceLines, setInvoiceLines] = useState<PurchaseInvoiceLineResponse[]>([])
+  const [invoiceLookupError, setInvoiceLookupError] = useState(false)
+  const [invoiceLookupLoading, setInvoiceLookupLoading] = useState(false)
+  const [blockedConsumption, setBlockedConsumption] = useState<{ id: number; status: string } | null>(null)
   const uoms = cachedUoms as unknown as UomResponse[]
   const [lookupsLoading, setLookupsLoading] = useState(false)
   const [loading, setLoading] = useState(!isCreate)
@@ -187,6 +204,7 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
     const initial = mapDocumentToHeader(document)
     return (
       header.warehouseId !== initial.warehouseId ||
+      header.invoiceId !== initial.invoiceId ||
       header.wasteDate !== initial.wasteDate ||
       header.reasonCode !== initial.reasonCode ||
       header.notes !== initial.notes
@@ -194,12 +212,13 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
   }, [document, header])
 
   const schema = useMemo(
+    // Schema handlers dereference only when invoked by user events, never during construction.
+    // eslint-disable-next-line react-hooks/refs
     () =>
       // Schema actions run only from user events; the refs keep the factory stable
       // while dispatching to the current hook controller.
-      // eslint-disable-next-line react-hooks/refs
       createWasteDocumentLineSchema({
-        lookups: { materials, uoms },
+        lookups: { materials, uoms, invoiceLines, invoiceLinked: Boolean(document?.invoiceId) },
         locale,
         t,
         handlers: {
@@ -207,7 +226,7 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
           onDeleteLine: handleSchemaDeleteLine,
         },
       }),
-    [materials, uoms, locale, t, handleSchemaEditLine, handleSchemaDeleteLine],
+    [materials, uoms, invoiceLines, document?.invoiceId, locale, t, handleSchemaEditLine, handleSchemaDeleteLine],
   )
 
   const initialLineForms = useMemo(
@@ -217,12 +236,12 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
 
   const lineController = useDocumentLines<
     WasteDocumentLineFormState,
-    { materials: MaterialResponse[]; uoms: UomResponse[] }
+    WasteDocumentLineLookups
   >({
     schema,
     initialLines: initialLineForms,
     linesReady: !loading,
-    lookups: { materials, uoms },
+    lookups: { materials, uoms, invoiceLines, invoiceLinked: Boolean(document?.invoiceId) },
     locale,
     t,
     onAddLine: async (payload) => {
@@ -340,12 +359,8 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
   const loadLookups = useCallback(async () => {
     setLookupsLoading(true)
     try {
-      const [warehouseData, materialData] = await Promise.all([
-        inventoryService.getWarehouses({ active: true }),
-        inventoryService.getMaterials({ active: true }),
-      ])
+      const warehouseData = await inventoryService.getWarehouses({ active: true })
       setWarehouses(warehouseData)
-      setMaterials(materialData)
     } catch {
       setWarehouses([])
       setMaterials([])
@@ -353,6 +368,34 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
       setLookupsLoading(false)
     }
   }, [])
+
+  useEffect(() => {
+    if (!canView || !canViewPurchases || !header.warehouseId || headerInputsDisabled) return
+    let active = true
+    setInvoiceLookupLoading(true)
+    setInvoiceLookupError(false)
+    void purchaseInvoiceService.getPurchaseInvoices({ status: 'POSTED', warehouseId: header.warehouseId })
+      .then((rows) => { if (active) setInvoices(rows.filter((row) => row.status === 'POSTED' && String(row.warehouseId) === header.warehouseId)) })
+      .catch(() => { if (active) { setInvoices([]); setInvoiceLookupError(true) } })
+      .finally(() => { if (active) setInvoiceLookupLoading(false) })
+    return () => { active = false }
+  }, [canView, canViewPurchases, header.warehouseId, headerInputsDisabled])
+
+  useEffect(() => {
+    if (!canView) return
+    let active = true
+    setMaterials([])
+    setInvoiceLines([])
+    const invoiceId = document?.invoiceId
+    if (invoiceId && !canViewPurchases) return
+    void Promise.all([
+      inventoryService.getMaterials(invoiceId ? { invoiceId } : { active: true }),
+      invoiceId ? purchaseInvoiceService.getPurchaseInvoice(invoiceId) : Promise.resolve(null),
+    ]).then(([rows, invoice]) => {
+      if (active) { setMaterials(rows); setInvoiceLines(invoice?.lines ?? []) }
+    }).catch(() => { if (active) setInvoiceLookupError(true) })
+    return () => { active = false }
+  }, [canView, canViewPurchases, document?.invoiceId])
 
   const loadDocument = useCallback(async (targetId: string) => {
     setError('')
@@ -382,6 +425,7 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
     const errors: FieldErrors = {}
     const fieldRequired = t('inventory.waste.validation.fieldRequired')
     if (!header.warehouseId) errors.warehouseId = fieldRequired
+    if (header.reasonCode === 'EXPIRED' && !header.invoiceId) errors.invoiceId = fieldRequired
     if (!header.wasteDate) errors.wasteDate = fieldRequired
     else if (header.wasteDate > todayLocalDate()) {
       errors.wasteDate = t('inventory.waste.validation.dateFuture')
@@ -404,6 +448,7 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
           warehouseId: Number(header.warehouseId),
           wasteDate: header.wasteDate,
           reasonCode: header.reasonCode,
+          invoiceId: header.invoiceId ? Number(header.invoiceId) : null,
           notes: header.notes.trim() || undefined,
         })
         setDocument(created)
@@ -416,6 +461,7 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
         warehouseId: Number(header.warehouseId),
         wasteDate: header.wasteDate,
         reasonCode: header.reasonCode,
+        invoiceId: header.invoiceId ? Number(header.invoiceId) : null,
         notes: header.notes.trim() || undefined,
       })
       setDocument(updated)
@@ -443,6 +489,7 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
         warehouseId: Number(header.warehouseId),
         wasteDate: header.wasteDate,
         reasonCode: header.reasonCode,
+        invoiceId: header.invoiceId ? Number(header.invoiceId) : null,
         notes: header.notes.trim() || undefined,
       })
       setDocument(created)
@@ -465,6 +512,7 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
   async function handleSaveNewLine() {
     const result = await saveNewLine((form) => ({
       materialId: Number(form.materialId),
+      invoiceLineId: form.invoiceLineId ? Number(form.invoiceLineId) : undefined,
       quantity: Number(form.quantity),
       uomId: Number(form.uomId),
       notes: form.notes?.trim() || undefined,
@@ -500,6 +548,7 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
 
   async function handlePost() {
     if (!persistedId || !isComplete) return
+    setBlockedConsumption(null)
     setActionLoading(true)
     try {
       const updated = await wasteDocumentService.postWasteDocument(persistedId)
@@ -507,8 +556,16 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
       setPostConfirmOpen(false)
       notify.success(t('inventory.waste.toast.postSuccess'))
       notifyStockBalancesRefresh()
-    } catch {
-      // API errors are translated and toasted by the global axios interceptor.
+    } catch (err) {
+      const details = getApiErrorDetails(err)
+      if (details.errorCode === 'WASTE_CONSUMPTION_NOT_SETTLED') {
+        const id = Number(details.params?.docId)
+        if (Number.isSafeInteger(id) && id > 0) {
+          setBlockedConsumption({ id, status: String(details.params?.status ?? 'CONFLICT') })
+          setPostConfirmOpen(false)
+        }
+      }
+      // The interceptor owns the error toast; this link opens the failed document's details.
     } finally {
       setActionLoading(false)
     }
@@ -770,6 +827,7 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                       value={header.notes?.trim() || '—'}
                       fullWidth
                     />
+                    <DetailField label={t('inventory.waste.fields.invoice')} value={header.invoiceId || '—'} />
                     {document?.completedAt ? (
                       <DetailField
                         label={t('inventory.waste.fields.completedAt')}
@@ -795,7 +853,7 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                       ) : (
                         <Dropdown
                           value={header.warehouseId}
-                          onChange={(val) => setHeader((prev) => ({ ...prev, warehouseId: val }))}
+                          onChange={(val) => setHeader((prev) => ({ ...prev, warehouseId: val, invoiceId: '' }))}
                           options={[
                             { value: '', label: t('inventory.common.selectWarehouse') },
                             ...warehouseOptions,
@@ -843,6 +901,19 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                       />
                     </PiFormField>
 
+                    <PiFormField label={t('inventory.waste.fields.invoice')} required={header.reasonCode === 'EXPIRED'} error={fieldErrors.invoiceId}>
+                      <Dropdown
+                        value={header.invoiceId}
+                        onChange={(invoiceId) => setHeader((prev) => ({ ...prev, invoiceId }))}
+                        disabled={!canViewPurchases || invoiceLookupLoading || !header.warehouseId || Boolean(document?.lines.length)}
+                        options={[
+                          { value: '', label: t('inventory.waste.invoice.none') },
+                          ...invoices.map((invoice) => ({ value: String(invoice.id), label: invoice.invoiceNumber || String(invoice.id) })),
+                        ]}
+                        ariaLabel={t('inventory.waste.fields.invoice')}
+                        className="dropdown--form-header"
+                      />
+                    </PiFormField>
                     <PiFormField label={t('inventory.waste.fields.notes')} htmlFor="waste-notes">
                       <textarea
                         id="waste-notes"
@@ -855,13 +926,23 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
                   </>
                 )}
               </div>
+              {invoiceLookupError ? <p role="alert">{t('inventory.waste.invoice.loadError')}</p> : null}
+              {!canViewPurchases && (header.reasonCode === 'EXPIRED' || header.invoiceId) ? <p role="alert">{t('inventory.waste.invoice.permissionRequired')}</p> : null}
+              {blockedConsumption ? (
+                <p role="status">
+                  {t(`inventory.waste.consumption.${['PARTIAL', 'IN_PROGRESS'].includes(blockedConsumption.status) ? blockedConsumption.status : 'CONFLICT'}`)}{' '}
+                  <Link to={`/inventory/order-consumption/${blockedConsumption.id}`}>
+                    {t('inventory.waste.consumption.open', { id: blockedConsumption.id })}
+                  </Link>
+                </p>
+              ) : null}
             </DocumentHeader>
 
             <SchemaDocumentLinesCard
               title={t('inventory.waste.lines.title')}
               schema={schema}
               lines={lines}
-              lookups={{ materials, uoms }}
+              lookups={{ materials, uoms, invoiceLines, invoiceLinked: Boolean(document?.invoiceId) }}
               viewMode={lineController.viewMode}
               selectedLineId={lineController.selectedLineId}
               selectedIndex={lineController.selectedIndex}

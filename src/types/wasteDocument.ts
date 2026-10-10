@@ -8,6 +8,7 @@ export type WasteReasonCode =
   | 'OTHER'
 
 export interface WasteDocumentRequest {
+  invoiceId?: number | null
   warehouseId: number
   wasteDate: string
   reasonCode: WasteReasonCode
@@ -15,6 +16,7 @@ export interface WasteDocumentRequest {
 }
 
 export interface WasteLineRequest {
+  invoiceLineId?: number
   materialId: number
   quantity: number
   uomId?: number
@@ -28,6 +30,7 @@ export interface WasteUpdateLineRequest {
 }
 
 export interface WasteLineResponse {
+  invoiceLineId?: number | null
   id: number
   materialId: number
   materialCode: string
@@ -50,6 +53,7 @@ export interface MaterialShortfallResponse {
 }
 
 export interface WasteDocumentResponse {
+  invoiceId?: number | null
   id: number
   warehouseId: number
   warehouseName: string

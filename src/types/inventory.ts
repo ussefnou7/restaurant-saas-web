@@ -228,6 +228,7 @@ export type MaterialCatalogListParams = {
 }
 
 export type MaterialListParams = InventoryListParams & {
+  invoiceId?: number | string
   categoryId?: number | string
   defaultUomId?: number | string
   stockUomId?: number | string

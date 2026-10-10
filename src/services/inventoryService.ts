@@ -145,6 +145,7 @@ export async function getMaterials(
       categoryId: params.categoryId,
       defaultUomId: params.defaultUomId,
       catalogId: params.catalogId,
+      invoiceId: params.invoiceId,
       active: params.active,
     })}`,
   )

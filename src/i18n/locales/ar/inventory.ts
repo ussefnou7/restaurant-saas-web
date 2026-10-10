@@ -1,6 +1,17 @@
 import type { TranslationDictionary } from '../../types'
 
 export const inventoryAr: TranslationDictionary = {
+  'inventory.waste.fields.invoice': 'فاتورة الشراء',
+  'inventory.waste.consumption.PARTIAL': 'لم يُرحّل الهالك لأن مستند استهلاك ما زال به مواد ناقصة.',
+  'inventory.waste.consumption.IN_PROGRESS': 'الاستهلاك قيد المعالجة. انتظر اكتماله قبل إعادة محاولة ترحيل الهالك.',
+  'inventory.waste.consumption.CONFLICT': 'تعذّر اكتمال الاستهلاك. راجع أخطاء معالجته قبل إعادة محاولة ترحيل الهالك.',
+  'inventory.waste.consumption.open': 'فتح مستند الاستهلاك {{id}}',
+  'inventory.waste.invoice.none': 'بدون فاتورة',
+  'inventory.waste.invoice.permissionRequired': 'تحتاج صلاحية عرض المشتريات لاختيار الفاتورة وسطورها.',
+  'inventory.waste.invoice.loadError': 'تعذر تحميل اختيارات فاتورة الشراء. حدّث الصفحة وحاول مرة أخرى.',
+  'inventory.waste.lines.invoiceLine': 'سطر الشراء / الصلاحية',
+  'inventory.waste.lines.invoiceLineOption': 'سطر {{id}} — {{expiry}}',
+  'inventory.waste.lines.noExpiry': 'بدون تاريخ صلاحية',
   'inventory.title': 'المخزون',
   'inventory.materials.new': 'مادة جديدة',
   'inventory.materials.edit': 'تعديل المادة',

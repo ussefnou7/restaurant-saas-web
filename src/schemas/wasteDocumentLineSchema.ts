@@ -1,9 +1,11 @@
 import type { LineSchema, LineSchemaDeps } from '../types/lineSchema'
 import type { MaterialResponse, UomResponse } from '../types/inventory'
+import type { PurchaseInvoiceLineResponse } from '../types/purchaseInvoice'
 import { getInventoryLocalizedName } from '../utils/inventoryDisplay'
 import { getCompatibleUoms, getLocalizedUomSymbol, resolveDisplayUomId } from '../utils/inventoryUom'
 
 export interface WasteDocumentLineFormState {
+  invoiceLineId?: string
   id?: number
   materialId: string
   quantity: string
@@ -12,6 +14,8 @@ export interface WasteDocumentLineFormState {
 }
 
 export interface WasteDocumentLineLookups {
+  invoiceLines?: PurchaseInvoiceLineResponse[]
+  invoiceLinked?: boolean
   materials: MaterialResponse[]
   uoms: UomResponse[]
 }
@@ -19,7 +23,7 @@ export interface WasteDocumentLineLookups {
 export function createWasteDocumentLineSchema(
   deps: LineSchemaDeps<WasteDocumentLineFormState, WasteDocumentLineLookups>,
 ): LineSchema<WasteDocumentLineFormState, WasteDocumentLineLookups> {
-  const { lookups, locale, handlers } = deps
+  const { lookups, locale, handlers, t } = deps
 
   return {
     fields: [
@@ -39,6 +43,28 @@ export function createWasteDocumentLineSchema(
           })),
         validate: (val, ctx) =>
           ctx.isNew && !val ? 'inventory.waste.validation.fieldRequired' : null,
+      },
+      {
+        id: 'invoice-line',
+        key: 'invoiceLineId',
+        labelKey: 'inventory.waste.lines.invoiceLine',
+        type: 'select',
+        required: true,
+        visible: () => Boolean(lookups.invoiceLinked),
+        readOnly: (ctx) => !ctx.isNew,
+        showIn: ['grid', 'form'],
+        tableWidth: '20%',
+        dependsOn: ['materialId'],
+        onDependencyChange: (materialId) => {
+          const lines = (lookups.invoiceLines ?? []).filter((line) => String(line.materialId) === String(materialId))
+          return { invoiceLineId: lines.length === 1 ? String(lines[0].id) : '' }
+        },
+        options: (ctx) => (lookups.invoiceLines ?? [])
+          .filter((line) => String(line.materialId) === ctx.line.materialId)
+          .map((line) => ({ value: String(line.id), label: t('inventory.waste.lines.invoiceLineOption', {
+            id: line.id, expiry: line.expiryDate ?? t('inventory.waste.lines.noExpiry'),
+          }) })),
+        validate: (val) => lookups.invoiceLinked && !val ? 'inventory.waste.validation.fieldRequired' : null,
       },
       {
         id: 'quantity',
