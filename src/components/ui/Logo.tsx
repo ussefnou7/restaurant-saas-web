@@ -17,14 +17,14 @@ function resolveHeight(size: LogoSize): number {
   if (typeof size === 'number') return size
   switch (size) {
     case 'sm':
-      return 74
+      return 36
     case 'lg':
-      return 92
+      return 48
     case 'xl':
-      return 112
+      return 56
     case 'md':
     default:
-      return 78
+      return 40
   }
 }
 

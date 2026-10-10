@@ -176,8 +176,8 @@
   flex: 1;
   min-width: 0;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 0;
+  align-items: center;
+  gap: 6px;
 }
 
 .sidebar-brand-logo {
@@ -193,7 +193,6 @@
 .sidebar-brand-link__tenant-name {
   display: block;
   width: 100%;
-  margin-block-start: -16px;
   overflow: hidden;
   color: var(--color-text-muted);
   font-size: var(--font-size-md);
