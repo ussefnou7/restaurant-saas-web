@@ -1,6 +1,7 @@
 import { MapPinned, MonitorSmartphone, Settings, Store, Users } from 'lucide-react'
 import { ModuleHubPage } from '../../components/hub/ModuleHubPage'
 import { useTranslation } from '../../i18n/useTranslation'
+import { useAccess } from '../../access/useAuthSession'
 import { useCanManageDevices } from '../../utils/deviceAccess'
 import { useCanViewTables } from '../../utils/tableAccess'
 
@@ -8,6 +9,8 @@ export function AdminHubPage() {
   const { t } = useTranslation()
   const showDevices = useCanManageDevices()
   const showTables = useCanViewTables()
+  const { canAny } = useAccess()
+  const showSettings = canAny(['TENANT_SETTINGS_VIEW', 'TENANT_SETTINGS_MANAGE'])
 
   return (
     <ModuleHubPage
@@ -52,13 +55,15 @@ export function AdminHubPage() {
               },
             ]
           : []),
-        {
-          id: 'settings',
-          icon: Settings,
-          title: t('hubs.admin.settings.title'),
-          description: t('hubs.admin.settings.description'),
-          to: '/settings',
-        },
+        ...(showSettings
+          ? [{
+              id: 'settings',
+              icon: Settings,
+              title: t('hubs.admin.settings.title'),
+              description: t('hubs.admin.settings.description'),
+              to: '/settings',
+            }]
+          : []),
       ]}
     />
   )

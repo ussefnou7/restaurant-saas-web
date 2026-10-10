@@ -30,6 +30,7 @@ import { tablesAr } from './tables'
 import { userDetailsAr } from './userDetails'
 import { expensesAr } from './expenses'
 import { usersAr } from './users'
+import { tenantSettingsAr } from './tenantSettings'
 
 export const ar = mergeMessages(
   commonAr,
@@ -44,6 +45,7 @@ export const ar = mergeMessages(
   branchDetailsAr,
   employeesAr,
   usersAr,
+  tenantSettingsAr,
   userDetailsAr,
   permissionsAr,
   leaveRequestsAr,

@@ -30,6 +30,7 @@ import { tablesEn } from './tables'
 import { userDetailsEn } from './userDetails'
 import { expensesEn } from './expenses'
 import { usersEn } from './users'
+import { tenantSettingsEn } from './tenantSettings'
 
 export const en = mergeMessages(
   commonEn,
@@ -44,6 +45,7 @@ export const en = mergeMessages(
   branchDetailsEn,
   employeesEn,
   usersEn,
+  tenantSettingsEn,
   userDetailsEn,
   permissionsEn,
   leaveRequestsEn,

@@ -478,7 +478,7 @@ export const router = createBrowserRouter([
           },
           {
             path: 'settings',
-            element: <SettingsPage />,
+            element: <ScreenGuard screen="settings"><SettingsPage /></ScreenGuard>,
             handle: { titleKey: 'layout.nav.settings' },
           },
         ],

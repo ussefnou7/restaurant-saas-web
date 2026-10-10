@@ -901,6 +901,65 @@ textarea {
   margin-top: var(--space-2);
 }
 
+.tenant-settings-page {
+  max-width: 960px;
+}
+
+.tenant-settings-page__form {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.tenant-settings-page__card {
+  padding: var(--space-5);
+}
+
+.tenant-settings-page__switch-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: 4.25rem;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-soft);
+}
+
+.tenant-settings-page__switch-label,
+.tenant-settings-page__switch-helper,
+.tenant-settings-page__read-only {
+  margin: 0;
+}
+
+.tenant-settings-page__switch-label {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.tenant-settings-page__switch-helper,
+.tenant-settings-page__read-only {
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+}
+
+.tenant-settings-page__footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 640px) {
+  .tenant-settings-page__card {
+    padding: var(--space-4);
+  }
+
+  .tenant-settings-page__switch-field {
+    align-items: flex-start;
+  }
+}
+
 /* Buttons */
 .button-primary,
 .button-secondary,

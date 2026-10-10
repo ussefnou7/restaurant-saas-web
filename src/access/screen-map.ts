@@ -157,6 +157,16 @@ export const SCREEN_MAP = {
     onDeniedRoute: 'deny-screen',
   },
 
+  settings: {
+    route: '/settings',
+    requires: ['TENANT_SETTINGS_VIEW', 'TENANT_SETTINGS_MANAGE'],
+    onDenied: 'hide',
+    onDeniedRoute: 'deny-screen',
+    actions: {
+      manage: { requires: 'TENANT_SETTINGS_MANAGE', onDenied: 'disable' },
+    },
+  },
+
   tables: {
     route: '/tables',
     requires: 'TABLES_VIEW',
