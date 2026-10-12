@@ -3,7 +3,6 @@ import type { TranslationDictionary } from '../../types'
 export const errorsEn: TranslationDictionary = {
   'errors.WASTE_INVOICE_REQUIRED': 'Select a purchase invoice for expired waste.',
   'errors.WASTE_INVALID_INVOICE_SOURCE': 'Select a posted purchase invoice from this warehouse and one of its matching material lines. Waste cannot predate receipt. Remove existing lines before changing the invoice.',
-  'errors.WASTE_CONSUMPTION_NOT_SETTLED': 'Waste was not posted: consumption document {{docId}} has not finished. Open that document to review stock shortages or processing errors. Materials: {{materialNames}}.',
   'errors.TENANT_SETTINGS_NOT_FOUND': 'Settings for this restaurant are missing. Contact your administrator.',
   'errors.TENANT_ORDER_TYPE_REQUIRED': 'Enable at least one order type: dine-in, takeaway or delivery.',
   'errors.LEAVE_REQUEST_OVERLAP': 'These dates overlap an approved leave request for this employee.',

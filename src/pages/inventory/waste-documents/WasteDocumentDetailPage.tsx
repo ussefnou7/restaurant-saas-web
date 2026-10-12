@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import {
   ArrowLeft,
   ArrowRight,
@@ -46,7 +46,7 @@ import {
   type WasteReasonCode,
   type WasteUpdateLineRequest,
 } from '../../../types/wasteDocument'
-import { getApiErrorDetails, translateApiError } from '../../../utils/errors'
+import { translateApiError } from '../../../utils/errors'
 import { formatDate, todayLocalDate } from '../../../utils/format'
 import { useCanManageInventoryStock, useCanUncompleteWasteDocuments, useCanViewInventoryStock } from '../../../utils/inventoryAccess'
 import { getInventoryLocalizedName } from '../../../utils/inventoryDisplay'
@@ -160,7 +160,6 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
   const [invoiceLines, setInvoiceLines] = useState<PurchaseInvoiceLineResponse[]>([])
   const [invoiceLookupError, setInvoiceLookupError] = useState(false)
   const [invoiceLookupLoading, setInvoiceLookupLoading] = useState(false)
-  const [blockedConsumption, setBlockedConsumption] = useState<{ id: number; status: string } | null>(null)
   const uoms = cachedUoms as unknown as UomResponse[]
   const [lookupsLoading, setLookupsLoading] = useState(false)
   const [loading, setLoading] = useState(!isCreate)
@@ -186,6 +185,9 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
   const headerInputsDisabled =
     !headerFieldsEnabled || headerSaving || lookupsLoading || actionLoading || isReadOnly
   const showDraftLineActions = isDraft && canManage
+  // EXPIRED needs a source invoice, enforced server-side at COMPLETE and POST — not at create,
+  // so a draft can be started before the invoice is known (D139).
+  const missingInvoiceForExpiry = header.reasonCode === 'EXPIRED' && !header.invoiceId
   const stockWarnings = document?.stockWarnings ?? []
   const showStockWarnings = isComplete && stockWarnings.length > 0
   const startEditLineRef = useRef<(line: WasteDocumentLineFormState) => void>(() => undefined)
@@ -425,7 +427,6 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
     const errors: FieldErrors = {}
     const fieldRequired = t('inventory.waste.validation.fieldRequired')
     if (!header.warehouseId) errors.warehouseId = fieldRequired
-    if (header.reasonCode === 'EXPIRED' && !header.invoiceId) errors.invoiceId = fieldRequired
     if (!header.wasteDate) errors.wasteDate = fieldRequired
     else if (header.wasteDate > todayLocalDate()) {
       errors.wasteDate = t('inventory.waste.validation.dateFuture')
@@ -531,6 +532,14 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
 
   async function handleComplete() {
     if (!persistedId || !isDraft) return
+    // The server requires a source invoice for EXPIRED at COMPLETE (D139). Say so on the field
+    // instead of letting the request fail with only a toast to explain it.
+    if (missingInvoiceForExpiry) {
+      setCompleteConfirmOpen(false)
+      setIsEditingHeader(true)
+      setFieldErrors({ invoiceId: t('inventory.waste.validation.invoiceRequiredForExpiry') })
+      return
+    }
     setActionLoading(true)
     try {
       const updated = await wasteDocumentService.completeWasteDocument(persistedId)
@@ -548,7 +557,6 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
 
   async function handlePost() {
     if (!persistedId || !isComplete) return
-    setBlockedConsumption(null)
     setActionLoading(true)
     try {
       const updated = await wasteDocumentService.postWasteDocument(persistedId)
@@ -556,16 +564,9 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
       setPostConfirmOpen(false)
       notify.success(t('inventory.waste.toast.postSuccess'))
       notifyStockBalancesRefresh()
-    } catch (err) {
-      const details = getApiErrorDetails(err)
-      if (details.errorCode === 'WASTE_CONSUMPTION_NOT_SETTLED') {
-        const id = Number(details.params?.docId)
-        if (Number.isSafeInteger(id) && id > 0) {
-          setBlockedConsumption({ id, status: String(details.params?.status ?? 'CONFLICT') })
-          setPostConfirmOpen(false)
-        }
-      }
-      // The interceptor owns the error toast; this link opens the failed document's details.
+    } catch {
+      // API errors are translated and toasted by the global axios interceptor. A per-batch
+      // shortfall arrives as BATCH_SHORTFALL naming the material and what the batch still holds.
     } finally {
       setActionLoading(false)
     }
@@ -928,14 +929,6 @@ function WasteDocumentForm({ mode }: { mode: FormMode }) {
               </div>
               {invoiceLookupError ? <p role="alert">{t('inventory.waste.invoice.loadError')}</p> : null}
               {!canViewPurchases && (header.reasonCode === 'EXPIRED' || header.invoiceId) ? <p role="alert">{t('inventory.waste.invoice.permissionRequired')}</p> : null}
-              {blockedConsumption ? (
-                <p role="status">
-                  {t(`inventory.waste.consumption.${['PARTIAL', 'IN_PROGRESS'].includes(blockedConsumption.status) ? blockedConsumption.status : 'CONFLICT'}`)}{' '}
-                  <Link to={`/inventory/order-consumption/${blockedConsumption.id}`}>
-                    {t('inventory.waste.consumption.open', { id: blockedConsumption.id })}
-                  </Link>
-                </p>
-              ) : null}
             </DocumentHeader>
 
             <SchemaDocumentLinesCard

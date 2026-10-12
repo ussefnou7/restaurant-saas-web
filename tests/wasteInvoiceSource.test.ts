@@ -31,6 +31,27 @@ test('same material in two invoice lines requires an explicit source selection',
   assert.equal(field.validate?.('', context), 'inventory.waste.validation.fieldRequired')
 })
 
+test('source options are labelled by expiry, quantity and price, not by row id', () => {
+  // The two candidate lines differ only in expiry and unit cost, so the label has to carry
+  // both for the choice to be makeable at all.
+  const labels = sourceField().options?.(context).map((option) => option.label)
+  assert.deepEqual(labels, [
+    'inventory.waste.lines.invoiceLineOption',
+    'inventory.waste.lines.invoiceLineOption',
+  ])
+  const interpolated = createWasteDocumentLineSchema({
+    lookups: { materials: [], uoms: [], invoiceLinked: true, invoiceLines },
+    locale: 'en',
+    t: (key: string, params?: Record<string, unknown>) => `${key}:${JSON.stringify(params ?? {})}`,
+    handlers: {},
+  }).fields.find((field) => field.id === 'invoice-line')!.options?.(context) ?? []
+  assert.match(interpolated[0].label, /"expiry":"2026-10-01"/)
+  assert.match(interpolated[0].label, /"unitCost":"2"/)
+  assert.match(interpolated[1].label, /"unitCost":"3"/)
+  // No raw database id leaks into the label.
+  assert.doesNotMatch(interpolated[0].label, /"id":/)
+})
+
 test('a unique matching source is selected and unrelated invoice lines never appear', () => {
   const field = sourceField()
   assert.deepEqual(field.onDependencyChange?.('2', context), { invoiceLineId: '13' })
@@ -48,8 +69,22 @@ test('invoice waste copy and blocking errors exist in both languages', () => {
   for (const key of Object.keys(inventoryEn).filter((key) => key.startsWith('inventory.waste.'))) {
     assert.ok(inventoryAr[key], key)
   }
-  for (const code of ['WASTE_INVOICE_REQUIRED', 'WASTE_INVALID_INVOICE_SOURCE', 'WASTE_CONSUMPTION_NOT_SETTLED']) {
-    assert.ok(errorsEn[`errors.${code}`])
-    assert.ok(errorsAr[`errors.${code}`])
+  // BATCH_SHORTFALL is reachable from waste now that a sourced line is bounded by its own batch.
+  for (const code of ['WASTE_INVOICE_REQUIRED', 'WASTE_INVALID_INVOICE_SOURCE', 'BATCH_SHORTFALL']) {
+    assert.ok(errorsEn[`errors.${code}`], code)
+    assert.ok(errorsAr[`errors.${code}`], code)
+  }
+  assert.ok(inventoryEn['inventory.waste.validation.invoiceRequiredForExpiry'])
+  assert.ok(inventoryAr['inventory.waste.validation.invoiceRequiredForExpiry'])
+})
+
+test('consumption settlement copy is gone and must not come back', () => {
+  // The waste post no longer drains consumption documents (D139 amendment 2026-10-10), so no
+  // copy may imply that it does. Re-adding it needs a new decision, not a translation.
+  for (const table of [inventoryEn, inventoryAr]) {
+    assert.deepEqual(Object.keys(table).filter((key) => key.startsWith('inventory.waste.consumption.')), [])
+  }
+  for (const table of [errorsEn, errorsAr]) {
+    assert.equal(table['errors.WASTE_CONSUMPTION_NOT_SETTLED'], undefined)
   }
 })

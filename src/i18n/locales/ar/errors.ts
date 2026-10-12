@@ -3,7 +3,6 @@ import type { TranslationDictionary } from '../../types'
 export const errorsAr: TranslationDictionary = {
   'errors.WASTE_INVOICE_REQUIRED': 'اختر فاتورة شراء للهالك بسبب انتهاء الصلاحية.',
   'errors.WASTE_INVALID_INVOICE_SOURCE': 'اختر فاتورة شراء مرحّلة من نفس المخزن وسطر المادة منها. تاريخ الهالك لا يسبق الاستلام. احذف السطور الحالية قبل تغيير الفاتورة.',
-  'errors.WASTE_CONSUMPTION_NOT_SETTLED': 'لم يُرحّل الهالك: مستند الاستهلاك {{docId}} لم يكتمل. افتح المستند لمراجعة نقص المخزون أو أخطاء المعالجة. المواد: {{materialNames}}.',
   'errors.TENANT_SETTINGS_NOT_FOUND': 'إعدادات هذا المطعم غير موجودة. تواصل مع مسؤول النظام.',
   'errors.TENANT_ORDER_TYPE_REQUIRED': 'فعّل نوع طلب واحدًا على الأقل: صالة أو تيك أواي أو دليفري.',
   'errors.LEAVE_REQUEST_OVERLAP': 'تتداخل هذه التواريخ مع طلب إجازة معتمد لهذا الموظف.',

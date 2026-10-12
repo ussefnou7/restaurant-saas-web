@@ -2,7 +2,7 @@ import type { LineSchema, LineSchemaDeps } from '../types/lineSchema'
 import type { MaterialResponse, UomResponse } from '../types/inventory'
 import type { PurchaseInvoiceLineResponse } from '../types/purchaseInvoice'
 import { getInventoryLocalizedName } from '../utils/inventoryDisplay'
-import { getCompatibleUoms, getLocalizedUomSymbol, resolveDisplayUomId } from '../utils/inventoryUom'
+import { formatQuantityWithUom, getCompatibleUoms, getLocalizedUomSymbol, resolveDisplayUomId } from '../utils/inventoryUom'
 
 export interface WasteDocumentLineFormState {
   invoiceLineId?: string
@@ -59,11 +59,24 @@ export function createWasteDocumentLineSchema(
           const lines = (lookups.invoiceLines ?? []).filter((line) => String(line.materialId) === String(materialId))
           return { invoiceLineId: lines.length === 1 ? String(lines[0].id) : '' }
         },
+        // Two lines of the same material are told apart by expiry, quantity and price — never
+        // by the row id, which means nothing to the person holding the stock.
         options: (ctx) => (lookups.invoiceLines ?? [])
           .filter((line) => String(line.materialId) === ctx.line.materialId)
-          .map((line) => ({ value: String(line.id), label: t('inventory.waste.lines.invoiceLineOption', {
-            id: line.id, expiry: line.expiryDate ?? t('inventory.waste.lines.noExpiry'),
-          }) })),
+          .map((line) => {
+            const uom = (lookups.uoms || []).find((candidate) => candidate.id === line.uomId)
+            return {
+              value: String(line.id),
+              label: t('inventory.waste.lines.invoiceLineOption', {
+                expiry: line.expiryDate ?? t('inventory.waste.lines.noExpiry'),
+                quantity: formatQuantityWithUom(
+                  line.quantity, uom ? getLocalizedUomSymbol(uom, locale) : null, uom?.code),
+                unitCost: line.unitCost.toLocaleString(undefined, {
+                  minimumFractionDigits: 0, maximumFractionDigits: 4,
+                }),
+              }),
+            }
+          }),
         validate: (val) => lookups.invoiceLinked && !val ? 'inventory.waste.validation.fieldRequired' : null,
       },
       {
